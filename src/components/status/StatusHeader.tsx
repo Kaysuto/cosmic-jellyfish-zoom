@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { useTranslation } from 'react-i18next';
 
 interface StatusHeaderProps {
   overallStatus: 'operational' | 'degraded' | 'downtime';
@@ -8,10 +9,12 @@ interface StatusHeaderProps {
 }
 
 const StatusHeader: React.FC<StatusHeaderProps> = ({ overallStatus, lastUpdated }) => {
+  const { t } = useTranslation();
+  
   const statusConfig = {
-    operational: { label: 'All Systems Operational', variant: 'default' },
-    degraded: { label: 'Partial System Outage', variant: 'destructive' },
-    downtime: { label: 'Major System Outage', variant: 'destructive' },
+    operational: { label: t('all_systems_operational'), variant: 'default' },
+    degraded: { label: t('partial_outage'), variant: 'destructive' },
+    downtime: { label: t('major_outage'), variant: 'destructive' },
   };
 
   const config = statusConfig[overallStatus];
@@ -25,14 +28,15 @@ const StatusHeader: React.FC<StatusHeaderProps> = ({ overallStatus, lastUpdated 
             {config.label}
           </Badge>
         </div>
-        <p className="text-sm text-gray-500 mt-2">Last updated: {lastUpdated}</p>
+        <p className="text-sm text-gray-500 mt-2">{t('last_updated')} {lastUpdated}</p>
       </div>
       
       <Card>
         <CardContent className="p-6">
           <p className="text-center text-gray-700">
-            This page shows the current status of all PlayJelly services. 
-            If you're experiencing issues, please check this page for updates.
+            {overallStatus === 'operational' 
+              ? "This page shows the current status of all PlayJelly services. If you're experiencing issues, please check this page for updates."
+              : "We are currently experiencing issues with some of our services. Please check this page for updates on our progress."}
           </p>
         </CardContent>
       </Card>

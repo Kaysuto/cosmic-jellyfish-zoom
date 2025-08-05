@@ -2,6 +2,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ServiceStatusProps {
   name: string;
@@ -11,19 +12,21 @@ interface ServiceStatusProps {
 }
 
 const ServiceStatus: React.FC<ServiceStatusProps> = ({ name, status, description, uptime }) => {
+  const { t } = useTranslation();
+  
   const statusConfig = {
     operational: { 
-      label: 'Operational', 
+      label: t('operational'), 
       variant: 'default',
       icon: <CheckCircle className="h-4 w-4" />
     },
     degraded: { 
-      label: 'Degraded Performance', 
+      label: t('degraded'), 
       variant: 'secondary',
       icon: <AlertTriangle className="h-4 w-4" />
     },
     downtime: { 
-      label: 'Major Outage', 
+      label: t('downtime'), 
       variant: 'destructive',
       icon: <XCircle className="h-4 w-4" />
     },
@@ -45,7 +48,7 @@ const ServiceStatus: React.FC<ServiceStatusProps> = ({ name, status, description
       <CardContent>
         <p className="text-sm text-gray-500 mb-2">{description}</p>
         <div className="flex justify-between items-center">
-          <span className="text-xs text-gray-500">Uptime: {uptime}%</span>
+          <span className="text-xs text-gray-500">{t('uptime')} {uptime}%</span>
         </div>
       </CardContent>
     </Card>

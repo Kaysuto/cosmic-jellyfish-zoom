@@ -9,8 +9,10 @@ import { useIncidents } from '@/hooks/useIncidents';
 import { useUptimeHistory } from '@/hooks/useUptimeHistory';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from 'react-i18next';
 
 const StatusPage: React.FC = () => {
+  const { t } = useTranslation();
   const { services, loading: servicesLoading } = useServices();
   const { incidents, loading: incidentsLoading } = useIncidents();
   const { uptimeData, loading: uptimeLoading } = useUptimeHistory();

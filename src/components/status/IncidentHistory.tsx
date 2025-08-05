@@ -2,11 +2,12 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Incident {
   id: string;
   title: string;
-  status: 'resolved' | 'investigating' | 'monitoring';
+  status: 'resolved' | 'investigating' | 'monitoring' | 'identified';
   createdAt: string;
   updatedAt: string;
   description: string;
@@ -17,10 +18,13 @@ interface IncidentHistoryProps {
 }
 
 const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
+  const { t } = useTranslation();
+  
   const statusConfig = {
-    resolved: { label: 'Resolved', variant: 'default' },
-    investigating: { label: 'Investigating', variant: 'secondary' },
-    monitoring: { label: 'Monitoring', variant: 'secondary' },
+    resolved: { label: t('resolved'), variant: 'default' },
+    investigating: { label: t('investigating'), variant: 'secondary' },
+    monitoring: { label: t('monitoring'), variant: 'secondary' },
+    identified: { label: t('identified'), variant: 'secondary' },
   };
 
   return (
@@ -28,13 +32,13 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />
-          Incident History
+          {t('incident_history')}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {incidents.length === 0 ? (
-            <p className="text-center text-gray-500 py-4">No incidents reported in the past 90 days.</p>
+            <p className="text-center text-gray-500 py-4">{t('no_incidents')}</p>
           ) : (
             incidents.map((incident) => {
               const config = statusConfig[incident.status];
@@ -53,7 +57,7 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
                     </span>
                     {incident.updatedAt !== incident.createdAt && (
                       <span className="text-xs text-gray-500">
-                        Updated: {new Date(incident.updatedAt).toLocaleString()}
+                        {t('updated')} {new Date(incident.updatedAt).toLocaleString()}
                       </span>
                     )}
                   </div>
