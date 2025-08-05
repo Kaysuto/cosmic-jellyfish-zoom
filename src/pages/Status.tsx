@@ -27,7 +27,8 @@ const StatusPage: React.FC = () => {
   // Formater les données pour le graphique
   const formattedUptimeData = uptimeData.map(dataPoint => ({
     date: dataPoint.date,
-    uptime: parseFloat(dataPoint.uptime_percentage.toFixed(2))
+    uptime: parseFloat(dataPoint.uptime_percentage.toFixed(2)),
+    formattedDate: new Date(dataPoint.date).toLocaleDateString()
   }));
 
   if (servicesLoading) {
