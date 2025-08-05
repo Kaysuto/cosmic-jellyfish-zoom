@@ -7,6 +7,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import FranceFlag from '@/components/icons/FranceFlag';
+import UKFlag from '@/components/icons/UKFlag';
 
 export const MadeWithDyad = () => {
   const { t, i18n } = useTranslation();
@@ -24,17 +26,21 @@ export const MadeWithDyad = () => {
             size="sm" 
             className="rounded-full bg-gray-800/50 border-gray-700 hover:bg-gray-700/50 text-gray-300"
           >
-            <span className="mr-2">{i18n.language === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
+            {i18n.language === 'fr' ? (
+              <FranceFlag className="w-5 h-auto mr-2 rounded-sm" />
+            ) : (
+              <UKFlag className="w-5 h-auto mr-2 rounded-sm" />
+            )}
             {i18n.language === 'fr' ? 'Français' : 'English'}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="bg-gray-800 border-gray-700 text-white">
           <DropdownMenuItem onClick={() => changeLanguage('fr')} className="focus:bg-gray-700 cursor-pointer">
-            <span className="mr-2">🇫🇷</span>
+            <FranceFlag className="w-5 h-auto mr-2 rounded-sm" />
             Français
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => changeLanguage('en')} className="focus:bg-gray-700 cursor-pointer">
-            <span className="mr-2">🇬🇧</span>
+            <UKFlag className="w-5 h-auto mr-2 rounded-sm" />
             English
           </DropdownMenuItem>
         </DropdownMenuContent>
