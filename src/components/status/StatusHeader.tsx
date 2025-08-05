@@ -1,15 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from 'react-i18next';
 
 interface StatusHeaderProps {
   overallStatus: 'operational' | 'degraded' | 'downtime';
-  lastUpdated: string;
 }
 
-const StatusHeader: React.FC<StatusHeaderProps> = ({ overallStatus, lastUpdated }) => {
+const StatusHeader: React.FC<StatusHeaderProps> = ({ overallStatus }) => {
   const { t } = useTranslation();
+  const [currentTime, setCurrentTime] = useState<string>(new Date().toLocaleString());
+  
+  // Mettre à jour l'heure toutes les secondes
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleString());
+    }, 1000);
+    
+    // Nettoyer l'intervalle quand le composant est démonté
+    return () => clearInterval(timer);
+  }, []);
   
   const statusConfig = {
     operational: { label: t('all_systems_operational'), variant: 'default' },
@@ -28,7 +38,7 @@ const StatusHeader: React.FC<StatusHeaderProps> = ({ overallStatus, lastUpdated 
             {config.label}
           </Badge>
         </div>
-        <p className="text-sm text-gray-500 mt-2">{t('last_updated')} {lastUpdated}</p>
+        <p className="text-sm text-gray-500 mt-2">{t('last_updated')} {currentTime}</p>
       </div>
       
       <Card>
