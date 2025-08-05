@@ -45,7 +45,7 @@ const StatusHeader: React.FC<StatusHeaderProps> = ({ overallStatus }) => {
     <div className="w-full py-8">
       <div className="text-center mb-8">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-          Jelly Status
+          PlayJelly Status
         </h1>
         <div className="flex justify-center">
           <Badge className={`px-4 py-2 text-sm font-medium rounded-full border ${config.color}`}>
@@ -64,15 +64,15 @@ const StatusHeader: React.FC<StatusHeaderProps> = ({ overallStatus }) => {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center p-4 bg-gradient-to-br from-green-900/30 to-green-800/20 rounded-xl border border-green-800/30 hover:border-green-600/50 transition-all duration-300">
-              <h3 className="font-semibold text-green-300">jelly.fr</h3>
+              <h3 className="font-semibold text-green-300">playjelly.fr</h3>
               <p className="text-sm text-gray-400 mt-1">{t('streaming_service')}</p>
             </div>
             <div className="text-center p-4 bg-gradient-to-br from-blue-900/30 to-blue-800/20 rounded-xl border border-blue-800/30 hover:border-blue-600/50 transition-all duration-300">
-              <h3 className="font-semibold text-blue-300">accounts.jelly.fr</h3>
+              <h3 className="font-semibold text-blue-300">accounts.playjelly.fr</h3>
               <p className="text-sm text-gray-400 mt-1">{t('accounts_service')}</p>
             </div>
             <div className="text-center p-4 bg-gradient-to-br from-purple-900/30 to-purple-800/20 rounded-xl border border-purple-800/30 hover:border-purple-600/50 transition-all duration-300">
-              <h3 className="font-semibold text-purple-300">vod.jelly.fr</h3>
+              <h3 className="font-semibold text-purple-300">vod.playjelly.fr</h3>
               <p className="text-sm text-gray-400 mt-1">{t('vod_service')}</p>
             </div>
           </div>
