@@ -23,9 +23,9 @@ export const MadeWithDyad = () => {
       </Button>
       
       <div className="text-sm text-gray-500 hover:text-gray-300 flex items-center gap-1 transition-colors">
-        <span>Créé avec</span>
+        <span>{t('made_with_love')}</span>
         <Heart className="h-4 w-4 text-red-500 fill-current" />
-        <span>par Kaysuto Kimiya</span>
+        <span>{t('by_kaysuto')}</span>
       </div>
     </div>
   );

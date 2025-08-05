@@ -43,6 +43,8 @@ const resources = {
       
       // Composants
       "made_with_dyad": "Fait avec Dyad",
+      "made_with_love": "Créé avec",
+      "by_kaysuto": "par Kaysuto Kimiya",
       
       // Messages d'erreur
       "page_not_found": "Oups ! Page non trouvée",
@@ -88,6 +90,8 @@ const resources = {
       
       // Composants
       "made_with_dyad": "Made with Dyad",
+      "made_with_love": "Made with",
+      "by_kaysuto": "by Kaysuto Kimiya",
       
       // Messages d'erreur
       "page_not_found": "Oops! Page not found",
