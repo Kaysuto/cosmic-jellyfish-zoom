@@ -4,113 +4,94 @@ import ServiceStatus from '@/components/status/ServiceStatus';
 import UptimeChart from '@/components/status/UptimeChart';
 import IncidentHistory from '@/components/status/IncidentHistory';
 import { MadeWithDyad } from '@/components/made-with-dyad';
+import { useServices } from '@/hooks/useServices';
+import { useIncidents } from '@/hooks/useIncidents';
+import { useUptimeHistory } from '@/hooks/useUptimeHistory';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const StatusPage: React.FC = () => {
-  // Mock data - in a real app this would come from an API
-  const services = [
-    {
-      name: 'Website',
-      status: 'operational' as const,
-      description: 'Main PlayJelly website and user interface',
-      uptime: '100.00'
-    },
-    {
-      name: 'API',
-      status: 'operational' as const,
-      description: 'Application programming interface for third-party integrations',
-      uptime: '99.95'
-    },
-    {
-      name: 'Database',
-      status: 'operational' as const,
-      description: 'Primary database service for user data',
-      uptime: '100.00'
-    },
-    {
-      name: 'Authentication',
-      status: 'operational' as const,
-      description: 'User authentication and account management',
-      uptime: '99.98'
-    },
-    {
-      name: 'File Storage',
-      status: 'operational' as const,
-      description: 'Cloud storage for user files and media',
-      uptime: '99.99'
-    },
-    {
-      name: 'Email Service',
-      status: 'operational' as const,
-      description: 'Email delivery system for notifications',
-      uptime: '99.90'
-    }
-  ];
+  const { services, loading: servicesLoading } = useServices();
+  const { incidents, loading: incidentsLoading } = useIncidents();
+  const { uptimeData, loading: uptimeLoading } = useUptimeHistory();
+  
+  // Calculer le statut global
+  const overallStatus = services.some(service => service.status === 'downtime') 
+    ? 'downtime' 
+    : services.some(service => service.status === 'degraded') 
+      ? 'degraded' 
+      : 'operational';
 
-  // Generate mock uptime data for the last 90 days
-  const generateUptimeData = () => {
-    const data = [];
-    const today = new Date();
-    
-    for (let i = 89; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      
-      // Generate realistic uptime values (mostly 100, occasional small dips)
-      const uptime = i === 15 ? 99.85 : 
-                    i === 45 ? 99.92 : 
-                    Math.random() < 0.02 ? 99.95 : 100;
-      
-      data.push({
-        date: date.toISOString().split('T')[0],
-        uptime: parseFloat(uptime.toFixed(2))
-      });
-    }
-    
-    return data;
-  };
+  // Formater les données pour le graphique
+  const formattedUptimeData = uptimeData.map(dataPoint => ({
+    date: dataPoint.date,
+    uptime: parseFloat(dataPoint.uptime_percentage.toFixed(2))
+  }));
 
-  const uptimeData = generateUptimeData();
-
-  const incidents = [
-    {
-      id: '1',
-      title: 'Intermittent API Latency',
-      status: 'resolved' as const,
-      createdAt: '2023-05-15T10:30:00Z',
-      updatedAt: '2023-05-15T14:45:00Z',
-      description: 'Some users experienced slower than usual API response times. Issue has been resolved.'
-    },
-    {
-      id: '2',
-      title: 'Email Delivery Delays',
-      status: 'resolved' as const,
-      createdAt: '2023-04-22T08:15:00Z',
-      updatedAt: '2023-04-22T12:30:00Z',
-      description: 'Delayed email notifications due to third-party service issues. Service has been restored.'
-    }
-  ];
+  if (servicesLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <div className="w-full py-8">
+            <div className="text-center mb-8">
+              <Skeleton className="h-10 w-64 mx-auto mb-4" />
+              <Skeleton className="h-6 w-48 mx-auto" />
+            </div>
+            
+            <Card>
+              <CardContent className="p-6">
+                <Skeleton className="h-4 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-6 w-3/4 mb-4" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-1/2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <StatusHeader 
-          overallStatus="operational" 
+          overallStatus={overallStatus} 
           lastUpdated={new Date().toLocaleString()} 
         />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {services.map((service, index) => (
-            <ServiceStatus key={index} {...service} />
+          {services.map((service) => (
+            <ServiceStatus 
+              key={service.id}
+              name={service.name}
+              status={service.status}
+              description={service.description}
+              uptime={service.uptime_percentage.toFixed(2)}
+            />
           ))}
         </div>
         
-        <div className="mb-8">
-          <UptimeChart data={uptimeData} />
-        </div>
+        {!uptimeLoading && (
+          <div className="mb-8">
+            <UptimeChart data={formattedUptimeData} />
+          </div>
+        )}
         
-        <div className="mb-8">
-          <IncidentHistory incidents={incidents} />
-        </div>
+        {!incidentsLoading && (
+          <div className="mb-8">
+            <IncidentHistory incidents={incidents} />
+          </div>
+        )}
         
         <MadeWithDyad />
       </div>
