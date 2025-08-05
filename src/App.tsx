@@ -8,7 +8,7 @@ import Index from "./pages/Index";
 import StatusPage from "./pages/Status";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "@/components/theme-provider";
-import MainLayout from "@/components/MainLayout";
+import MainLayout from "@/components/layout/MainLayout";
 
 const queryClient = new QueryClient();
 

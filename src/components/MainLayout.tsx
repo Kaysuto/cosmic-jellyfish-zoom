@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import Navbar from "./Navbar";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const MainLayout = () => {
