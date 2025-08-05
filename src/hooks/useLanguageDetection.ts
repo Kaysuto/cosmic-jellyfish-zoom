@@ -25,8 +25,8 @@ const countryToLanguage: Record<string, string> = {
   'AU': 'en',
   'NZ': 'en',
   'IE': 'en',
-  'ZA': 'en',
-  'CA': 'en', // Note: Le Canada a aussi le français, mais on met l'anglais par défaut
+  'ZA': 'en'
+  // Note: Le Canada a aussi le français, mais on met l'anglais par défaut (CA est déjà défini plus haut)
 };
 
 export const useLanguageDetection = () => {

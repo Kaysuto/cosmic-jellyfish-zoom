@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Incident as ApiIncident } from '@/hooks/useIncidents';
 
 interface Incident {
   id: string;
@@ -14,11 +15,21 @@ interface Incident {
 }
 
 interface IncidentHistoryProps {
-  incidents: Incident[];
+  incidents: ApiIncident[];
 }
 
 const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
   const { t } = useTranslation();
+  
+  // Conversion des incidents de l'API vers le format attendu par le composant
+  const convertedIncidents: Incident[] = incidents.map(incident => ({
+    id: incident.id,
+    title: incident.title,
+    status: incident.status,
+    createdAt: incident.created_at,
+    updatedAt: incident.updated_at,
+    description: incident.description || ''
+  }));
   
   const statusConfig = {
     resolved: { label: t('resolved'), variant: 'default' },
@@ -37,10 +48,10 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {incidents.length === 0 ? (
+          {convertedIncidents.length === 0 ? (
             <p className="text-center text-gray-500 py-4">{t('no_incidents')}</p>
           ) : (
-            incidents.map((incident) => {
+            convertedIncidents.map((incident) => {
               const config = statusConfig[incident.status];
               return (
                 <div key={incident.id} className="border-l-2 border-gray-200 pl-4 py-1">
