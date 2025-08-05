@@ -1,31 +1,32 @@
+"use client";
+
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Heart, Languages } from 'lucide-react';
+import { Globe } from 'lucide-react';
 
-export const MadeWithDyad = () => {
+export const MadeWithDyad: React.FC = () => {
   const { t, i18n } = useTranslation();
-  
+
   const toggleLanguage = () => {
-    const newLang = i18n.language === 'fr' ? 'en' : 'fr';
-    i18n.changeLanguage(newLang);
+    const newLanguage = i18n.language === 'fr' ? 'en' : 'fr';
+    i18n.changeLanguage(newLanguage);
   };
-  
+
   return (
     <div className="p-6 text-center flex flex-col items-center gap-3">
       <Button 
         variant="outline" 
         size="sm" 
         onClick={toggleLanguage}
-        className="rounded-full bg-gray-800/50 border-gray-700 hover:bg-gray-700/50 text-gray-300"
+        className="bg-gray-800/50 border-gray-700 hover:bg-gray-700/50 text-gray-200"
       >
-        <Languages className="h-4 w-4 mr-2" />
-        {i18n.language === 'fr' ? 'English' : 'Français'}
+        <Globe className="w-4 h-4 mr-2" />
+        {i18n.language === 'fr' ? 'Switch to English' : 'Passer en français'}
       </Button>
       
-      <div className="text-sm text-gray-500 hover:text-gray-300 flex items-center gap-1 transition-colors">
-        <span>Créé avec</span>
-        <Heart className="h-4 w-4 text-red-500 fill-current" />
-        <span>par Kaysuto Kimiya</span>
+      <div className="text-sm text-gray-400">
+        Made with <span className="text-blue-400">Dyad</span>
       </div>
     </div>
   );
