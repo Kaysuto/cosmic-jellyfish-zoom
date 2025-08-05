@@ -18,6 +18,7 @@ const resources = {
       "mission_description": "Nous nous engageons à fournir une plateforme fiable et performante pour vos expériences numériques.",
       
       // Page de statut
+      "status_title": "Statut des services",
       "all_systems_operational": "Tous les systèmes sont opérationnels",
       "partial_outage": "Panne partielle du système",
       "major_outage": "Panne majeure du système",
@@ -65,6 +66,7 @@ const resources = {
       "mission_description": "We are committed to providing a reliable and high-performance platform for your digital experiences.",
       
       // Page de statut
+      "status_title": "Service Status",
       "all_systems_operational": "All Systems Operational",
       "partial_outage": "Partial System Outage",
       "major_outage": "Major System Outage",

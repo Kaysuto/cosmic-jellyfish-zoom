@@ -45,7 +45,7 @@ const StatusHeader: React.FC<StatusHeaderProps> = ({ overallStatus }) => {
     <div className="w-full py-8">
       <div className="text-center mb-8">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-          PlayJelly Status
+          {t('status_title')}
         </h1>
         <div className="flex justify-center">
           <Badge className={`px-4 py-2 text-sm font-medium rounded-full border ${config.color}`}>
