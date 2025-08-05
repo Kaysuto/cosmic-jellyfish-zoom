@@ -35,22 +35,22 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
     resolved: { 
       label: t('resolved'), 
       variant: 'default',
-      color: 'bg-green-500/20 text-green-400 border-green-500/30'
+      color: 'bg-green-500/10 text-green-500 border-green-500/20'
     },
     investigating: { 
       label: t('investigating'), 
       variant: 'secondary',
-      color: 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+      color: 'bg-blue-500/10 text-blue-500 border-blue-500/20'
     },
     monitoring: { 
       label: t('monitoring'), 
       variant: 'secondary',
-      color: 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+      color: 'bg-purple-500/10 text-purple-500 border-purple-500/20'
     },
     identified: { 
       label: t('identified'), 
       variant: 'secondary',
-      color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+      color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
     },
   };
 

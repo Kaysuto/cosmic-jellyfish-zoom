@@ -183,7 +183,7 @@ const UptimeHistory: React.FC<UptimeHistoryProps> = ({ services }) => {
     <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 shadow-xl">
       <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-blue-400" />
+          <TrendingUp className="h-5 w-5 text-green-500" />
           <CardTitle className="text-xl">
             {t('uptime_history')}
           </CardTitle>
@@ -289,10 +289,10 @@ const UptimeHistory: React.FC<UptimeHistoryProps> = ({ services }) => {
                       type="monotone" 
                       dataKey="uptime" 
                       name="Disponibilité"
-                      stroke="#60A5FA" 
-                      activeDot={{ r: 6, fill: '#3B82F6' }} 
+                      stroke="#22c55e" 
+                      activeDot={{ r: 6, fill: '#22c55e' }} 
                       strokeWidth={3}
-                      dot={{ r: 3, fill: '#3B82F6' }}
+                      dot={{ r: 3, fill: '#22c55e' }}
                       animationDuration={500}
                     />
                   </LineChart>
@@ -300,17 +300,17 @@ const UptimeHistory: React.FC<UptimeHistoryProps> = ({ services }) => {
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-700">
-                <div className="text-center p-4 bg-gradient-to-br from-blue-900/30 to-blue-800/20 rounded-xl border border-blue-800/30">
+                <div className="text-center p-4 bg-gray-900/50 rounded-xl border border-gray-700/50">
                   <p className="text-sm text-gray-400">Moyenne</p>
-                  <p className="text-2xl font-bold text-blue-400 mt-1">{stats.average.toFixed(2)}%</p>
+                  <p className="text-2xl font-bold text-green-500 mt-1">{stats.average.toFixed(2)}%</p>
                 </div>
-                <div className="text-center p-4 bg-gradient-to-br from-green-900/30 to-green-800/20 rounded-xl border border-green-800/30">
+                <div className="text-center p-4 bg-gray-900/50 rounded-xl border border-gray-700/50">
                   <p className="text-sm text-gray-400">Maximum</p>
-                  <p className="text-2xl font-bold text-green-400 mt-1">{stats.max.toFixed(2)}%</p>
+                  <p className="text-2xl font-bold text-green-500 mt-1">{stats.max.toFixed(2)}%</p>
                 </div>
-                <div className="text-center p-4 bg-gradient-to-br from-amber-900/30 to-amber-800/20 rounded-xl border border-amber-800/30">
+                <div className="text-center p-4 bg-gray-900/50 rounded-xl border border-gray-700/50">
                   <p className="text-sm text-gray-400">Minimum</p>
-                  <p className="text-2xl font-bold text-amber-400 mt-1">{stats.min.toFixed(2)}%</p>
+                  <p className="text-2xl font-bold text-yellow-500 mt-1">{stats.min.toFixed(2)}%</p>
                 </div>
               </div>
             </>

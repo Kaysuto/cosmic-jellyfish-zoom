@@ -25,17 +25,17 @@ const StatusHeader: React.FC<StatusHeaderProps> = ({ overallStatus }) => {
     operational: { 
       label: t('all_systems_operational'), 
       variant: 'default',
-      color: 'bg-green-500/20 text-green-400 border-green-500/30'
+      color: 'bg-green-500/10 text-green-500 border-green-500/20'
     },
     degraded: { 
       label: t('partial_outage'), 
       variant: 'destructive',
-      color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+      color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
     },
     downtime: { 
       label: t('major_outage'), 
       variant: 'destructive',
-      color: 'bg-red-500/20 text-red-400 border-red-500/30'
+      color: 'bg-red-500/10 text-red-500 border-red-500/20'
     },
   };
 
