@@ -33,28 +33,28 @@ const StatusPage: React.FC = () => {
 
   if (servicesLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-900 text-white">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="w-full py-8">
             <div className="text-center mb-8">
-              <Skeleton className="h-10 w-64 mx-auto mb-4" />
-              <Skeleton className="h-6 w-48 mx-auto" />
+              <Skeleton className="h-10 w-64 mx-auto mb-4 bg-gray-700" />
+              <Skeleton className="h-6 w-48 mx-auto bg-gray-700" />
             </div>
             
-            <Card>
+            <Card className="bg-gray-800 border-gray-700">
               <CardContent className="p-6">
-                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full bg-gray-700" />
               </CardContent>
             </Card>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {[1, 2, 3, 4].map((i) => (
-              <Card key={i}>
+              <Card key={i} className="bg-gray-800 border-gray-700">
                 <CardContent className="p-6">
-                  <Skeleton className="h-6 w-3/4 mb-4" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-6 w-3/4 mb-4 bg-gray-700" />
+                  <Skeleton className="h-4 w-full mb-2 bg-gray-700" />
+                  <Skeleton className="h-4 w-1/2 bg-gray-700" />
                 </CardContent>
               </Card>
             ))}
@@ -65,7 +65,7 @@ const StatusPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <StatusHeader 
           overallStatus={overallStatus} 

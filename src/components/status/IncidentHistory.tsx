@@ -39,9 +39,9 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
   };
 
   return (
-    <Card>
+    <Card className="bg-gray-800 border-gray-700">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-white">
           <AlertCircle className="h-5 w-5" />
           {t('incident_history')}
         </CardTitle>
@@ -54,14 +54,14 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
             convertedIncidents.map((incident) => {
               const config = statusConfig[incident.status];
               return (
-                <div key={incident.id} className="border-l-2 border-gray-200 pl-4 py-1">
+                <div key={incident.id} className="border-l-2 border-gray-600 pl-4 py-1">
                   <div className="flex justify-between items-start">
-                    <h3 className="font-medium">{incident.title}</h3>
+                    <h3 className="font-medium text-white">{incident.title}</h3>
                     <Badge variant={config.variant === 'default' ? 'default' : 'secondary'}>
                       {config.label}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">{incident.description}</p>
+                  <p className="text-sm text-gray-400 mt-1">{incident.description}</p>
                   <div className="flex justify-between items-center mt-2">
                     <span className="text-xs text-gray-500">
                       {new Date(incident.createdAt).toLocaleString()}

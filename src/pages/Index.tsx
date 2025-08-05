@@ -7,10 +7,10 @@ const Index = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-4">{t('welcome')}</h1>
-        <p className="text-xl text-gray-600 mb-8">
+        <p className="text-xl text-gray-300 mb-8">
           {t('description')}
         </p>
         <Link to="/status">

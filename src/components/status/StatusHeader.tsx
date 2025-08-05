@@ -38,28 +38,28 @@ const StatusHeader: React.FC<StatusHeaderProps> = ({ overallStatus }) => {
             {config.label}
           </Badge>
         </div>
-        <p className="text-sm text-gray-500 mt-2">{t('last_updated')} {currentTime}</p>
+        <p className="text-sm text-gray-400 mt-2">{t('last_updated')} {currentTime}</p>
       </div>
       
-      <Card>
+      <Card className="bg-gray-800 border-gray-700">
         <CardContent className="p-6">
-          <p className="text-center text-gray-700">
+          <p className="text-center text-gray-300">
             {overallStatus === 'operational' 
               ? t('all_systems_operational_description')
               : t('systems_issues_description')}
           </p>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-3 bg-green-50 rounded-lg">
+            <div className="text-center p-3 bg-green-900/30 rounded-lg border border-green-800/50">
               <h3 className="font-semibold">playjelly.fr</h3>
-              <p className="text-sm text-gray-600">{t('streaming_service')}</p>
+              <p className="text-sm text-gray-400">{t('streaming_service')}</p>
             </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
+            <div className="text-center p-3 bg-green-900/30 rounded-lg border border-green-800/50">
               <h3 className="font-semibold">accounts.playjelly.fr</h3>
-              <p className="text-sm text-gray-600">{t('accounts_service')}</p>
+              <p className="text-sm text-gray-400">{t('accounts_service')}</p>
             </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
+            <div className="text-center p-3 bg-green-900/30 rounded-lg border border-green-800/50">
               <h3 className="font-semibold">vod.playjelly.fr</h3>
-              <p className="text-sm text-gray-600">{t('vod_service')}</p>
+              <p className="text-sm text-gray-400">{t('vod_service')}</p>
             </div>
           </div>
         </CardContent>

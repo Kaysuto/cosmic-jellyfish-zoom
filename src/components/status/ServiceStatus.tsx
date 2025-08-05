@@ -35,9 +35,9 @@ const ServiceStatus: React.FC<ServiceStatusProps> = ({ name, status, description
   const config = statusConfig[status];
 
   return (
-    <Card>
+    <Card className="bg-gray-800 border-gray-700">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{name}</CardTitle>
+        <CardTitle className="text-sm font-medium text-white">{name}</CardTitle>
         <Badge variant={config.variant === 'default' ? 'default' : 'destructive'}>
           <span className="flex items-center gap-1">
             {config.icon}
@@ -46,7 +46,7 @@ const ServiceStatus: React.FC<ServiceStatusProps> = ({ name, status, description
         </Badge>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-gray-500 mb-2">{description}</p>
+        <p className="text-sm text-gray-400 mb-2">{description}</p>
         <div className="flex justify-between items-center">
           <span className="text-xs text-gray-500">{t('uptime')} {uptime}%</span>
         </div>
