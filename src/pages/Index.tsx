@@ -15,7 +15,7 @@ const Index = () => {
             <Monitor className="h-12 w-12 text-white" />
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-            PlayJelly
+            Jelly
           </h1>
           <p className="text-xl text-gray-300 mb-4">
             {t('description')}
