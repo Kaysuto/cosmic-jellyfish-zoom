@@ -41,6 +41,9 @@ const resources = {
       "streaming_service": "Service de streaming principal",
       "accounts_service": "Gestion des comptes utilisateurs",
       "vod_service": "Demande de films et séries",
+      "select_service": "Sélectionner un service",
+      "loading": "Chargement",
+      "no_uptime_history": "Aucun historique de disponibilité pour ce service.",
       
       // Composants
       "made_with_dyad": "Fait avec Dyad",
@@ -89,6 +92,9 @@ const resources = {
       "streaming_service": "Main streaming service",
       "accounts_service": "User accounts management",
       "vod_service": "Movie and series requests",
+      "select_service": "Select a service",
+      "loading": "Loading",
+      "no_uptime_history": "No uptime history for this service.",
       
       // Composants
       "made_with_dyad": "Made with Dyad",

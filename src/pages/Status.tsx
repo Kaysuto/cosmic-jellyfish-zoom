@@ -1,101 +1,75 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import StatusHeader from '@/components/status/StatusHeader';
-import ServiceStatus from '@/components/status/ServiceStatus';
-import UptimeChart from '@/components/status/UptimeChart';
 import IncidentHistory from '@/components/status/IncidentHistory';
-import { MadeWithDyad } from '@/components/made-with-dyad';
-import { useServices } from '@/hooks/useServices';
-import { useIncidents } from '@/hooks/useIncidents';
-import { useUptimeHistory } from '@/hooks/useUptimeHistory';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import UptimeHistory from '@/components/status/UptimeHistory';
 import { useTranslation } from 'react-i18next';
 
 const StatusPage: React.FC = () => {
   const { t } = useTranslation();
-  const { services, loading: servicesLoading } = useServices();
-  const { incidents, loading: incidentsLoading } = useIncidents();
-  const { uptimeData, loading: uptimeLoading } = useUptimeHistory();
-  
-  // Calculer le statut global
-  const overallStatus = services.some(service => service.status === 'downtime') 
-    ? 'downtime' 
-    : services.some(service => service.status === 'degraded') 
-      ? 'degraded' 
-      : 'operational';
+  const [services, setServices] = useState<any[]>([]);
+  const [incidents, setIncidents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [overallStatus, setOverallStatus] = useState<'operational' | 'degraded' | 'downtime'>('operational');
 
-  // Formater les données pour le graphique
-  const formattedUptimeData = uptimeData.map(dataPoint => ({
-    date: dataPoint.date,
-    uptime: parseFloat(dataPoint.uptime_percentage.toFixed(2)),
-    formattedDate: new Date(dataPoint.date).toLocaleDateString()
-  }));
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      
+      // Fetch services
+      const { data: servicesData, error: servicesError } = await supabase
+        .from('services')
+        .select('*')
+        .order('created_at', { ascending: true });
 
-  if (servicesLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <div className="w-full py-8">
-            <div className="text-center mb-8">
-              <Skeleton className="h-12 w-80 mx-auto mb-4 bg-gray-700" />
-              <Skeleton className="h-6 w-48 mx-auto bg-gray-700" />
-            </div>
-            
-            <Card className="bg-gray-800/50 border-gray-700/50">
-              <CardContent className="p-6">
-                <Skeleton className="h-4 w-full bg-gray-700" />
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {[1, 2].map((i) => (
-              <Card key={i} className="bg-gray-800/50 border-gray-700/50">
-                <CardContent className="p-6">
-                  <Skeleton className="h-6 w-3/4 mb-4 bg-gray-700" />
-                  <Skeleton className="h-4 w-full mb-2 bg-gray-700" />
-                  <Skeleton className="h-4 w-1/2 bg-gray-700" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+      if (servicesError) {
+        console.error('Error fetching services:', servicesError);
+      } else {
+        setServices(servicesData);
+        
+        // Determine overall status
+        const hasDowntime = servicesData.some(s => s.status === 'downtime');
+        const hasDegraded = servicesData.some(s => s.status === 'degraded');
+        
+        if (hasDowntime) {
+          setOverallStatus('downtime');
+        } else if (hasDegraded) {
+          setOverallStatus('degraded');
+        } else {
+          setOverallStatus('operational');
+        }
+      }
+
+      // Fetch incidents
+      const { data: incidentsData, error: incidentsError } = await supabase
+        .from('incidents')
+        .select('*, services(name)')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (incidentsError) {
+        console.error('Error fetching incidents:', incidentsError);
+      } else {
+        setIncidents(incidentsData);
+      }
+
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen text-white">{t('loading')}...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <StatusHeader 
-          overallStatus={overallStatus} 
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {services.map((service) => (
-            <ServiceStatus 
-              key={service.id}
-              name={service.name}
-              status={service.status}
-              description={service.description}
-              uptime={service.uptime_percentage.toFixed(2)}
-            />
-          ))}
-        </div>
-        
-        {!uptimeLoading && (
-          <div className="mb-8">
-            <UptimeChart data={formattedUptimeData} />
-          </div>
-        )}
-        
-        {!incidentsLoading && (
-          <div className="mb-8">
-            <IncidentHistory incidents={incidents} />
-          </div>
-        )}
-        
-        <MadeWithDyad />
+    <div className="container mx-auto px-4 py-8 text-white">
+      <StatusHeader overallStatus={overallStatus} />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+        <IncidentHistory incidents={incidents} />
+        <UptimeHistory services={services} />
       </div>
     </div>
   );
