@@ -1,4 +1,40 @@
 {
+  "home": {
+    "badge": "Plateforme certifiée",
+    "title": "Plateforme de Surveillance",
+    "description": "Surveillez la disponibilité de vos services en temps réel avec notre solution fiable et performante.",
+    "get_started": "Commencer",
+    "learn_more": "En savoir plus",
+    "mission": {
+      "title": "Notre Mission",
+      "description": "Nous nous engageons à fournir une plateforme fiable et performante pour vos expériences numériques. Notre équipe travaille sans relâche pour maintenir une disponibilité maximale de nos services."
+    },
+    "features": {
+      "title": "Fonctionnalités Clés",
+      "reliable": {
+        "title": "Fiable",
+        "description": "Infrastructure robuste avec une disponibilité garantie à 99.99% pour vos services critiques."
+      },
+      "fast": {
+        "title": "Rapide",
+        "description": "Temps de réponse ultra-rapide et surveillance en temps réel de vos services."
+      },
+      "global": {
+        "title": "Global",
+        "description": "Surveillance mondiale avec des points de présence dans plusieurs régions."
+      }
+    },
+    "stats": {
+      "servers": "Serveurs",
+      "uptime": "Disponibilité",
+      "support": "Support"
+    },
+    "status": {
+      "title": "État du Système",
+      "description": "Tous nos services fonctionnent actuellement sans interruption.",
+      "operational": "Opérationnel"
+    }
+  },
   "status": {
     "title": "État du système",
     "description": "Vérifiez l'état actuel de nos services",

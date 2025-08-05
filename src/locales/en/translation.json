@@ -1,4 +1,40 @@
 {
+  "home": {
+    "badge": "Certified Platform",
+    "title": "Monitoring Platform",
+    "description": "Monitor the availability of your services in real-time with our reliable and high-performance solution.",
+    "get_started": "Get Started",
+    "learn_more": "Learn More",
+    "mission": {
+      "title": "Our Mission",
+      "description": "We are committed to providing a reliable and high-performance platform for your digital experiences. Our team works tirelessly to maintain maximum availability of our services."
+    },
+    "features": {
+      "title": "Key Features",
+      "reliable": {
+        "title": "Reliable",
+        "description": "Robust infrastructure with guaranteed 99.99% availability for your critical services."
+      },
+      "fast": {
+        "title": "Fast",
+        "description": "Ultra-fast response times and real-time monitoring of your services."
+      },
+      "global": {
+        "title": "Global",
+        "description": "Global monitoring with presence points in multiple regions."
+      }
+    },
+    "stats": {
+      "servers": "Servers",
+      "uptime": "Uptime",
+      "support": "Support"
+    },
+    "status": {
+      "title": "System Status",
+      "description": "All our services are currently running without interruption.",
+      "operational": "Operational"
+    }
+  },
   "status": {
     "title": "System Status",
     "description": "Check the current status of our services",
