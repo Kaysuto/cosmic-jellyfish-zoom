@@ -301,15 +301,15 @@ const UptimeHistory: React.FC<UptimeHistoryProps> = ({ services }) => {
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-700">
                 <div className="text-center p-4 bg-gray-900/50 rounded-xl border border-gray-700/50">
-                  <p className="text-sm text-gray-400">Moyenne</p>
+                  <p className="text-sm text-gray-400">{t('average')}</p>
                   <p className="text-2xl font-bold text-green-500 mt-1">{stats.average.toFixed(2)}%</p>
                 </div>
                 <div className="text-center p-4 bg-gray-900/50 rounded-xl border border-gray-700/50">
-                  <p className="text-sm text-gray-400">Maximum</p>
+                  <p className="text-sm text-gray-400">{t('maximum')}</p>
                   <p className="text-2xl font-bold text-green-500 mt-1">{stats.max.toFixed(2)}%</p>
                 </div>
                 <div className="text-center p-4 bg-gray-900/50 rounded-xl border border-gray-700/50">
-                  <p className="text-sm text-gray-400">Minimum</p>
+                  <p className="text-sm text-gray-400">{t('minimum')}</p>
                   <p className="text-2xl font-bold text-yellow-500 mt-1">{stats.min.toFixed(2)}%</p>
                 </div>
               </div>

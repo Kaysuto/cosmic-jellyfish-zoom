@@ -48,6 +48,9 @@ const resources = {
       "time_range_week": "Semaine",
       "time_range_month": "Mois",
       "time_range_year": "Année",
+      "average": "Moyenne",
+      "maximum": "Maximum",
+      "minimum": "Minimum",
       
       // Composants
       "made_with_dyad": "Fait avec Dyad",
@@ -103,6 +106,9 @@ const resources = {
       "time_range_week": "Week",
       "time_range_month": "Month",
       "time_range_year": "Year",
+      "average": "Average",
+      "maximum": "Maximum",
+      "minimum": "Minimum",
       
       // Composants
       "made_with_dyad": "Made with Dyad",
