@@ -11,7 +11,7 @@ import {
   Legend
 } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface UptimeDataPoint {
@@ -134,16 +134,13 @@ const UptimeChart: React.FC<UptimeChartProps> = ({ data }) => {
   };
   
   return (
-    <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+    <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 shadow-xl">
       <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5 text-blue-500" />
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-5 w-5 text-blue-400" />
+          <CardTitle className="text-xl">
             {t('uptime_history')}
           </CardTitle>
-          <p className="text-sm text-gray-500 mt-1">
-            Disponibilité moyenne: {stats.average.toFixed(2)}%
-          </p>
         </div>
         
         <div className="flex flex-wrap gap-2">
@@ -151,7 +148,7 @@ const UptimeChart: React.FC<UptimeChartProps> = ({ data }) => {
             variant={timeRange === 'day' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setTimeRange('day')}
-            className="rounded-full"
+            className="rounded-full text-xs"
           >
             Jour
           </Button>
@@ -159,7 +156,7 @@ const UptimeChart: React.FC<UptimeChartProps> = ({ data }) => {
             variant={timeRange === 'week' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setTimeRange('week')}
-            className="rounded-full"
+            className="rounded-full text-xs"
           >
             Semaine
           </Button>
@@ -167,7 +164,7 @@ const UptimeChart: React.FC<UptimeChartProps> = ({ data }) => {
             variant={timeRange === 'month' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setTimeRange('month')}
-            className="rounded-full"
+            className="rounded-full text-xs"
           >
             Mois
           </Button>
@@ -175,7 +172,7 @@ const UptimeChart: React.FC<UptimeChartProps> = ({ data }) => {
             variant={timeRange === 'year' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setTimeRange('year')}
-            className="rounded-full"
+            className="rounded-full text-xs"
           >
             Année
           </Button>
@@ -189,16 +186,16 @@ const UptimeChart: React.FC<UptimeChartProps> = ({ data }) => {
               data={groupedData}
               margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis 
                 dataKey="date" 
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 12, fill: '#9CA3AF' }}
                 tickFormatter={formatXAxis}
                 interval={timeRange === 'year' ? 0 : 'preserveStartEnd'}
               />
               <YAxis 
                 domain={[99.5, 100]} 
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 12, fill: '#9CA3AF' }}
                 tickFormatter={(value) => `${value}%`}
                 width={40}
               />
@@ -211,10 +208,11 @@ const UptimeChart: React.FC<UptimeChartProps> = ({ data }) => {
                   return groupedData.find(d => d.date === value)?.formattedDate || value;
                 }}
                 contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #e5e7eb', 
+                  backgroundColor: '#1F2937', 
+                  border: '1px solid #374151', 
                   borderRadius: '0.5rem',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
+                  color: '#F9FAFB'
                 }}
               />
               <Legend />
@@ -222,28 +220,28 @@ const UptimeChart: React.FC<UptimeChartProps> = ({ data }) => {
                 type="monotone" 
                 dataKey="uptime" 
                 name="Disponibilité"
-                stroke="#3b82f6" 
-                activeDot={{ r: 6, fill: '#3b82f6' }} 
+                stroke="#60A5FA" 
+                activeDot={{ r: 6, fill: '#3B82F6' }} 
                 strokeWidth={3}
-                dot={{ r: 3, fill: '#3b82f6' }}
+                dot={{ r: 3, fill: '#3B82F6' }}
                 animationDuration={500}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-4 border-t">
-          <div className="text-center p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-gray-600">Moyenne</p>
-            <p className="text-lg font-semibold text-blue-600">{stats.average.toFixed(2)}%</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-700">
+          <div className="text-center p-4 bg-gradient-to-br from-blue-900/30 to-blue-800/20 rounded-xl border border-blue-800/30">
+            <p className="text-sm text-gray-400">Moyenne</p>
+            <p className="text-2xl font-bold text-blue-400 mt-1">{stats.average.toFixed(2)}%</p>
           </div>
-          <div className="text-center p-3 bg-green-50 rounded-lg">
-            <p className="text-sm text-gray-600">Maximum</p>
-            <p className="text-lg font-semibold text-green-600">{stats.max.toFixed(2)}%</p>
+          <div className="text-center p-4 bg-gradient-to-br from-green-900/30 to-green-800/20 rounded-xl border border-green-800/30">
+            <p className="text-sm text-gray-400">Maximum</p>
+            <p className="text-2xl font-bold text-green-400 mt-1">{stats.max.toFixed(2)}%</p>
           </div>
-          <div className="text-center p-3 bg-amber-50 rounded-lg">
-            <p className="text-sm text-gray-600">Minimum</p>
-            <p className="text-lg font-semibold text-amber-600">{stats.min.toFixed(2)}%</p>
+          <div className="text-center p-4 bg-gradient-to-br from-amber-900/30 to-amber-800/20 rounded-xl border border-amber-800/30">
+            <p className="text-sm text-gray-400">Minimum</p>
+            <p className="text-2xl font-bold text-amber-400 mt-1">{stats.min.toFixed(2)}%</p>
           </div>
         </div>
       </CardContent>

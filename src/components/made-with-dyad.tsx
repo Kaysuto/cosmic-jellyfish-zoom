@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Heart } from 'lucide-react';
+import { Heart, Languages } from 'lucide-react';
 
 export const MadeWithDyad = () => {
   const { t, i18n } = useTranslation();
@@ -11,17 +11,18 @@ export const MadeWithDyad = () => {
   };
   
   return (
-    <div className="p-4 text-center flex flex-col items-center gap-2">
+    <div className="p-6 text-center flex flex-col items-center gap-3">
       <Button 
         variant="outline" 
         size="sm" 
         onClick={toggleLanguage}
-        className="rounded-full"
+        className="rounded-full bg-gray-800/50 border-gray-700 hover:bg-gray-700/50 text-gray-300"
       >
+        <Languages className="h-4 w-4 mr-2" />
         {i18n.language === 'fr' ? 'English' : 'Français'}
       </Button>
       
-      <div className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-1">
+      <div className="text-sm text-gray-500 hover:text-gray-300 flex items-center gap-1 transition-colors">
         <span>Créé avec</span>
         <Heart className="h-4 w-4 text-red-500 fill-current" />
         <span>par Kaysuto Kimiya</span>

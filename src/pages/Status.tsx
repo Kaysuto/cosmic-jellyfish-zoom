@@ -33,15 +33,58 @@ const StatusPage: React.FC = () => {
 
   if (servicesLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
           <div className="w-full py-8">
             <div className="text-center mb-8">
-              <Skeleton className="h-10 w-64 mx-auto mb-4 bg-gray-700" />
+              <Skeleton className="h-12 w-80 mx-auto mb-4 bg-gray-700" />
+              <Skeleton className="h-6 w-48Je vais terminer la refonte de la page de statut et corriger les erreurs :
+
+<dyad-write path="src/pages/Status.tsx" description="Refonte moderne de la page de statut">
+import React from 'react';
+import StatusHeader from '@/components/status/StatusHeader';
+import ServiceStatus from '@/components/status/ServiceStatus';
+import UptimeChart from '@/components/status/UptimeChart';
+import IncidentHistory from '@/components/status/IncidentHistory';
+import { MadeWithDyad } from '@/components/made-with-dyad';
+import { useServices } from '@/hooks/useServices';
+import { useIncidents } from '@/hooks/useIncidents';
+import { useUptimeHistory } from '@/hooks/useUptimeHistory';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from 'react-i18next';
+
+const StatusPage: React.FC = () => {
+  const { t } = useTranslation();
+  const { services, loading: servicesLoading } = useServices();
+  const { incidents, loading: incidentsLoading } = useIncidents();
+  const { uptimeData, loading: uptimeLoading } = useUptimeHistory();
+  
+  // Calculer le statut global
+  const overallStatus = services.some(service => service.status === 'downtime') 
+    ? 'downtime' 
+    : services.some(service => service.status === 'degraded') 
+      ? 'degraded' 
+      : 'operational';
+
+  // Formater les données pour le graphique
+  const formattedUptimeData = uptimeData.map(dataPoint => ({
+    date: dataPoint.date,
+    uptime: parseFloat(dataPoint.uptime_percentage.toFixed(2)),
+    formattedDate: new Date(dataPoint.date).toLocaleDateString()
+  }));
+
+  if (servicesLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <div className="w-full py-8">
+            <div className="text-center mb-8">
+              <Skeleton className="h-12 w-80 mx-auto mb-4 bg-gray-700" />
               <Skeleton className="h-6 w-48 mx-auto bg-gray-700" />
             </div>
             
-            <Card className="bg-gray-800 border-gray-700">
+            <Card className="bg-gray-800/50 border-gray-700/50">
               <CardContent className="p-6">
                 <Skeleton className="h-4 w-full bg-gray-700" />
               </CardContent>
@@ -49,8 +92,8 @@ const StatusPage: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="bg-gray-800 border-gray-700">
+            {[1, 2].map((i) => (
+              <Card key={i} className="bg-gray-800/50 border-gray-700/50">
                 <CardContent className="p-6">
                   <Skeleton className="h-6 w-3/4 mb-4 bg-gray-700" />
                   <Skeleton className="h-4 w-full mb-2 bg-gray-700" />
@@ -65,8 +108,8 @@ const StatusPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
         <StatusHeader 
           overallStatus={overallStatus} 
         />
