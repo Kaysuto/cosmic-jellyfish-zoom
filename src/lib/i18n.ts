@@ -44,6 +44,10 @@ const resources = {
       "select_service": "Sélectionner un service",
       "loading": "Chargement",
       "no_uptime_history": "Aucun historique de disponibilité pour ce service.",
+      "time_range_day": "Jour",
+      "time_range_week": "Semaine",
+      "time_range_month": "Mois",
+      "time_range_year": "Année",
       
       // Composants
       "made_with_dyad": "Fait avec Dyad",
@@ -95,6 +99,10 @@ const resources = {
       "select_service": "Select a service",
       "loading": "Loading",
       "no_uptime_history": "No uptime history for this service.",
+      "time_range_day": "Day",
+      "time_range_week": "Week",
+      "time_range_month": "Month",
+      "time_range_year": "Year",
       
       // Composants
       "made_with_dyad": "Made with Dyad",

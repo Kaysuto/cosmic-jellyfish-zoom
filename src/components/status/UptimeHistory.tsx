@@ -221,7 +221,7 @@ const UptimeHistory: React.FC<UptimeHistoryProps> = ({ services }) => {
                   onClick={() => setTimeRange('day')}
                   className="rounded-full text-xs"
                 >
-                  Jour
+                  {t('time_range_day')}
                 </Button>
                 <Button
                   variant={timeRange === 'week' ? 'default' : 'outline'}
@@ -229,7 +229,7 @@ const UptimeHistory: React.FC<UptimeHistoryProps> = ({ services }) => {
                   onClick={() => setTimeRange('week')}
                   className="rounded-full text-xs"
                 >
-                  Semaine
+                  {t('time_range_week')}
                 </Button>
                 <Button
                   variant={timeRange === 'month' ? 'default' : 'outline'}
@@ -237,7 +237,7 @@ const UptimeHistory: React.FC<UptimeHistoryProps> = ({ services }) => {
                   onClick={() => setTimeRange('month')}
                   className="rounded-full text-xs"
                 >
-                  Mois
+                  {t('time_range_month')}
                 </Button>
                 <Button
                   variant={timeRange === 'year' ? 'default' : 'outline'}
@@ -245,7 +245,7 @@ const UptimeHistory: React.FC<UptimeHistoryProps> = ({ services }) => {
                   onClick={() => setTimeRange('year')}
                   className="rounded-full text-xs"
                 >
-                  Année
+                  {t('time_range_year')}
                 </Button>
               </div>
               <div className="h-80">
