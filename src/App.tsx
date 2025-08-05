@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import StatusPage from "./pages/Status";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "@/components/theme-provider";
+import MainLayout from "@/components/MainLayout";
 
 const queryClient = new QueryClient();
 
@@ -23,8 +24,10 @@ const AppWrapper = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/status" element={<StatusPage />} />
+              <Route element={<MainLayout />}>
+                <Route path="/" element={<Index />} />
+                <Route path="/status" element={<StatusPage />} />
+              </Route>
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
