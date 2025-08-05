@@ -34,10 +34,9 @@ const Index = () => {
         </div>
         
         <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 shadow-lg">
-          <h2 className="text-2xl font-semibold mb-4 text-blue-300">Notre Mission</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-blue-300">{t('our_mission')}</h2>
           <p className="text-gray-300">
-            Nous nous engageons à fournir une plateforme fiable et performante pour vos expériences numériques. 
-            Notre équipe travaille sans relâche pour maintenir une disponibilité maximale de nos services.
+            {t('mission_description')}
           </p>
         </div>
       </div>

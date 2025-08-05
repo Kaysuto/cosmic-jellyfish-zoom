@@ -14,6 +14,8 @@ const resources = {
       "welcome": "Bienvenue sur Jelly",
       "description": "Votre plateforme pour des expériences extraordinaires",
       "view_status": "Voir le statut du système",
+      "our_mission": "Notre Mission",
+      "mission_description": "Nous nous engageons à fournir une plateforme fiable et performante pour vos expériences numériques.",
       
       // Page de statut
       "all_systems_operational": "Tous les systèmes sont opérationnels",
@@ -57,6 +59,8 @@ const resources = {
       "welcome": "Welcome to Jelly",
       "description": "Your platform for amazing experiences",
       "view_status": "View System Status",
+      "our_mission": "Our Mission",
+      "mission_description": "We are committed to providing a reliable and high-performance platform for your digital experiences.",
       
       // Page de statut
       "all_systems_operational": "All Systems Operational",
