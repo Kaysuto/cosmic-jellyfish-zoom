@@ -14,7 +14,7 @@ import {
   Legend
 } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Loader2 } from 'lucide-react';
 
 interface Service {
   id: string;
@@ -46,7 +46,11 @@ const UptimeHistory: React.FC<UptimeHistoryProps> = ({ services }) => {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      if (!selectedServiceId) return;
+      if (!selectedServiceId) {
+        setHistory([]);
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       const { data, error } = await supabase
@@ -201,114 +205,121 @@ const UptimeHistory: React.FC<UptimeHistoryProps> = ({ services }) => {
         )}
       </CardHeader>
       
-      <CardContent>
-        {loading ? (
-          <div className="text-center text-gray-400 py-10">{t('loading')}...</div>
-        ) : groupedData.length > 0 ? (
-          <>
-            <div className="flex flex-wrap gap-2 mb-6 justify-center">
-              <Button
-                variant={timeRange === 'day' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTimeRange('day')}
-                className="rounded-full text-xs"
-              >
-                Jour
-              </Button>
-              <Button
-                variant={timeRange === 'week' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTimeRange('week')}
-                className="rounded-full text-xs"
-              >
-                Semaine
-              </Button>
-              <Button
-                variant={timeRange === 'month' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTimeRange('month')}
-                className="rounded-full text-xs"
-              >
-                Mois
-              </Button>
-              <Button
-                variant={timeRange === 'year' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setTimeRange('year')}
-                className="rounded-full text-xs"
-              >
-                Année
-              </Button>
-            </div>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={groupedData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis 
-                    dataKey="date" 
-                    tick={{ fontSize: 12, fill: '#9CA3AF' }}
-                    tickFormatter={formatXAxis}
-                    interval={timeRange === 'year' ? 0 : 'preserveStartEnd'}
-                  />
-                  <YAxis 
-                    domain={[99.5, 100]} 
-                    tick={{ fontSize: 12, fill: '#9CA3AF' }}
-                    tickFormatter={(value) => `${value}%`}
-                    width={40}
-                  />
-                  <Tooltip 
-                    formatter={(value) => [`${value}%`, 'Uptime']}
-                    labelFormatter={(value) => {
-                      if (timeRange === 'day') {
-                        return `Date: ${new Date(value).toLocaleDateString()}`;
-                      }
-                      const dataPoint = groupedData.find(d => d.date === value);
-                      return dataPoint ? dataPoint.formattedDate : value;
-                    }}
-                    contentStyle={{ 
-                      backgroundColor: '#1F2937', 
-                      border: '1px solid #374151', 
-                      borderRadius: '0.5rem',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
-                      color: '#F9FAFB'
-                    }}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="uptime" 
-                    name="Disponibilité"
-                    stroke="#60A5FA" 
-                    activeDot={{ r: 6, fill: '#3B82F6' }} 
-                    strokeWidth={3}
-                    dot={{ r: 3, fill: '#3B82F6' }}
-                    animationDuration={500}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-700">
-              <div className="text-center p-4 bg-gradient-to-br from-blue-900/30 to-blue-800/20 rounded-xl border border-blue-800/30">
-                <p className="text-sm text-gray-400">Moyenne</p>
-                <p className="text-2xl font-bold text-blue-400 mt-1">{stats.average.toFixed(2)}%</p>
-              </div>
-              <div className="text-center p-4 bg-gradient-to-br from-green-900/30 to-green-800/20 rounded-xl border border-green-800/30">
-                <p className="text-sm text-gray-400">Maximum</p>
-                <p className="text-2xl font-bold text-green-400 mt-1">{stats.max.toFixed(2)}%</p>
-              </div>
-              <div className="text-center p-4 bg-gradient-to-br from-amber-900/30 to-amber-800/20 rounded-xl border border-amber-800/30">
-                <p className="text-sm text-gray-400">Minimum</p>
-                <p className="text-2xl font-bold text-amber-400 mt-1">{stats.min.toFixed(2)}%</p>
-              </div>
-            </div>
-          </>
-        ) : (
-          <p className="text-center text-gray-400 py-10">{t('no_uptime_history')}</p>
+      <CardContent className="relative">
+        {loading && (
+          <div className="absolute inset-0 bg-gray-800/80 flex items-center justify-center z-10 rounded-b-xl">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+          </div>
         )}
+        <div className="min-h-[480px] flex flex-col">
+          {history.length > 0 ? (
+            <>
+              <div className="flex flex-wrap gap-2 mb-6 justify-center">
+                <Button
+                  variant={timeRange === 'day' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeRange('day')}
+                  className="rounded-full text-xs"
+                >
+                  Jour
+                </Button>
+                <Button
+                  variant={timeRange === 'week' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeRange('week')}
+                  className="rounded-full text-xs"
+                >
+                  Semaine
+                </Button>
+                <Button
+                  variant={timeRange === 'month' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeRange('month')}
+                  className="rounded-full text-xs"
+                >
+                  Mois
+                </Button>
+                <Button
+                  variant={timeRange === 'year' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeRange('year')}
+                  className="rounded-full text-xs"
+                >
+                  Année
+                </Button>
+              </div>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={groupedData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 12, fill: '#9CA3AF' }}
+                      tickFormatter={formatXAxis}
+                      interval={timeRange === 'year' ? 0 : 'preserveStartEnd'}
+                    />
+                    <YAxis 
+                      domain={[99.5, 100]} 
+                      tick={{ fontSize: 12, fill: '#9CA3AF' }}
+                      tickFormatter={(value) => `${value}%`}
+                      width={40}
+                    />
+                    <Tooltip 
+                      formatter={(value) => [`${value}%`, 'Uptime']}
+                      labelFormatter={(value) => {
+                        if (timeRange === 'day') {
+                          return `Date: ${new Date(value).toLocaleDateString()}`;
+                        }
+                        const dataPoint = groupedData.find(d => d.date === value);
+                        return dataPoint ? dataPoint.formattedDate : value;
+                      }}
+                      contentStyle={{ 
+                        backgroundColor: '#1F2937', 
+                        border: '1px solid #374151', 
+                        borderRadius: '0.5rem',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
+                        color: '#F9FAFB'
+                      }}
+                    />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="uptime" 
+                      name="Disponibilité"
+                      stroke="#60A5FA" 
+                      activeDot={{ r: 6, fill: '#3B82F6' }} 
+                      strokeWidth={3}
+                      dot={{ r: 3, fill: '#3B82F6' }}
+                      animationDuration={500}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-700">
+                <div className="text-center p-4 bg-gradient-to-br from-blue-900/30 to-blue-800/20 rounded-xl border border-blue-800/30">
+                  <p className="text-sm text-gray-400">Moyenne</p>
+                  <p className="text-2xl font-bold text-blue-400 mt-1">{stats.average.toFixed(2)}%</p>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-br from-green-900/30 to-green-800/20 rounded-xl border border-green-800/30">
+                  <p className="text-sm text-gray-400">Maximum</p>
+                  <p className="text-2xl font-bold text-green-400 mt-1">{stats.max.toFixed(2)}%</p>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-br from-amber-900/30 to-amber-800/20 rounded-xl border border-amber-800/30">
+                  <p className="text-sm text-gray-400">Minimum</p>
+                  <p className="text-2xl font-bold text-amber-400 mt-1">{stats.min.toFixed(2)}%</p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-grow flex items-center justify-center">
+              <p className="text-center text-gray-400">{t('no_uptime_history')}</p>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
