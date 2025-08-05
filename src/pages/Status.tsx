@@ -38,49 +38,6 @@ const StatusPage: React.FC = () => {
           <div className="w-full py-8">
             <div className="text-center mb-8">
               <Skeleton className="h-12 w-80 mx-auto mb-4 bg-gray-700" />
-              <Skeleton className="h-6 w-48Je vais terminer la refonte de la page de statut et corriger les erreurs :
-
-<dyad-write path="src/pages/Status.tsx" description="Refonte moderne de la page de statut">
-import React from 'react';
-import StatusHeader from '@/components/status/StatusHeader';
-import ServiceStatus from '@/components/status/ServiceStatus';
-import UptimeChart from '@/components/status/UptimeChart';
-import IncidentHistory from '@/components/status/IncidentHistory';
-import { MadeWithDyad } from '@/components/made-with-dyad';
-import { useServices } from '@/hooks/useServices';
-import { useIncidents } from '@/hooks/useIncidents';
-import { useUptimeHistory } from '@/hooks/useUptimeHistory';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useTranslation } from 'react-i18next';
-
-const StatusPage: React.FC = () => {
-  const { t } = useTranslation();
-  const { services, loading: servicesLoading } = useServices();
-  const { incidents, loading: incidentsLoading } = useIncidents();
-  const { uptimeData, loading: uptimeLoading } = useUptimeHistory();
-  
-  // Calculer le statut global
-  const overallStatus = services.some(service => service.status === 'downtime') 
-    ? 'downtime' 
-    : services.some(service => service.status === 'degraded') 
-      ? 'degraded' 
-      : 'operational';
-
-  // Formater les données pour le graphique
-  const formattedUptimeData = uptimeData.map(dataPoint => ({
-    date: dataPoint.date,
-    uptime: parseFloat(dataPoint.uptime_percentage.toFixed(2)),
-    formattedDate: new Date(dataPoint.date).toLocaleDateString()
-  }));
-
-  if (servicesLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <div className="w-full py-8">
-            <div className="text-center mb-8">
-              <Skeleton className="h-12 w-80 mx-auto mb-4 bg-gray-700" />
               <Skeleton className="h-6 w-48 mx-auto bg-gray-700" />
             </div>
             
