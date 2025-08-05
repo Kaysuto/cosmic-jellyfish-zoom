@@ -4,6 +4,7 @@ import StatusHeader from '@/components/status/StatusHeader';
 import IncidentHistory from '@/components/status/IncidentHistory';
 import UptimeHistory from '@/components/status/UptimeHistory';
 import { useTranslation } from 'react-i18next';
+import { MadeWithDyad } from '@/components/made-with-dyad';
 
 const StatusPage: React.FC = () => {
   const { t } = useTranslation();
@@ -60,17 +61,22 @@ const StatusPage: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen text-white">{t('loading')}...</div>;
+    return <div className="flex justify-center items-center h-screen text-white bg-gray-900">{t('loading')}...</div>;
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 text-white">
-      <StatusHeader overallStatus={overallStatus} />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
-        <IncidentHistory incidents={incidents} />
-        <UptimeHistory services={services} />
-      </div>
+    <div className="min-h-screen flex flex-col bg-gray-900 text-white">
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <StatusHeader overallStatus={overallStatus} />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+          <IncidentHistory incidents={incidents} />
+          <UptimeHistory services={services} />
+        </div>
+      </main>
+      <footer className="w-full">
+        <MadeWithDyad />
+      </footer>
     </div>
   );
 };
