@@ -1,137 +1,325 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { subDays, format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  Legend
+} from 'recharts';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, Loader2 } from 'lucide-react';
 
-interface UptimeHistoryProps {
-  services: { id: string; name: string }[];
+interface Service {
+  id: string;
+  name: string;
 }
 
-type TimeRange = 'day' | 'week' | 'month';
+interface UptimeHistoryProps {
+  services: Service[];
+}
+
+interface UptimeDataPoint {
+  date: string;
+  uptime: number;
+  formattedDate: string;
+}
 
 const UptimeHistory: React.FC<UptimeHistoryProps> = ({ services }) => {
   const { t } = useTranslation();
-  const [uptimeHistory, setUptimeHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState<TimeRange>('month');
-
-  const daysForRange: Record<TimeRange, number> = {
-    day: 1,
-    week: 7,
-    month: 30,
-  };
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('week');
 
   useEffect(() => {
-    const fetchUptimeHistory = async () => {
-      if (!services.length) {
+    if (services.length > 0 && !selectedServiceId) {
+      setSelectedServiceId(services[0].id);
+    }
+  }, [services, selectedServiceId]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!selectedServiceId) {
+        setHistory([]);
         setLoading(false);
         return;
       }
 
       setLoading(true);
-      const days = daysForRange[timeRange];
-      const startDate = subDays(new Date(), days - 1);
-      const serviceIds = services.map(s => s.id);
-
       const { data, error } = await supabase
         .from('uptime_history')
-        .select('date, uptime_percentage, service_id')
-        .in('service_id', serviceIds)
-        .gte('date', format(startDate, 'yyyy-MM-dd'))
-        .order('date', { ascending: true });
+        .select('*')
+        .eq('service_id', selectedServiceId)
+        .order('date', { ascending: true })
+        .limit(365); // Fetch up to a year of data
 
       if (error) {
         console.error('Error fetching uptime history:', error);
-        setUptimeHistory([]);
+        setHistory([]);
       } else {
-        const processedData = services.map(service => {
-          const history = Array.from({ length: days }, (_, i) => {
-            const date = subDays(new Date(), days - 1 - i);
-            const dateString = format(date, 'yyyy-MM-dd');
-            const record = data.find(d => d.service_id === service.id && d.date === dateString);
-            return {
-              date: dateString,
-              uptime: record ? record.uptime_percentage : 100,
-              status: record ? (record.uptime_percentage < 100 ? 'incident' : 'operational') : 'operational'
-            };
-          });
-          return {
-            name: service.name,
-            history,
-          };
-        });
-        setUptimeHistory(processedData);
+        setHistory(data || []);
       }
       setLoading(false);
     };
 
-    fetchUptimeHistory();
-  }, [services, timeRange]);
+    fetchHistory();
+  }, [selectedServiceId]);
+
+  const chartData: UptimeDataPoint[] = history.map(record => ({
+    date: record.date,
+    uptime: record.uptime_percentage,
+    formattedDate: new Date(record.date).toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }),
+  }));
+
+  const getGroupedData = () => {
+    if (chartData.length === 0) return [];
+    
+    switch (timeRange) {
+      case 'day':
+        return chartData.slice(-30);
+      
+      case 'week':
+        const weeklyData: Record<string, { total: number; count: number }> = {};
+        chartData.slice(-90).forEach(point => {
+          const date = new Date(point.date);
+          const monday = new Date(date);
+          const day = monday.getDay();
+          const diff = monday.getDate() - day + (day === 0 ? -6 : 1);
+          monday.setDate(diff);
+          monday.setHours(0, 0, 0, 0);
+          
+          const weekKey = monday.toISOString().split('T')[0];
+          if (!weeklyData[weekKey]) {
+            weeklyData[weekKey] = { total: 0, count: 0 };
+          }
+          weeklyData[weekKey].total += point.uptime;
+          weeklyData[weekKey].count++;
+        });
+        
+        return Object.entries(weeklyData).map(([week, { total, count }]) => ({
+          date: week,
+          uptime: parseFloat((total / count).toFixed(2)),
+          formattedDate: `Semaine du ${new Date(week).toLocaleDateString()}`
+        }));
+      
+      case 'month':
+        const monthlyData: Record<string, { total: number; count: number }> = {};
+        chartData.forEach(point => {
+          const date = new Date(point.date);
+          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          if (!monthlyData[monthKey]) {
+            monthlyData[monthKey] = { total: 0, count: 0 };
+          }
+          monthlyData[monthKey].total += point.uptime;
+          monthlyData[monthKey].count++;
+        });
+        
+        return Object.entries(monthlyData).map(([month, { total, count }]) => ({
+          date: month,
+          uptime: parseFloat((total / count).toFixed(2)),
+          formattedDate: new Date(`${month}-01`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+        }));
+      
+      case 'year':
+        const yearlyData: Record<string, { total: number; count: number }> = {};
+        chartData.forEach(point => {
+          const date = new Date(point.date);
+          const yearKey = date.getFullYear().toString();
+          if (!yearlyData[yearKey]) {
+            yearlyData[yearKey] = { total: 0, count: 0 };
+          }
+          yearlyData[yearKey].total += point.uptime;
+          yearlyData[yearKey].count++;
+        });
+        
+        return Object.entries(yearlyData).map(([year, { total, count }]) => ({
+          date: year,
+          uptime: parseFloat((total / count).toFixed(2)),
+          formattedDate: `Année ${year}`
+        }));
+      
+      default:
+        return chartData.slice(-30);
+    }
+  };
+  
+  const groupedData = getGroupedData();
+  
+  const stats = groupedData.length > 0 ? {
+    average: groupedData.reduce((sum, point) => sum + point.uptime, 0) / groupedData.length,
+    min: Math.min(...groupedData.map(point => point.uptime)),
+    max: Math.max(...groupedData.map(point => point.uptime))
+  } : { average: 0, min: 0, max: 0 };
+  
+  const formatXAxis = (value: string) => {
+    switch (timeRange) {
+      case 'day':
+        return new Date(value).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      case 'week':
+        const date = new Date(value);
+        const weekNumber = Math.ceil((((date.getTime() - new Date(date.getFullYear(), 0, 1).getTime()) / 86400000) + new Date(date.getFullYear(), 0, 1).getDay() + 1) / 7);
+        return `Sem. ${weekNumber}`;
+      case 'month':
+        return new Date(`${value}-01`).toLocaleDateString('fr-FR', { month: 'short' });
+      case 'year':
+        return value;
+      default:
+        return value;
+    }
+  };
 
   return (
-    <Card className="bg-gray-800/50 border-white/10 text-white">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">{t('uptime_history')}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-2 mb-6 justify-center">
-          <Button
-            variant={timeRange === 'day' ? 'secondary' : 'outline'}
-            size="sm"
-            onClick={() => setTimeRange('day')}
-            className="text-white border-white/20 hover:bg-white/10"
-          >
-            {t('day')}
-          </Button>
-          <Button
-            variant={timeRange === 'week' ? 'secondary' : 'outline'}
-            size="sm"
-            onClick={() => setTimeRange('week')}
-            className="text-white border-white/20 hover:bg-white/10"
-          >
-            {t('week')}
-          </Button>
-          <Button
-            variant={timeRange === 'month' ? 'secondary' : 'outline'}
-            size="sm"
-            onClick={() => setTimeRange('month')}
-            className="text-white border-white/20 hover:bg-white/10"
-          >
-            {t('month')}
-          </Button>
+    <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 shadow-xl">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-5 w-5 text-green-500" />
+          <CardTitle className="text-xl">
+            {t('uptime_history')}
+          </CardTitle>
         </div>
-        {loading ? (
-          <div className="text-center py-8">{t('loading')}...</div>
-        ) : (
-          <TooltipProvider>
-            <div className="space-y-6">
-              {uptimeHistory.map(service => (
-                <div key={service.name}>
-                  <h4 className="font-medium mb-2">{service.name}</h4>
-                  <div className="flex items-center gap-1 h-8">
-                    {service.history.map((day: any, index: number) => (
-                      <Tooltip key={index}>
-                        <TooltipTrigger asChild>
-                          <div
-                            className={`h-full flex-1 rounded ${
-                              day.status === 'operational' ? 'bg-green-500' : 'bg-yellow-500'
-                            }`}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-gray-900 text-white border-gray-700">
-                          <p>{format(new Date(day.date), 'MMM d, yyyy')}: {day.uptime}%</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    ))}
-                  </div>
-                </div>
+        
+        {services.length > 0 && (
+          <Select onValueChange={setSelectedServiceId} value={selectedServiceId || ''}>
+            <SelectTrigger className="w-full sm:w-[220px] bg-gray-900 border-gray-700 text-white focus:ring-blue-500">
+              <SelectValue placeholder={t('select_service')} />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-900 border-gray-700 text-white">
+              {services.map(service => (
+                <SelectItem key={service.id} value={service.id} className="focus:bg-gray-700">
+                  {service.name}
+                </SelectItem>
               ))}
-            </div>
-          </TooltipProvider>
+            </SelectContent>
+          </Select>
         )}
+      </CardHeader>
+      
+      <CardContent className="relative">
+        {loading && (
+          <div className="absolute inset-0 bg-gray-800/80 flex items-center justify-center z-10 rounded-b-xl">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+          </div>
+        )}
+        <div className="min-h-[480px] flex flex-col">
+          {history.length > 0 ? (
+            <>
+              <div className="flex flex-wrap gap-2 mb-6 justify-center">
+                <Button
+                  variant={timeRange === 'day' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeRange('day')}
+                  className="rounded-full text-xs"
+                >
+                  Jour
+                </Button>
+                <Button
+                  variant={timeRange === 'week' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeRange('week')}
+                  className="rounded-full text-xs"
+                >
+                  Semaine
+                </Button>
+                <Button
+                  variant={timeRange === 'month' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeRange('month')}
+                  className="rounded-full text-xs"
+                >
+                  Mois
+                </Button>
+                <Button
+                  variant={timeRange === 'year' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTimeRange('year')}
+                  className="rounded-full text-xs"
+                >
+                  Année
+                </Button>
+              </div>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={groupedData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 12, fill: '#9CA3AF' }}
+                      tickFormatter={formatXAxis}
+                      interval={timeRange === 'year' ? 0 : 'preserveStartEnd'}
+                    />
+                    <YAxis 
+                      domain={[99.5, 100]} 
+                      tick={{ fontSize: 12, fill: '#9CA3AF' }}
+                      tickFormatter={(value) => `${value}%`}
+                      width={40}
+                    />
+                    <Tooltip 
+                      formatter={(value) => [`${value}%`, 'Uptime']}
+                      labelFormatter={(value) => {
+                        if (timeRange === 'day') {
+                          return `Date: ${new Date(value).toLocaleDateString()}`;
+                        }
+                        const dataPoint = groupedData.find(d => d.date === value);
+                        return dataPoint ? dataPoint.formattedDate : value;
+                      }}
+                      contentStyle={{ 
+                        backgroundColor: '#1F2937', 
+                        border: '1px solid #374151', 
+                        borderRadius: '0.5rem',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
+                        color: '#F9FAFB'
+                      }}
+                    />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="uptime" 
+                      name="Disponibilité"
+                      stroke="#22c55e" 
+                      activeDot={{ r: 6, fill: '#22c55e' }} 
+                      strokeWidth={3}
+                      dot={{ r: 3, fill: '#22c55e' }}
+                      animationDuration={500}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-700">
+                <div className="text-center p-4 bg-gray-900/50 rounded-xl border border-gray-700/50">
+                  <p className="text-sm text-gray-400">Moyenne</p>
+                  <p className="text-2xl font-bold text-green-500 mt-1">{stats.average.toFixed(2)}%</p>
+                </div>
+                <div className="text-center p-4 bg-gray-900/50 rounded-xl border border-gray-700/50">
+                  <p className="text-sm text-gray-400">Maximum</p>
+                  <p className="text-2xl font-bold text-green-500 mt-1">{stats.max.toFixed(2)}%</p>
+                </div>
+                <div className="text-center p-4 bg-gray-900/50 rounded-xl border border-gray-700/50">
+                  <p className="text-sm text-gray-400">Minimum</p>
+                  <p className="text-2xl font-bold text-yellow-500 mt-1">{stats.min.toFixed(2)}%</p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-grow flex items-center justify-center">
+              <p className="text-center text-gray-400">{t('no_uptime_history')}</p>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
