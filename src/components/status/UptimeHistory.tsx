@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
+import { RealtimeChannel } from '@supabase/supabase-js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -50,6 +51,26 @@ const UptimeHistory = ({ serviceId, children }: { serviceId: string | null; chil
     };
 
     fetchUptimeHistory();
+
+    const channel: RealtimeChannel = supabase
+      .channel(`uptime-history-${serviceId || 'all'}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'uptime_history',
+          filter: serviceId ? `service_id=eq.${serviceId}` : undefined,
+        },
+        () => {
+          fetchUptimeHistory();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [serviceId, timeRange]);
 
   const chartData = useMemo(() => {

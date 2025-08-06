@@ -18,6 +18,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // 1. Get all services
     const { data: services, error: servicesError } = await supabaseAdmin
       .from('services')
       .select('id');
@@ -35,6 +36,7 @@ serve(async (req) => {
     yesterdayEnd.setUTCHours(23, 59, 59, 999);
 
     for (const service of services) {
+      // 2. Calculate yesterday's uptime from health checks
       const { data: checks, error: checksError } = await supabaseAdmin
         .from('health_check_results')
         .select('status', { count: 'exact' })
@@ -47,30 +49,55 @@ serve(async (req) => {
         continue;
       }
 
-      if (!checks || checks.length === 0) {
-        console.log(`No checks found for service ${service.id} for date ${yesterdayDateString}. Skipping.`);
-        continue;
+      if (checks && checks.length > 0) {
+        const upCount = checks.filter(c => c.status === 'up').length;
+        const totalCount = checks.length;
+        const uptimePercentage = (upCount / totalCount) * 100;
+
+        // 3. Save yesterday's uptime to history
+        const { error: upsertError } = await supabaseAdmin
+          .from('uptime_history')
+          .upsert({
+            service_id: service.id,
+            date: yesterdayDateString,
+            uptime_percentage: uptimePercentage,
+          }, {
+            onConflict: 'service_id,date'
+          });
+
+        if (upsertError) {
+          console.error(`Error upserting uptime for service ${service.id}:`, upsertError.message);
+        }
       }
 
-      const upCount = checks.filter(c => c.status === 'up').length;
-      const totalCount = checks.length;
-      const uptimePercentage = (upCount / totalCount) * 100;
+      // 4. Calculate and update the 90-day rolling uptime average on the service itself
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-      const { error: upsertError } = await supabaseAdmin
+      const { data: recentUptime, error: avgError } = await supabaseAdmin
         .from('uptime_history')
-        .upsert({
-          service_id: service.id,
-          date: yesterdayDateString,
-          uptime_percentage: uptimePercentage,
-        }, {
-          onConflict: 'service_id,date'
-        });
+        .select('uptime_percentage')
+        .eq('service_id', service.id)
+        .gte('date', ninetyDaysAgo.toISOString().split('T')[0]);
 
-      if (upsertError) {
-        console.error(`Error upserting uptime for service ${service.id}:`, upsertError.message);
+      if (avgError) {
+        console.error(`Error fetching recent uptime for service ${service.id}:`, avgError.message);
+      } else if (recentUptime && recentUptime.length > 0) {
+        const totalUptime = recentUptime.reduce((sum, record) => sum + record.uptime_percentage, 0);
+        const averageUptime = totalUptime / recentUptime.length;
+
+        const { error: updateServiceError } = await supabaseAdmin
+          .from('services')
+          .update({ uptime_percentage: averageUptime, updated_at: new Date().toISOString() })
+          .eq('id', service.id);
+
+        if (updateServiceError) {
+          console.error(`Error updating service uptime for ${service.id}:`, updateServiceError.message);
+        }
       }
     }
     
+    // 5. Clean up old health check results (older than 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(today.getDate() - 30);
     const { error: deleteError } = await supabaseAdmin
@@ -82,7 +109,7 @@ serve(async (req) => {
         console.error(`Error cleaning up old health checks:`, deleteError.message);
     }
 
-    return new Response(JSON.stringify({ message: 'Uptime calculation completed.' }), {
+    return new Response(JSON.stringify({ message: 'Uptime calculation and service update completed.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
