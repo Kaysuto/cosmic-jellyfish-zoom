@@ -104,7 +104,7 @@ const Navbar = () => {
       <DropdownMenuContent
         onMouseEnter={handleUserMenuEnter}
         onMouseLeave={handleUserMenuLeave}
-        className="w-56 bg-gray-900/80 backdrop-blur-lg border border-gray-700/60 text-gray-300 rounded-xl shadow-2xl p-2"
+        className="w-56 bg-gray-900/80 backdrop-blur-lg border border-gray-700/60 text-gray-300 rounded-xl shadow-2xl p-2 data-[state=open]:animate-slide-down-and-fade data-[state=closed]:animate-slide-up-and-fade"
         align="end"
         forceMount
       >
