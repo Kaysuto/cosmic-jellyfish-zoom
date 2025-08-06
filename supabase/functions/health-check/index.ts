@@ -1,5 +1,4 @@
-/// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
-
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
@@ -32,38 +31,56 @@ serve(async (req) => {
 
     const checks = services.map(async (service: Service) => {
       if (!service.url) {
-        return; // Ignore les services sans URL
+        return; // Ignore services without a URL
       }
 
-      let status: 'operational' | 'downtime' = 'operational';
-      let uptimePercentage = 100;
+      let live_status: 'operational' | 'downtime' = 'operational';
+      let check_status: 'up' | 'down' = 'up';
 
       try {
-        const response = await fetch(service.url, { method: 'HEAD', redirect: 'follow' });
+        // Use a timeout for the fetch request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        
+        const response = await fetch(service.url, { 
+          method: 'HEAD', 
+          redirect: 'follow',
+          signal: controller.signal 
+        });
+        
+        clearTimeout(timeoutId);
+
         if (!response.ok) {
-          status = 'downtime';
-          uptimePercentage = 0;
+          live_status = 'downtime';
+          check_status = 'down';
         }
       } catch (e) {
         console.error(`Error pinging ${service.url}:`, e.message);
-        status = 'downtime';
-        uptimePercentage = 0;
+        live_status = 'downtime';
+        check_status = 'down';
       }
 
-      // Mettre à jour le statut du service
-      await supabaseAdmin
+      // 1. Update the live status of the service
+      const { error: updateError } = await supabaseAdmin
         .from('services')
-        .update({ status, updated_at: new Date().toISOString() })
+        .update({ status: live_status, updated_at: new Date().toISOString() })
         .eq('id', service.id);
+      
+      if (updateError) {
+        console.error(`Error updating service ${service.id}:`, updateError.message);
+      }
 
-      // Insérer dans l'historique de disponibilité
-      await supabaseAdmin
-        .from('uptime_history')
+      // 2. Insert a record into the health check history
+      const { error: insertError } = await supabaseAdmin
+        .from('health_check_results')
         .insert({
           service_id: service.id,
-          date: new Date().toISOString().split('T')[0],
-          uptime_percentage: uptimePercentage
+          status: check_status
         });
+
+      if (insertError) {
+        console.error(`Error inserting health check for service ${service.id}:`, insertError.message);
+      }
     });
 
     await Promise.all(checks);
