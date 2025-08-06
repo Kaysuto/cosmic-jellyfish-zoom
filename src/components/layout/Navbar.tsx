@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import CustomAudioPlayer from "@/components/CustomAudioPlayer";
+import { useAudioStore } from "@/stores/audioStore";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -21,6 +22,7 @@ const Navbar = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { session } = useSession();
   const { profile } = useProfile();
+  const { tracks } = useAudioStore();
   
   // Statut Discord (simulé)
   const [discordOnline, setDiscordOnline] = useState(24);
@@ -95,19 +97,13 @@ const Navbar = () => {
     );
   };
 
-  const audioTracks = [
-    { name: 'Track 1', url: 'https://example.com/track1.mp3' },
-    { name: 'Track 2', url: 'https://example.com/track2.mp3' },
-    { name: 'Track 3', url: 'https://example.com/track3.mp3' },
-  ];
-
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/60 backdrop-blur-lg border-b border-white/10">
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Partie gauche */}
         <div className="flex-1 flex justify-start items-center gap-4">
           {/* Mini lecteur audio */}
-          <CustomAudioPlayer tracks={audioTracks} />
+          <CustomAudioPlayer tracks={tracks} />
         </div>
 
         {/* Partie centrale - Navigation */}

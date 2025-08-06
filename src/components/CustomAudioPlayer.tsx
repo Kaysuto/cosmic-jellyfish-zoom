@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Disc3, Volume2, SkipBack, Play, Pause, SkipForward } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
@@ -30,11 +30,11 @@ const CustomAudioPlayer = () => {
   };
 
   const handleNextTrack = () => {
-    setCurrentTrackIndex((prevIndex) => (prevIndex + 1) % tracks.length);
+    setCurrentTrackIndex((prevIndex: number) => (prevIndex + 1) % tracks.length);
   };
 
   const handlePrevTrack = () => {
-    setCurrentTrackIndex((prevIndex) => (prevIndex - 1 + tracks.length) % tracks.length);
+    setCurrentTrackIndex((prevIndex: number) => (prevIndex - 1 + tracks.length) % tracks.length);
   };
 
   return (
@@ -81,7 +81,10 @@ const CustomAudioPlayer = () => {
         </PopoverContent>
       </Popover>
 
-      <audio ref={audioRef} src={currentTrack.url} preload="metadata" />
+      <audio ref={audioRef} preload="metadata">
+        <source src={currentTrack.url} type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
     </div>
   );
 };
