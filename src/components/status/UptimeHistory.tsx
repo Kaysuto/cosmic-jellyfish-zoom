@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { subDays, format } from 'date-fns';
@@ -13,6 +13,37 @@ import { Service } from '@/hooks/useServices';
 type UptimeRecord = {
   date: string;
   uptime_percentage: number;
+};
+
+const NextUpdateTimer = () => {
+  const { t } = useTranslation();
+  const [timeLeft, setTimeLeft] = useState('');
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const nextUpdate = new Date(now);
+      nextUpdate.setUTCHours(24, 0, 0, 0); // Prochain minuit UTC
+
+      const diff = nextUpdate.getTime() - now.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <CardDescription>
+      {t('next_update_in')} <span className="font-mono font-semibold text-foreground">{timeLeft}</span>
+    </CardDescription>
+  );
 };
 
 const UptimeHistory = ({ service, children }: { service: Service; children?: ReactNode }) => {
@@ -138,6 +169,7 @@ const UptimeHistory = ({ service, children }: { service: Service; children?: Rea
       <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex-grow">
             <CardTitle>{t('uptime_history')}</CardTitle>
+            <NextUpdateTimer />
             {children && <div className="mt-2">{children}</div>}
         </div>
         <div className="flex items-center gap-1 self-start sm:self-center shrink-0">

@@ -81,7 +81,7 @@ const Status = () => {
       transition={{ duration: 0.5 }}
       className="container mx-auto px-4 py-8 flex-grow flex flex-col"
     >
-      <OverallStatus status={overallStatus} lastUpdated={lastUpdated ? `${t('last_updated')} ${formatDistanceToNow(lastUpdated, { addSuffix: true, locale: currentLocale })}` : ''} />
+      <OverallStatus status={overallStatus} lastUpdatedText={lastUpdated ? `${t('live_status_last_updated')} ${formatDistanceToNow(lastUpdated, { addSuffix: true, locale: currentLocale })}` : ''} />
       
       <div className="mt-8">
         <ScheduledMaintenances maintenances={maintenances} />

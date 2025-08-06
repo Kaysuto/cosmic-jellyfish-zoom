@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 type OverallStatusProps = {
   status: 'all_systems_operational' | 'partial_outage' | 'major_outage';
-  lastUpdated: string;
+  lastUpdatedText: string;
 };
 
 const statusConfig = {
@@ -28,7 +28,7 @@ const statusConfig = {
   },
 };
 
-const OverallStatus = ({ status, lastUpdated }: OverallStatusProps) => {
+const OverallStatus = ({ status, lastUpdatedText }: OverallStatusProps) => {
   const { t } = useTranslation();
   const config = statusConfig[status];
   const Icon = config.icon;
@@ -38,8 +38,9 @@ const OverallStatus = ({ status, lastUpdated }: OverallStatusProps) => {
       <div className="flex items-center justify-center">
         <Icon className={cn("h-10 w-10 mr-4 shrink-0", config.color)} />
         <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t(config.textKey)}</h1>
+      
       </div>
-      <p className="text-xs text-muted-foreground mt-4">{lastUpdated}</p>
+      <p className="text-xs text-muted-foreground mt-4">{lastUpdatedText}</p>
     </div>
   );
 };

@@ -7,6 +7,8 @@ const resources = {
   fr: {
     translation: {
       // ... (toutes les traductions existantes)
+      "live_status_last_updated": "Statut en direct mis à jour",
+      "next_update_in": "Prochaine mise à jour dans",
       "new_service_uptime_message": "L'historique de disponibilité pour les nouveaux services est généré après 24 heures. Les premières données apparaîtront demain.",
       "page_not_found_desc": "Désolé, la page que vous recherchez semble avoir disparu dans le néant.",
       "spotify_title": "Musique d'ambiance",
@@ -207,6 +209,8 @@ const resources = {
   en: {
     translation: {
       // ... (toutes les traductions existantes)
+      "live_status_last_updated": "Live status updated",
+      "next_update_in": "Next update in",
       "new_service_uptime_message": "Uptime history for new services is generated after 24 hours. The first data will appear tomorrow.",
       "page_not_found_desc": "Sorry, the page you are looking for seems to have vanished into thin air.",
       "spotify_title": "Ambiant Music",
