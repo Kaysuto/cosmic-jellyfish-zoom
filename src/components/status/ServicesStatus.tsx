@@ -59,7 +59,9 @@ const ServicesStatus = ({ services }: ServicesStatusProps) => {
                   <span className="font-medium text-foreground">{t(service.name.toLowerCase().replace(/ /g, '_'))}</span>
                 </div>
                 <div className="flex items-center gap-4 pl-6 sm:pl-0">
-                  <span className="text-sm text-muted-foreground">{t('uptime')} {service.uptime_percentage.toFixed(2)}%</span>
+                  {service.status !== 'downtime' && (
+                    <span className="text-sm text-muted-foreground">{t('uptime')} {service.uptime_percentage.toFixed(2)}%</span>
+                  )}
                   <span className="text-sm font-semibold text-foreground">{t(statusConfig.textKey)}</span>
                 </div>
               </div>
