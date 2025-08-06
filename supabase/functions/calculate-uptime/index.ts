@@ -38,10 +38,10 @@ serve(async (req) => {
     yesterdayEnd.setUTCHours(23, 59, 59, 999);
 
     for (const service of services) {
-      // 2. Calculate yesterday's uptime from health checks
+      // 2. Calculate yesterday's uptime and avg response time from health checks
       const { data: checks, error: checksError } = await supabaseAdmin
         .from('health_check_results')
-        .select('status', { count: 'exact' })
+        .select('status, response_time_ms')
         .eq('service_id', service.id)
         .gte('created_at', yesterdayStart.toISOString())
         .lte('created_at', yesterdayEnd.toISOString());
@@ -52,17 +52,22 @@ serve(async (req) => {
       }
 
       if (checks && checks.length > 0) {
-        const upCount = checks.filter(c => c.status === 'up').length;
+        const upChecks = checks.filter(c => c.status === 'up');
+        const upCount = upChecks.length;
         const totalCount = checks.length;
         const uptimePercentage = (upCount / totalCount) * 100;
 
-        // 3. Save yesterday's uptime to history
+        const totalResponseTime = upChecks.reduce((sum, check) => sum + (check.response_time_ms || 0), 0);
+        const avgResponseTime = upCount > 0 ? Math.round(totalResponseTime / upCount) : null;
+
+        // 3. Save yesterday's uptime and avg response time to history
         const { error: upsertError } = await supabaseAdmin
           .from('uptime_history')
           .upsert({
             service_id: service.id,
             date: yesterdayDateString,
             uptime_percentage: uptimePercentage,
+            avg_response_time_ms: avgResponseTime,
           }, {
             onConflict: 'service_id,date'
           });

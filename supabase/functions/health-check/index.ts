@@ -38,19 +38,23 @@ serve(async (req) => {
 
       let live_status: 'operational' | 'downtime' = 'operational';
       let check_status: 'up' | 'down' = 'up';
+      let response_time_ms: number | null = null;
 
       try {
         // Use a timeout for the fetch request
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
         
+        const startTime = Date.now();
         const response = await fetch(service.url, { 
           method: 'GET', // Changed from HEAD to GET for better compatibility
           redirect: 'follow',
           signal: controller.signal 
         });
+        const endTime = Date.now();
         
         clearTimeout(timeoutId);
+        response_time_ms = endTime - startTime;
 
         if (!response.ok) {
           live_status = 'downtime';
@@ -60,6 +64,7 @@ serve(async (req) => {
         console.error(`Error pinging ${service.url}:`, e.message);
         live_status = 'downtime';
         check_status = 'down';
+        response_time_ms = null;
       }
 
       // 1. Update the live status of the service
@@ -77,7 +82,8 @@ serve(async (req) => {
         .from('health_check_results')
         .insert({
           service_id: service.id,
-          status: check_status
+          status: check_status,
+          response_time_ms: response_time_ms
         });
 
       if (insertError) {
