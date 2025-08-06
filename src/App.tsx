@@ -31,9 +31,21 @@ const AppWrapper = () => {
         const response = await fetch('/audio/tracks.json');
         const tracks = await response.json();
         setTracks(tracks);
-        // Select a random track after loading
-        const randomTrackIndex = Math.floor(Math.random() * tracks.length);
-        setCurrentTrackIndex(randomTrackIndex);
+
+        // Vérifier si un index est déjà dans la session
+        const savedIndex = sessionStorage.getItem('audioPlayerTrackIndex');
+        if (savedIndex === null) {
+          // Si non, choisir une nouvelle piste aléatoire
+          const randomTrackIndex = Math.floor(Math.random() * tracks.length);
+          setCurrentTrackIndex(randomTrackIndex);
+        } else {
+          // Si oui, s'assurer qu'il est valide et le définir (déjà fait dans le store initial)
+          const parsedIndex = parseInt(savedIndex, 10);
+          if (isNaN(parsedIndex) || parsedIndex >= tracks.length) {
+            const randomTrackIndex = Math.floor(Math.random() * tracks.length);
+            setCurrentTrackIndex(randomTrackIndex);
+          }
+        }
       } catch (error) {
         console.error("Failed to fetch audio tracks:", error);
       }

@@ -17,7 +17,6 @@ const getInitialVolume = (): number => {
     const savedVolume = localStorage.getItem('audioPlayerVolume');
     if (savedVolume !== null) {
       const parsedVolume = parseInt(savedVolume, 10);
-      // S'assurer que la valeur est un nombre valide entre 0 et 100
       if (!isNaN(parsedVolume) && parsedVolume >= 0 && parsedVolume <= 100) {
         return parsedVolume;
       }
@@ -25,24 +24,45 @@ const getInitialVolume = (): number => {
   } catch (error) {
     console.error('Erreur lors de la lecture du volume depuis le localStorage:', error);
   }
-  return 50; // Volume par défaut si rien n'est trouvé ou en cas d'erreur
+  return 50;
+};
+
+// Fonction pour récupérer l'index de la piste depuis le sessionStorage
+const getInitialTrackIndex = (): number => {
+  try {
+    const savedIndex = sessionStorage.getItem('audioPlayerTrackIndex');
+    if (savedIndex !== null) {
+      const parsedIndex = parseInt(savedIndex, 10);
+      if (!isNaN(parsedIndex)) {
+        return parsedIndex;
+      }
+    }
+  } catch (error) {
+    console.error('Erreur lors de la lecture de l\'index depuis le sessionStorage:', error);
+  }
+  return 0;
 };
 
 export const useAudioStore = create<AudioState>((set) => ({
-  currentTrackIndex: 0,
+  currentTrackIndex: getInitialTrackIndex(),
   isPlaying: false,
   volume: getInitialVolume(),
   tracks: [],
-  setCurrentTrackIndex: (index) => set({ currentTrackIndex: index }),
+  setCurrentTrackIndex: (index) => {
+    try {
+      sessionStorage.setItem('audioPlayerTrackIndex', index.toString());
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde de l\'index dans le sessionStorage:', error);
+    }
+    set({ currentTrackIndex: index });
+  },
   setIsPlaying: (isPlaying) => set({ isPlaying: isPlaying }),
   setVolume: (volume) => {
     try {
-      // Sauvegarder le volume dans le localStorage
       localStorage.setItem('audioPlayerVolume', volume.toString());
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du volume dans le localStorage:', error);
     }
-    // Mettre à jour l'état
     set({ volume });
   },
   setTracks: (tracks) => set({ tracks }),
