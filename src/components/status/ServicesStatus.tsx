@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -45,21 +45,9 @@ const ServicesStatus = ({ services }: ServicesStatusProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const SERVICES_PER_PAGE = 3;
 
-  const sortedServices = useMemo(() => {
-    return [...services].sort((a, b) => {
-      const aIsPj = a.name.toLowerCase().includes('playjelly.fr');
-      const bIsPj = b.name.toLowerCase().includes('playjelly.fr');
-
-      if (aIsPj && !bIsPj) return -1;
-      if (!aIsPj && bIsPj) return 1;
-
-      return a.name.localeCompare(b.name);
-    });
-  }, [services]);
-
-  const totalPages = Math.ceil(sortedServices.length / SERVICES_PER_PAGE);
+  const totalPages = Math.ceil(services.length / SERVICES_PER_PAGE);
   const startIndex = (currentPage - 1) * SERVICES_PER_PAGE;
-  const currentServices = sortedServices.slice(startIndex, startIndex + SERVICES_PER_PAGE);
+  const currentServices = services.slice(startIndex, startIndex + SERVICES_PER_PAGE);
 
   return (
     <Card className="flex flex-col h-full">
@@ -94,7 +82,7 @@ const ServicesStatus = ({ services }: ServicesStatusProps) => {
           })}
         </div>
       </CardContent>
-      {sortedServices.length > SERVICES_PER_PAGE && (
+      {services.length > SERVICES_PER_PAGE && (
         <div className="flex-shrink-0 flex items-center justify-between w-full gap-2 text-white p-4 border-t border-gray-700/50">
           <Button
             variant="outline"
