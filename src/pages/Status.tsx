@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
-import { supabase } from '@/integrations/supabase/client';
 
 import { useServices, type Service } from '@/hooks/useServices';
 import { useIncidents, type Incident } from '@/hooks/useIncidents';
@@ -28,12 +27,7 @@ const Status = () => {
 
   useEffect(() => {
     if (services && services.length > 0) {
-      // Set default selected service to node.playjelly.fr if it exists
-      const defaultService = services.find(s => s.name === 'node.playjelly.fr');
-      if (defaultService) {
-        setSelectedServiceId(defaultService.id);
-      } else if (!selectedServiceId) {
-        // Fallback to the first service if node.playjelly.fr is not found
+      if (!selectedServiceId) {
         setSelectedServiceId(services[0].id);
       }
 
@@ -82,8 +76,8 @@ const Status = () => {
         <div className="flex flex-col gap-8">
           <ServicesStatus services={services} />
           <UptimeHistory serviceId={selectedServiceId}>
-            {services.length > 0 && (
-              <Select value={selectedServiceId || ''} onValueChange={setSelectedServiceId}>
+            {services.length > 0 && selectedServiceId && (
+              <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
                 <SelectTrigger className="w-full sm:w-[250px]">
                   <SelectValue placeholder={t('select_service')} />
                 </SelectTrigger>
