@@ -65,17 +65,22 @@ const Login = () => {
                     password_label: t('password'),
                     button_label: t('sign_in'),
                     link_text: t('already_have_account'),
+                    email_input_placeholder: t('email_placeholder'),
+                    password_input_placeholder: t('password_placeholder'),
                   },
                   sign_up: {
                     email_label: t('email_address'),
                     password_label: t('password'),
                     button_label: t('sign_up'),
                     link_text: t('dont_have_account'),
+                    email_input_placeholder: t('email_placeholder'),
+                    password_input_placeholder: t('password_placeholder'),
                   },
                   forgotten_password: {
                     email_label: t('email_address'),
                     button_label: t('send_instructions'),
                     link_text: t('forgot_password'),
+                    email_input_placeholder: t('email_placeholder'),
                   },
                 },
               }}
