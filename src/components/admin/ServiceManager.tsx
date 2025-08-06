@@ -31,35 +31,57 @@ const ServiceManager = () => {
     maintenance: { text: 'En maintenance', className: 'bg-gray-500/20 text-gray-500 border-gray-500/30' },
   };
 
+  const triggerImmediateCheck = async (serviceId: string) => {
+    try {
+      await supabase.functions.invoke('immediate-health-check', {
+        body: { service_id: serviceId },
+      });
+    } catch (e) {
+      console.error("Failed to trigger immediate health check:", e);
+    }
+  };
+
   const handleFormSubmit = async (values: ServiceFormValues) => {
     setIsSubmitting(true);
     
-    // Déterminer le statut initial basé sur la présence d'une URL
-    const initialStatus = values.url && values.url.trim() !== '' ? 'operational' : 'maintenance';
-    
+    const hasUrl = values.url && values.url.trim() !== '';
     const serviceData = {
       ...values,
-      url: values.url && values.url.trim() !== '' ? values.url : null,
-      status: selectedService ? selectedService.status : initialStatus,
+      url: hasUrl ? values.url : null,
+      status: selectedService ? selectedService.status : (hasUrl ? 'operational' : 'maintenance'),
       updated_at: new Date().toISOString(),
     };
 
-    let error;
+    let savedServiceId: string | null = null;
+
     if (selectedService) {
-      ({ error } = await supabase.from('services').update(serviceData).eq('id', selectedService.id));
+      const { data, error } = await supabase.from('services').update(serviceData).eq('id', selectedService.id).select().single();
+      if (error) {
+        showError(t('error_saving_service'));
+      } else {
+        showSuccess(t('service_saved_successfully'));
+        savedServiceId = data.id;
+      }
     } else {
-      ({ error } = await supabase.from('services').insert(serviceData));
+      const { data, error } = await supabase.from('services').insert(serviceData).select().single();
+      if (error) {
+        showError(t('error_saving_service'));
+      } else {
+        showSuccess(t('service_saved_successfully'));
+        savedServiceId = data.id;
+      }
     }
 
-    if (error) {
-      showError(t('error_saving_service'));
-    } else {
-      showSuccess(t('service_saved_successfully'));
-      setIsSheetOpen(false);
-      setSelectedService(null);
-      // Forcer le rafraîchissement après création/modification
-      setTimeout(() => refreshServices(), 100);
+    if (savedServiceId) {
+      if (hasUrl) {
+        await triggerImmediateCheck(savedServiceId);
+      }
+      // The real-time subscription will handle the UI update
+      setTimeout(() => refreshServices(), 500); // Small delay to allow check to run
     }
+
+    setIsSheetOpen(false);
+    setSelectedService(null);
     setIsSubmitting(false);
   };
 
@@ -77,7 +99,6 @@ const ServiceManager = () => {
       showError(t('error_deleting_service'));
     } else {
       showSuccess(t('service_deleted_successfully'));
-      // Forcer le rafraîchissement après suppression
       setTimeout(() => refreshServices(), 100);
     }
     
