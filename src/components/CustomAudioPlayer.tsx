@@ -9,20 +9,14 @@ const CustomAudioPlayer = () => {
     currentTrackIndex, 
     isPlaying, 
     volume, 
-    tracks,
-    tracksLoading,
+    tracks, 
     setCurrentTrackIndex, 
     setIsPlaying, 
-    setVolume,
-    fetchTracks
+    setVolume 
   } = useAudioStore();
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    fetchTracks();
-  }, [fetchTracks]);
 
   const currentTrack = tracks && tracks.length > 0 ? tracks[currentTrackIndex] : null;
 
@@ -110,20 +104,11 @@ const CustomAudioPlayer = () => {
     setCurrentTrackIndex(prevIndex);
   };
 
-  if (tracksLoading) {
-    return (
-      <div className="flex items-center gap-3 bg-gray-800/30 rounded-full px-3 py-1.5 border border-gray-700/60 text-gray-500">
-        <Disc3 className="h-4 w-4 text-gray-600 animate-spin" />
-        <div className="text-xs truncate max-w-[120px]">Chargement...</div>
-      </div>
-    );
-  }
-
   if (!currentTrack) {
     return (
       <div className="flex items-center gap-3 bg-gray-800/30 rounded-full px-3 py-1.5 border border-gray-700/60 text-gray-500">
         <Disc3 className="h-4 w-4 text-gray-600" />
-        <div className="text-xs truncate max-w-[120px]">Aucune piste</div>
+        <div className="text-xs truncate max-w-[120px]">Aucune piste disponible</div>
       </div>
     );
   }
