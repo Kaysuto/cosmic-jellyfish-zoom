@@ -21,7 +21,7 @@ export const useIncidents = () => {
   const fetchIncidents = useCallback(async () => {
     const { data, error } = await supabase
       .from('incidents')
-      .select('*, services(name), profiles!incidents_author_id_fkey(first_name, last_name, email)')
+      .select('*, services(name), profiles!author_id(first_name, last_name, email)')
       .order('created_at', { ascending: false });
     
     if (error) {
