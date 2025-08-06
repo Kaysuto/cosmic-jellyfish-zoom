@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import Settings from "./pages/admin/Settings";
+import Profile from "./pages/admin/Profile";
 import { ThemeProvider } from "@/components/theme-provider";
 import MainLayout from "@/components/layout/MainLayout";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -36,6 +37,7 @@ const AppWrapper = () => {
                   <Route element={<ProtectedRoute />}>
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/admin/settings" element={<Settings />} />
+                    <Route path="/admin/profile" element={<Profile />} />
                   </Route>
                 </Route>
                 <Route path="/login" element={<Login />} />
