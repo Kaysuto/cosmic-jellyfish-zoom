@@ -145,7 +145,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/60 backdrop-blur-lg border-b border-white/10">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/60 backdrop-blur-lg border-b border-white/10 compensate-for-scrollbar">
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <div className="flex-1 flex justify-start items-center gap-4">
           <CustomAudioPlayer />
