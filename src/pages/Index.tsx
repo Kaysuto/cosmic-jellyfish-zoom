@@ -23,7 +23,7 @@ const Index = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="max-w-3xl"
         >
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
             {t('welcome')}
           </h1>
           <p className="mt-6 text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
