@@ -12,7 +12,7 @@ export interface Incident {
   created_at: string;
   updated_at: string;
   services: { name: string } | null;
-  profiles: { first_name: string | null, last_name: string | null, email: string | null } | null;
+  profiles: { first_name: string | null, last_name: string | null, email: string | null, avatar_url: string | null } | null;
 }
 
 export const useIncidents = () => {
@@ -22,7 +22,7 @@ export const useIncidents = () => {
   const fetchIncidents = useCallback(async () => {
     const { data, error } = await supabase
       .from('incidents')
-      .select('*, services(name), profiles!author_id(first_name, last_name, email)')
+      .select('*, services(name), profiles!author_id(first_name, last_name, email, avatar_url)')
       .order('created_at', { ascending: false });
     
     if (error) {

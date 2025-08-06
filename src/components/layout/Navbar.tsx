@@ -43,7 +43,7 @@ const Navbar = () => {
       <DropdownMenuTrigger asChild>
         <button className={cn(desktopNavLinkClasses({ isActive: false }), "flex items-center gap-2")}>
           <Avatar className="h-6 w-6">
-            <AvatarImage src={getGravatarURL(profile?.email)} alt={profile?.first_name || 'Avatar'} />
+            <AvatarImage src={profile?.avatar_url || getGravatarURL(profile?.email)} alt={profile?.first_name || 'Avatar'} />
             <AvatarFallback>{profile?.first_name?.charAt(0) || 'U'}</AvatarFallback>
           </Avatar>
           <span className="text-white hidden sm:inline">

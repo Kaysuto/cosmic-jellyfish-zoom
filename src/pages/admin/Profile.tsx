@@ -86,7 +86,7 @@ const Profile = () => {
       <CardHeader className="bg-muted/30 p-6">
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20 border-4 border-background">
-            <AvatarImage src={getGravatarURL(profile?.email, 160)} />
+            <AvatarImage src={profile?.avatar_url || getGravatarURL(profile?.email, 160)} />
             <AvatarFallback className="text-3xl">
               {profile?.first_name?.charAt(0)}{profile?.last_name?.charAt(0)}
             </AvatarFallback>

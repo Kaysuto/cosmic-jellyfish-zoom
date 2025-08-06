@@ -77,7 +77,7 @@ const IncidentItem = ({ incident }: { incident: ApiIncident }) => {
         <div className="flex items-center gap-2" title={`Posté par ${authorName}`}>
           <span className="text-gray-400 text-right">{authorName}</span>
           <Avatar className="h-6 w-6">
-            <AvatarImage src={getGravatarURL(incident.profiles?.email, 24)} />
+            <AvatarImage src={incident.profiles?.avatar_url || getGravatarURL(incident.profiles?.email, 24)} />
             <AvatarFallback>{authorInitial}</AvatarFallback>
           </Avatar>
         </div>
