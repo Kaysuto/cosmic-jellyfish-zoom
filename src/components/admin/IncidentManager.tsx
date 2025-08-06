@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PlusCircle, Edit, Trash2, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, MoreHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
 import IncidentForm, { IncidentFormValues } from './IncidentForm';
 import { showSuccess, showError } from '@/utils/toast';
 import { format } from 'date-fns';
@@ -41,6 +41,25 @@ const IncidentManager = () => {
     resolved: { text: t('resolved'), className: 'bg-green-500/20 text-green-500 border-green-500/30' },
   };
 
+  const handleReorder = async (index: number, direction: 'up' | 'down') => {
+    const incidentToMove = incidents[index];
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    const incidentToSwap = incidents[swapIndex];
+
+    if (!incidentToMove || !incidentToSwap) return;
+
+    const { error } = await supabase.rpc('swap_incident_positions', {
+      incident_id_1: incidentToMove.id,
+      incident_id_2: incidentToSwap.id,
+    });
+
+    if (error) {
+      showError("Erreur lors de la réorganisation.");
+    } else {
+      refreshIncidents();
+    }
+  };
+
   const handleFormSubmit = async (values: IncidentFormValues) => {
     if (!session?.user) {
       showError("Vous devez être connecté pour effectuer cette action.");
@@ -53,6 +72,7 @@ const IncidentManager = () => {
       title_en: values.title_en || null,
       description_en: values.description_en || null,
       updated_at: new Date().toISOString(),
+      position: selectedIncident ? selectedIncident.position : (incidents.length > 0 ? Math.max(...incidents.map(i => i.position)) + 1 : 1),
     };
 
     let error;
@@ -69,8 +89,7 @@ const IncidentManager = () => {
       showSuccess(t('incident_saved_successfully'));
       setIsSheetOpen(false);
       setSelectedIncident(null);
-      // Forcer le rafraîchissement après création/modification
-      setTimeout(() => refreshIncidents(), 100);
+      refreshIncidents();
     }
     setIsSubmitting(false);
   };
@@ -90,8 +109,7 @@ const IncidentManager = () => {
       console.error(error);
     } else {
       showSuccess(t('incident_deleted_successfully'));
-      // Forcer le rafraîchissement après suppression
-      setTimeout(() => refreshIncidents(), 100);
+      refreshIncidents();
     }
     
     setIsDeleteDialogOpen(false);
@@ -133,6 +151,7 @@ const IncidentManager = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[60px]">Ordre</TableHead>
                 <TableHead>{t('title')}</TableHead>
                 <TableHead>{t('status')}</TableHead>
                 <TableHead>{t('service')}</TableHead>
@@ -141,8 +160,18 @@ const IncidentManager = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {incidents.map((incident) => (
+              {incidents.map((incident, index) => (
                 <TableRow key={incident.id}>
+                  <TableCell>
+                    <div className="flex flex-col items-center">
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleReorder(index, 'up')} disabled={index === 0}>
+                        <ChevronUp className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleReorder(index, 'down')} disabled={index === incidents.length - 1}>
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                   <TableCell className="font-medium">{incident.title}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn('border', statusConfig[incident.status].className)}>

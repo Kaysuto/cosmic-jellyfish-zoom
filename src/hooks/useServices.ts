@@ -15,6 +15,7 @@ export interface Service {
   created_at: string;
   updated_at: string;
   url: string | null;
+  position: number;
 }
 
 export const useServices = () => {
@@ -26,7 +27,7 @@ export const useServices = () => {
     const { data, error } = await supabase
       .from('services')
       .select('*')
-      .order('name');
+      .order('position');
     
     if (error) {
       console.error('Erreur lors de la récupération des services:', error);
@@ -42,20 +43,7 @@ export const useServices = () => {
 
     const handleRealtimeUpdate = (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
       console.log('Realtime update received:', payload);
-      
-      if (payload.eventType === 'UPDATE') {
-        const updatedService = payload.new as Service;
-        setServices(currentServices =>
-          currentServices.map(s => (s.id === updatedService.id ? updatedService : s))
-        );
-      } else if (payload.eventType === 'INSERT') {
-        const newService = payload.new as Service;
-        setServices(currentServices => [...currentServices, newService].sort((a, b) => a.name.localeCompare(b.name)));
-      } else if (payload.eventType === 'DELETE') {
-        const deletedService = payload.old as Partial<Service>;
-        console.log('Service deleted:', deletedService.id);
-        setServices(currentServices => currentServices.filter(s => s.id !== deletedService.id));
-      }
+      fetchServices(); // Re-fetch to get the correct order
     };
 
     const channel: RealtimeChannel = supabase

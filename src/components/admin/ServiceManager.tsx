@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PlusCircle, Edit, Trash2, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, MoreHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
 import ServiceForm, { ServiceFormValues } from './ServiceForm';
 import { showSuccess, showError } from '@/utils/toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -31,13 +31,22 @@ const ServiceManager = () => {
     maintenance: { text: 'En maintenance', className: 'bg-gray-500/20 text-gray-500 border-gray-500/30' },
   };
 
-  const triggerImmediateCheck = async (serviceId: string) => {
-    try {
-      await supabase.functions.invoke('immediate-health-check', {
-        body: { service_id: serviceId },
-      });
-    } catch (e) {
-      console.error("Failed to trigger immediate health check:", e);
+  const handleReorder = async (index: number, direction: 'up' | 'down') => {
+    const serviceToMove = services[index];
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    const serviceToSwap = services[swapIndex];
+
+    if (!serviceToMove || !serviceToSwap) return;
+
+    const { error } = await supabase.rpc('swap_service_positions', {
+      service_id_1: serviceToMove.id,
+      service_id_2: serviceToSwap.id,
+    });
+
+    if (error) {
+      showError("Erreur lors de la réorganisation.");
+    } else {
+      refreshServices();
     }
   };
 
@@ -50,34 +59,21 @@ const ServiceManager = () => {
       url: hasUrl ? values.url : null,
       status: selectedService ? selectedService.status : (hasUrl ? 'operational' : 'maintenance'),
       updated_at: new Date().toISOString(),
+      position: selectedService ? selectedService.position : (services.length > 0 ? Math.max(...services.map(s => s.position)) + 1 : 1),
     };
 
-    let savedServiceId: string | null = null;
-
+    let error;
     if (selectedService) {
-      const { data, error } = await supabase.from('services').update(serviceData).eq('id', selectedService.id).select().single();
-      if (error) {
-        showError(t('error_saving_service'));
-      } else {
-        showSuccess(t('service_saved_successfully'));
-        savedServiceId = data.id;
-      }
+      ({ error } = await supabase.from('services').update(serviceData).eq('id', selectedService.id));
     } else {
-      const { data, error } = await supabase.from('services').insert(serviceData).select().single();
-      if (error) {
-        showError(t('error_saving_service'));
-      } else {
-        showSuccess(t('service_saved_successfully'));
-        savedServiceId = data.id;
-      }
+      ({ error } = await supabase.from('services').insert(serviceData));
     }
 
-    if (savedServiceId) {
-      if (hasUrl) {
-        await triggerImmediateCheck(savedServiceId);
-      }
-      // The real-time subscription will handle the UI update
-      setTimeout(() => refreshServices(), 500); // Small delay to allow check to run
+    if (error) {
+      showError(t('error_saving_service'));
+    } else {
+      showSuccess(t('service_saved_successfully'));
+      refreshServices();
     }
 
     setIsSheetOpen(false);
@@ -99,7 +95,7 @@ const ServiceManager = () => {
       showError(t('error_deleting_service'));
     } else {
       showSuccess(t('service_deleted_successfully'));
-      setTimeout(() => refreshServices(), 100);
+      refreshServices();
     }
     
     setIsDeleteDialogOpen(false);
@@ -139,6 +135,7 @@ const ServiceManager = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[60px]">Ordre</TableHead>
                 <TableHead>{t('service')}</TableHead>
                 <TableHead>{t('status')}</TableHead>
                 <TableHead>URL</TableHead>
@@ -146,8 +143,18 @@ const ServiceManager = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {services.map((service) => (
+              {services.map((service, index) => (
                 <TableRow key={service.id}>
+                  <TableCell>
+                    <div className="flex flex-col items-center">
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleReorder(index, 'up')} disabled={index === 0}>
+                        <ChevronUp className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleReorder(index, 'down')} disabled={index === services.length - 1}>
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="font-medium">{t(service.name.toLowerCase().replace(/ /g, '_'))}</div>
                     <div className="text-sm text-muted-foreground">{service.description}</div>

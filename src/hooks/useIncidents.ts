@@ -14,6 +14,7 @@ export interface Incident {
   created_at: string;
   updated_at: string;
   resolved_at: string | null;
+  position: number;
   services: { name: string } | null;
   profiles: { first_name: string | null, last_name: string | null, email: string | null, avatar_url: string | null } | null;
 }
@@ -26,7 +27,7 @@ export const useIncidents = () => {
     const { data, error } = await supabase
       .from('incidents')
       .select('*, services(name), profiles!author_id(first_name, last_name, email, avatar_url)')
-      .order('created_at', { ascending: false });
+      .order('position');
     
     if (error) {
       console.error('Erreur lors de la récupération des incidents:', error);
@@ -48,19 +49,8 @@ export const useIncidents = () => {
           schema: 'public',
           table: 'incidents',
         },
-        (payload) => {
-          console.log('Incident realtime update:', payload);
-          
-          if (payload.eventType === 'DELETE') {
-            const deletedIncident = payload.old as Partial<Incident>;
-            console.log('Incident deleted:', deletedIncident.id);
-            setIncidents(currentIncidents => 
-              currentIncidents.filter(i => i.id !== deletedIncident.id)
-            );
-          } else {
-            // Pour les autres événements, on refetch pour avoir les données complètes avec les jointures
-            fetchIncidents();
-          }
+        () => {
+          fetchIncidents();
         }
       )
       .subscribe();
