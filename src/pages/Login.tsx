@@ -46,6 +46,27 @@ const Login = () => {
     };
 
     checkRegistrationStatus();
+
+    const channel = supabase
+      .channel('app-settings-change')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'app_settings',
+          filter: 'key=eq.allow_registrations',
+        },
+        (payload) => {
+          const newSetting = payload.new as { value: string };
+          setAllowRegistrations(newSetting.value === 'true');
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loginSchema = z.object({
