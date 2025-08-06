@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
+
+import { useServices, type Service } from '@/hooks/useServices';
+import { useIncidents, type Incident } from '@/hooks/useIncidents';
 
 import OverallStatus from '@/components/status/OverallStatus';
 import ServicesStatus from '@/components/status/ServicesStatus';
@@ -12,80 +14,30 @@ import UptimeHistory from '@/components/status/UptimeHistory';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type Service = {
-  id: string;
-  name: string;
-  description: string;
-  status: 'operational' | 'degraded' | 'downtime';
-  uptime_percentage: number;
-  created_at: string;
-  updated_at: string;
-};
-
-type Incident = {
-  id: string;
-  service_id: string;
-  title: string;
-  description: string;
-  status: 'investigating' | 'identified' | 'monitoring' | 'resolved';
-  created_at: string;
-  updated_at: string;
-  services: { name: string };
-};
-
 const Status = () => {
   const { t, i18n } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [services, setServices] = useState<Service[]>([]);
-  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const { services, loading: servicesLoading } = useServices();
+  const { incidents, loading: incidentsLoading } = useIncidents();
+  
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
 
+  const loading = servicesLoading || incidentsLoading;
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-
-      const { data: servicesData, error: servicesError } = await supabase
-        .from('services')
-        .select('*')
-        .order('created_at', { ascending: true });
-
-      if (servicesError) {
-        console.error('Error fetching services:', servicesError);
-      } else if (servicesData) {
-        const typedServices = servicesData as Service[];
-        setServices(typedServices);
-        if (typedServices.length > 0) {
-          setSelectedServiceId(typedServices[0].id);
-        }
+    if (services && services.length > 0) {
+      if (!selectedServiceId) {
+        setSelectedServiceId(services[0].id);
       }
 
-      const { data: incidentsData, error: incidentsError } = await supabase
-        .from('incidents')
-        .select('*, services(name)')
-        .order('created_at', { ascending: false });
-
-      if (incidentsError) {
-        console.error('Error fetching incidents:', incidentsError);
-      } else if (incidentsData) {
-        setIncidents(incidentsData as any[]);
-      }
-
-      if (servicesData && servicesData.length > 0) {
-        const mostRecentUpdate = servicesData.reduce((latest, service) => {
-          const serviceDate = new Date(service.updated_at);
-          return serviceDate > latest ? serviceDate : latest;
-        }, new Date(0));
-        setLastUpdated(mostRecentUpdate);
-      }
-
-      setLoading(false);
-    };
-
-    fetchData();
-  }, []);
+      const mostRecentUpdate = services.reduce((latest, service) => {
+        const serviceDate = new Date(service.updated_at);
+        return serviceDate > latest ? serviceDate : latest;
+      }, new Date(0));
+      setLastUpdated(mostRecentUpdate);
+    }
+  }, [services, selectedServiceId]);
 
   const overallStatus = useMemo(() => {
     if (services.length === 0) return 'all_systems_operational';
