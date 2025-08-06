@@ -11,11 +11,7 @@ interface AudioState {
   setTracks: (tracks: { name: string; url: string }[]) => void;
 }
 
-export const useAudioStore = create<AudioState>((set) => ({
-  currentTrackIndex: 0,
-  isPlaying: false,
-  volume: 50,
-  tracks: [
+const tracksList = [
     { name: 'The Sound of Rain', url: '/audio/001 - The Sound of Rain.webm' },
     { name: 'Eden', url: '/audio/002 - Eden.webm' },
     { name: 'Yal!X - Crystal Realm', url: '/audio/003 - Yal!X - Crystal Realm.webm' },
@@ -196,7 +192,15 @@ export const useAudioStore = create<AudioState>((set) => ({
     { name: 'Skypath', url: '/audio/180 - Skypath.webm' },
     { name: 'Through the Silence', url: '/audio/181 - Through the Silence.webm' },
     { name: 'Fragments', url: '/audio/182 - Fragments.webm' },
-  ],
+];
+
+const randomTrackIndex = Math.floor(Math.random() * tracksList.length);
+
+export const useAudioStore = create<AudioState>((set) => ({
+  currentTrackIndex: randomTrackIndex,
+  isPlaying: false,
+  volume: 50,
+  tracks: tracksList,
   setCurrentTrackIndex: (index) => set({ currentTrackIndex: index }),
   setIsPlaying: (isPlaying) => set({ isPlaying: isPlaying }),
   setVolume: (volume) => set({ volume: volume }),
