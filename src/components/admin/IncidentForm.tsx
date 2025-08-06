@@ -9,12 +9,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Incident } from '@/hooks/useIncidents';
 import { Service } from '@/hooks/useServices';
+import { Profile } from '@/hooks/useProfile';
 
 const incidentSchema = z.object({
   title: z.string().min(1, { message: 'Le titre est requis' }),
   description: z.string().min(1, { message: 'La description est requise' }),
   status: z.enum(['investigating', 'identified', 'monitoring', 'resolved']),
   service_id: z.string().nullable(),
+  author_id: z.string().uuid("L'auteur est requis."),
 });
 
 export type IncidentFormValues = z.infer<typeof incidentSchema>;
@@ -22,12 +24,14 @@ export type IncidentFormValues = z.infer<typeof incidentSchema>;
 interface IncidentFormProps {
   incident?: Incident | null;
   services: Service[];
+  admins: Profile[];
+  currentUserId: string;
   onSubmit: (values: IncidentFormValues) => void;
   onCancel: () => void;
   isSubmitting: boolean;
 }
 
-const IncidentForm = ({ incident, services, onSubmit, onCancel, isSubmitting }: IncidentFormProps) => {
+const IncidentForm = ({ incident, services, admins, currentUserId, onSubmit, onCancel, isSubmitting }: IncidentFormProps) => {
   const { t } = useTranslation();
 
   const form = useForm<IncidentFormValues>({
@@ -37,6 +41,7 @@ const IncidentForm = ({ incident, services, onSubmit, onCancel, isSubmitting }: 
       description: incident?.description || '',
       status: incident?.status || 'investigating',
       service_id: incident?.service_id || null,
+      author_id: incident?.author_id || currentUserId,
     },
   });
 
@@ -109,6 +114,30 @@ const IncidentForm = ({ incident, services, onSubmit, onCancel, isSubmitting }: 
                   {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
                       {t(service.name.toLowerCase().replace(/ /g, '_'))}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="author_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('assign_to')}</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('select_admin')} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {admins.map((admin) => (
+                    <SelectItem key={admin.id} value={admin.id}>
+                      {`${admin.first_name || ''} ${admin.last_name || ''}`.trim() || admin.email}
                     </SelectItem>
                   ))}
                 </SelectContent>

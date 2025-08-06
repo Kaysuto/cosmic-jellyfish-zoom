@@ -137,7 +137,9 @@ const resources = {
       "role": "Rôle",
       "admin_role": "Administrateur",
       "user_role": "Utilisateur",
-      "member_since": "Membre depuis"
+      "member_since": "Membre depuis",
+      "assign_to": "Assigner à",
+      "select_admin": "Sélectionner un administrateur"
     }
   },
   en: {
@@ -273,7 +275,9 @@ const resources = {
       "role": "Role",
       "admin_role": "Administrator",
       "user_role": "User",
-      "member_since": "Member since"
+      "member_since": "Member since",
+      "assign_to": "Assign to",
+      "select_admin": "Select an administrator"
     }
   }
 };

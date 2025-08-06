@@ -4,7 +4,8 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface Incident {
   id: string;
-  service_id: string;
+  service_id: string | null;
+  author_id: string | null;
   title: string;
   description: string;
   status: 'investigating' | 'identified' | 'monitoring' | 'resolved';

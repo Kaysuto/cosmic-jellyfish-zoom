@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useIncidents, Incident } from '@/hooks/useIncidents';
 import { useServices } from '@/hooks/useServices';
+import { useAdmins } from '@/hooks/useAdmins';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ const IncidentManager = () => {
   const { session } = useSession();
   const { incidents, loading: incidentsLoading } = useIncidents();
   const { services, loading: servicesLoading } = useServices();
+  const { admins, loading: adminsLoading } = useAdmins();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
@@ -35,7 +37,6 @@ const IncidentManager = () => {
     setIsSubmitting(true);
     const incidentData = {
       ...values,
-      author_id: session.user.id,
       updated_at: new Date().toISOString(),
     };
 
@@ -77,7 +78,7 @@ const IncidentManager = () => {
     setIsFormOpen(true);
   };
 
-  const loading = incidentsLoading || servicesLoading;
+  const loading = incidentsLoading || servicesLoading || adminsLoading;
 
   if (loading) {
     return <Skeleton className="h-96 w-full" />;
@@ -139,6 +140,8 @@ const IncidentManager = () => {
           <IncidentForm
             incident={selectedIncident}
             services={services}
+            admins={admins}
+            currentUserId={session!.user.id}
             onSubmit={handleFormSubmit}
             onCancel={() => setIsFormOpen(false)}
             isSubmitting={isSubmitting}
