@@ -8,7 +8,7 @@ interface AudioState {
   setCurrentTrackIndex: (index: number) => void;
   setIsPlaying: (isPlaying: boolean) => void;
   setVolume: (volume: number) => void;
-  setTracks: (tracks: { name: string; url: string }[]) => void; // Ajout de setTracks
+  setTracks: (tracks: { name: string; url: string }[]) => void;
 }
 
 export const useAudioStore = create<AudioState>((set) => ({
@@ -16,11 +16,13 @@ export const useAudioStore = create<AudioState>((set) => ({
   isPlaying: false,
   volume: 50,
   tracks: [
-    { name: 'Track 1', url: 'https://storage.googleapis.com/jelly-status/musics/chill.mp3' },
-    { name: 'Track 2', url: 'https://storage.googleapis.com/jelly-status/musics/lofi.mp3' },
+    // Remplacez ces URLs par les URLs de vos propres fichiers audio
+    { name: 'Ma Musique Chill', url: 'https://votre-domaine.com/musiques/ma-musique-chill.mp3' },
+    { name: 'Rythme Lofi', url: 'https://votre-domaine.com/musiques/rythme-lofi.mp3' },
+    { name: 'Ambiance Électro', url: 'https://votre-domaine.com/musiques/ambiance-electro.mp3' },
   ],
   setCurrentTrackIndex: (index) => set({ currentTrackIndex: index }),
   setIsPlaying: (isPlaying) => set({ isPlaying: isPlaying }),
   setVolume: (volume) => set({ volume: volume }),
-  setTracks: (tracks) => set({ tracks }), // Implémentation de setTracks
+  setTracks: (tracks) => set({ tracks }),
 }));
