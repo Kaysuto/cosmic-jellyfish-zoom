@@ -1,5 +1,4 @@
 import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/AuthContext';
@@ -55,9 +54,18 @@ const Login = () => {
           <div className="p-8 space-y-8 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg shadow-xl">
             <Auth
               supabaseClient={supabase}
-              appearance={{ theme: ThemeSupa }}
               providers={[]}
-              theme="dark"
+              appearance={{
+                className: {
+                  container: 'space-y-6',
+                  label: 'text-sm font-medium text-gray-300',
+                  input: 'flex h-10 w-full rounded-md border border-gray-600 bg-gray-900/50 px-3 py-2 text-sm text-white ring-offset-background placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                  button: 'inline-flex items-center justify-center rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 h-10 px-4 py-2 w-full',
+                  anchor: 'text-sm text-blue-400 hover:text-blue-300 hover:underline',
+                  message: 'text-sm text-red-400 mt-2',
+                  divider: 'bg-gray-600'
+                }
+              }}
               localization={{
                 variables: {
                   sign_in: {
