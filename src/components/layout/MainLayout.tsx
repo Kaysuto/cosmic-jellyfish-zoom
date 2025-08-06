@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import { MadeWithDyad } from "@/components/made-with-dyad";
+import CustomAudioPlayer from "@/components/CustomAudioPlayer"; // Import the CustomAudioPlayer
 
 const MainLayout = () => {
   return (
