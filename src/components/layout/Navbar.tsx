@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu, LayoutDashboard, User, Settings, LogOut } from "lucide-react";
+import { Menu, LayoutDashboard, User, Settings, LogOut, Users as UsersIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -71,6 +71,7 @@ const Navbar = () => {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild><Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span></Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/admin/profile"><User className="mr-2 h-4 w-4" /><span>Profil</span></Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/admin/users"><UsersIcon className="mr-2 h-4 w-4" /><span>{t('manage_users')}</span></Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/admin/settings"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></Link></DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
@@ -153,6 +154,7 @@ const Navbar = () => {
                         </div>
                         <NavLink to="/admin" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><LayoutDashboard className="mr-3 h-5 w-5" />{t('admin_dashboard')}</NavLink>
                         <NavLink to="/admin/profile" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
+                        <NavLink to="/admin/users" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><UsersIcon className="mr-3 h-5 w-5" />{t('manage_users')}</NavLink>
                         <NavLink to="/admin/settings" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><Settings className="mr-3 h-5 w-5" />{t('settings')}</NavLink>
                         <div className="px-4 pt-2">
                           <Button onClick={handleLogout} variant="destructive" className="w-full justify-start">
