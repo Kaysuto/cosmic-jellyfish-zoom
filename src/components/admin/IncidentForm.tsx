@@ -50,9 +50,19 @@ const IncidentForm = ({ incident, services, admins, currentUserId, onSubmit, onC
     },
   });
 
+  const handleFormSubmit = (values: IncidentFormValues) => {
+    const dataToSubmit: any = { ...values };
+    if (values.status === 'resolved' && (!incident || incident.status !== 'resolved')) {
+      dataToSubmit.resolved_at = new Date().toISOString();
+    } else if (values.status !== 'resolved') {
+      dataToSubmit.resolved_at = null;
+    }
+    onSubmit(dataToSubmit);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
         <Tabs defaultValue="fr" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="fr">Français</TabsTrigger>

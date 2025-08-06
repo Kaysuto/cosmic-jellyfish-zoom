@@ -5,11 +5,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ServiceManager from '@/components/admin/ServiceManager';
 import IncidentManager from '@/components/admin/IncidentManager';
-import { Settings, LogOut, Server, ShieldAlert, CheckCircle } from 'lucide-react';
+import { Settings, LogOut, Server, ShieldAlert, CheckCircle, Clock, Wrench } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useServices } from '@/hooks/useServices';
 import { useIncidents } from '@/hooks/useIncidents';
 import { Skeleton } from '@/components/ui/skeleton';
+import { differenceInMinutes } from 'date-fns';
+import MaintenanceManager from '@/components/admin/MaintenanceManager';
 
 const Admin = () => {
   const { t } = useTranslation();
@@ -24,10 +26,17 @@ const Admin = () => {
 
   const operationalServices = services.filter(s => s.status === 'operational').length;
   const activeIncidents = incidents.filter(i => i.status !== 'resolved').length;
+  
+  const resolvedIncidents = incidents.filter(i => i.status === 'resolved' && i.resolved_at);
+  const totalResolutionTime = resolvedIncidents.reduce((acc, i) => {
+    return acc + differenceInMinutes(new Date(i.resolved_at!), new Date(i.created_at));
+  }, 0);
+  const avgResolutionTime = resolvedIncidents.length > 0 ? Math.round(totalResolutionTime / resolvedIncidents.length) : 0;
+
   const loading = servicesLoading || incidentsLoading;
 
   const AdminStats = () => (
-    <div className="grid gap-4 md:grid-cols-3 mb-8">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">{t('total_services')}</CardTitle>
@@ -55,6 +64,15 @@ const Admin = () => {
           {loading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">{activeIncidents}</div>}
         </CardContent>
       </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">{t('avg_resolution_time')}</CardTitle>
+          <Clock className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          {loading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">{avgResolutionTime} min</div>}
+        </CardContent>
+      </Card>
     </div>
   );
 
@@ -79,15 +97,19 @@ const Admin = () => {
       <AdminStats />
 
       <Tabs defaultValue="services" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="services">{t('manage_services')}</TabsTrigger>
           <TabsTrigger value="incidents">{t('manage_incidents')}</TabsTrigger>
+          <TabsTrigger value="maintenance">{t('manage_maintenance')}</TabsTrigger>
         </TabsList>
         <TabsContent value="services" className="mt-4">
           <ServiceManager />
         </TabsContent>
         <TabsContent value="incidents" className="mt-4">
           <IncidentManager />
+        </TabsContent>
+        <TabsContent value="maintenance" className="mt-4">
+          <MaintenanceManager />
         </TabsContent>
       </Tabs>
     </div>

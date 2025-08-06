@@ -58,6 +58,8 @@ const resources = {
       "system_wide_incident": "Incident général",
       "url_monitoring": "URL de surveillance",
       "no_url_provided": "Aucune URL fournie",
+      "scheduled_maintenance": "Maintenance planifiée",
+      "all_services": "Tous les services",
       
       // Composants
       "made_with_dyad": "Fait avec Dyad",
@@ -83,15 +85,21 @@ const resources = {
       "admin_dashboard_wip": "Les outils de gestion des services et des incidents seront bientôt disponibles ici.",
       "manage_services": "Gérer les services",
       "manage_incidents": "Gérer les incidents",
+      "manage_maintenance": "Gérer la maintenance",
       "create_incident": "Créer un incident",
       "edit_incident": "Modifier l'incident",
       "delete_incident": "Supprimer l'incident",
       "create_service": "Créer un service",
       "edit_service": "Modifier le service",
       "delete_service": "Supprimer le service",
+      "schedule_maintenance": "Planifier une maintenance",
+      "edit_maintenance": "Modifier la maintenance",
+      "delete_maintenance": "Supprimer la maintenance",
       "title": "Titre",
       "description": "Description",
       "service": "Service",
+      "start_time": "Début",
+      "end_time": "Fin",
       "save": "Enregistrer",
       "saving": "Enregistrement...",
       "cancel": "Annuler",
@@ -99,6 +107,7 @@ const resources = {
       "confirm_delete_title": "Êtes-vous sûr ?",
       "confirm_delete_incident": "Cette action est irréversible. L'incident sera supprimé définitivement.",
       "confirm_delete_service": "Cette action est irréversible. Le service sera supprimé définitivement.",
+      "confirm_delete_maintenance": "Cette action est irréversible. La maintenance sera supprimée définitivement.",
       "no_service_affected": "Aucun service spécifique",
       "return_to_dashboard": "Retour au tableau de bord",
       "language_settings": "Paramètres de langue",
@@ -113,6 +122,10 @@ const resources = {
       "service_saved_successfully": "Service enregistré avec succès.",
       "error_deleting_service": "Erreur lors de la suppression du service.",
       "service_deleted_successfully": "Service supprimé avec succès.",
+      "error_saving_maintenance": "Erreur lors de l'enregistrement de la maintenance.",
+      "maintenance_saved_successfully": "Maintenance enregistrée avec succès.",
+      "error_deleting_maintenance": "Erreur lors de la suppression de la maintenance.",
+      "maintenance_deleted_successfully": "Maintenance supprimée avec succès.",
       "personal_information": "Informations personnelles",
       "update_your_personal_information": "Mettez à jour votre nom et prénom.",
       "first_name": "Prénom",
@@ -146,181 +159,240 @@ const resources = {
       "total_services": "Services au total",
       "operational_services": "Services opérationnels",
       "active_incidents": "Incidents actifs",
+      "avg_resolution_time": "Tps de résolution moy.",
       "actions": "Actions",
       "edit": "Modifier",
       "edit_service_desc": "Modifiez les détails de ce service ci-dessous.",
-      "create_service_desc": "Remplissez les détails pour créer un nouveau service.",
-      "edit_incident_desc": "Modifiez les détails de cet incident ci-dessous.",
-      "create_incident_desc": "Remplissez les détails pour créer un nouvel incident."
-    }
-  },
-  en: {
-    translation: {
-      // Navigation
-      "home": "Home",
-      "status": "Status",
-      "admin": "Admin",
-      "login": "Login",
-      "settings": "Settings",
-      
-      // Page d'accueil
-      "welcome": "Real-time status of Jelly services",
-      "homepage_description": "This page provides detailed information on our systems' availability. In case of an incident, you will find all updates here.",
-      "view_status": "View System Status",
-      
-      // Page de statut
-      "status_title": "Service Status",
-      "all_systems_operational": "All Systems Operational",
-      "partial_outage": "Partial System Outage",
-      "major_outage": "Major System Outage",
-      "last_updated": "Last updated:",
-      "services_status": "Services Status",
-      "operational": "Operational",
-      "degraded": "Degraded Performance",
-      "downtime": "Major Outage",
-      "maintenance": "Under Maintenance",
-      "uptime": "Uptime:",
-      "uptime_legend": "Uptime",
-      "incident_history": "Incident History",
-      "uptime_history": "Uptime History",
-      "no_incidents": "No incidents reported in the past 90 days.",
-      "resolved": "Resolved",
-      "investigating": "Investigating",
-      "monitoring": "Monitoring",
-      "identified": "Identified",
-      "updated": "Updated:",
-      "all_systems_operational_description": "This page shows the current status of all Jelly services. If you're experiencing issues, please check this page for updates.",
-      "systems_issues_description": "We are currently experiencing issues with some of our services. Please check this page for updates on our progress.",
-      "streaming_service": "Main streaming service",
-      "accounts_service": "User accounts management",
-      "vod_service": "Movie and series requests",
-      "select_service": "Select a service",
-      "loading": "Loading",
-      "no_uptime_history": "No uptime history for this service.",
-      "time_range_day": "Day",
-      "time_range_week": "Week",
-      "time_range_month": "Month",
-      "time_range_year": "Year",
-      "average": "Average",
-      "maximum": "Maximum",
-      "minimum": "Minimum",
-      "Service": "Service",
-      "system_wide_incident": "System-wide incident",
-      "url_monitoring": "Monitoring URL",
-      "no_url_provided": "No URL provided",
-      
-      // Composants
-      "made_with_dyad": "Made with Dyad",
-      "made_with_love": "Made with",
-      "by_kaysuto": "by Kaysuto Kimiya",
-      
-      // Messages d'erreur
-      "page_not_found": "Oops! Page not found",
-      "return_home": "Return to Home",
+      "create_service_desc": "Remplissez<dyad-problem-report summary="10 problems">
+<problem file="src/components/admin/MaintenanceManager.tsx" line="135" column="22" code="2304">Cannot find name 'DropdownMenu'.</problem>
+<problem file="src/components/admin/MaintenanceManager.tsx" line="136" column="24" code="2304">Cannot find name 'DropdownMenuTrigger'.</problem>
+<problem file="src/components/admin/MaintenanceManager.tsx" line="140" column="25" code="2304">Cannot find name 'DropdownMenuTrigger'.</problem>
+<problem file="src/components/admin/MaintenanceManager.tsx" line="141" column="24" code="2304">Cannot find name 'DropdownMenuContent'.</problem>
+<problem file="src/components/admin/MaintenanceManager.tsx" line="142" column="26" code="2304">Cannot find name 'DropdownMenuItem'.</problem>
+<problem file="src/components/admin/MaintenanceManager.tsx" line="145" column="27" code="2304">Cannot find name 'DropdownMenuItem'.</problem>
+<problem file="src/components/admin/MaintenanceManager.tsx" line="146" column="26" code="2304">Cannot find name 'DropdownMenuItem'.</problem>
+<problem file="src/components/admin/MaintenanceManager.tsx" line="149" column="27" code="2304">Cannot find name 'DropdownMenuItem'.</problem>
+<problem file="src/components/admin/MaintenanceManager.tsx" line="150" column="25" code="2304">Cannot find name 'DropdownMenuContent'.</problem>
+<problem file="src/components/admin/MaintenanceManager.tsx" line="151" column="23" code="2304">Cannot find name 'DropdownMenu'.</problem>
+</dyad-problem-report><think>**Analyzing TypeScript Errors**
 
-      // Admin & Auth
-      "admin_login": "Admin Login",
-      "email_address": "Email address",
-      "password": "Password",
-      "sign_in": "Sign in",
-      "sign_up": "Sign up",
-      "already_have_account": "Already have an account? Sign in",
-      "dont_have_account": "Don't have an account? Sign up",
-      "forgot_password": "Forgot your password?",
-      "send_instructions": "Send instructions",
-      "admin_dashboard": "Dashboard",
-      "logout": "Logout",
-      "admin_dashboard_wip": "Management tools for services and incidents will be available here soon.",
-      "manage_services": "Manage Services",
-      "manage_incidents": "Manage Incidents",
-      "create_incident": "Create Incident",
-      "edit_incident": "Edit Incident",
-      "delete_incident": "Delete Incident",
-      "create_service": "Create Service",
-      "edit_service": "Edit Service",
-      "delete_service": "Delete Service",
-      "title": "Title",
-      "description": "Description",
-      "service": "Service",
-      "save": "Save",
-      "saving": "Saving...",
-      "cancel": "Cancel",
-      "delete": "Delete",
-      "confirm_delete_title": "Are you sure?",
-      "confirm_delete_incident": "This action is irreversible. The incident will be permanently deleted.",
-      "confirm_delete_service": "This action is irreversible. The service will be permanently deleted.",
-      "no_service_affected": "No specific service",
-      "return_to_dashboard": "Return to Dashboard",
-      "language_settings": "Language Settings",
-      "select_language_desc": "Choose the display language for the entire site.",
-      "error_updating_service": "Error updating service status.",
-      "service_updated_successfully": "Service status updated successfully.",
-      "error_saving_incident": "Error saving incident.",
-      "incident_saved_successfully": "Incident saved successfully.",
-      "error_deleting_incident": "Error deleting incident.",
-      "incident_deleted_successfully": "Incident deleted successfully.",
-      "error_saving_service": "Error saving service.",
-      "service_saved_successfully": "Service saved successfully.",
-      "error_deleting_service": "Error deleting service.",
-      "service_deleted_successfully": "Service deleted successfully.",
-      "personal_information": "Personal Information",
-      "update_your_personal_information": "Update your first and last name.",
-      "first_name": "First Name",
-      "last_name": "Last Name",
-      "save_changes": "Save Changes",
-      "change_email": "Change Email Address",
-      "update_your_email_address": "A confirmation email will be sent to your new address.",
-      "update_email": "Update Email",
-      "change_password": "Change Password",
-      "update_your_password": "Make sure to use a secure password.",
-      "new_password": "New Password",
-      "confirm_new_password": "Confirm New Password",
-      "update_password": "Update Password",
-      "first_name_required": "First name is required.",
-      "last_name_required": "Last name is required.",
-      "invalid_email": "Invalid email address.",
-      "password_too_short": "Password must be at least 6 characters.",
-      "passwords_do_not_match": "Passwords do not match.",
-      "error_updating_profile": "Error updating profile.",
-      "profile_updated_successfully": "Profile updated successfully.",
-      "error_updating_email": "Error updating email.",
-      "email_update_confirmation_sent": "Confirmation email sent. Please check your new inbox.",
-      "error_updating_password": "Error updating password.",
-      "password_updated_successfully": "Password updated successfully.",
-      "role": "Role",
-      "admin_role": "Administrator",
-      "user_role": "User",
-      "member_since": "Member since",
-      "assign_to": "Assign to",
-      "select_admin": "Select an administrator",
-      "total_services": "Total Services",
-      "operational_services": "Operational Services",
-      "active_incidents": "Active Incidents",
-      "actions": "Actions",
-      "edit": "Edit",
-      "edit_service_desc": "Edit the details of this service below.",
-      "create_service_desc": "Fill in the details to create a new service.",
-      "edit_incident_desc": "Edit the details of this incident below.",
-      "create_incident_desc": "Fill in the details to create a new incident."
+I'm currently focused on pinpointing the root cause of the TypeScript errors in `MaintenanceManager.tsx`. The "cannot find name" errors are a clear indication of import issues. My next step is to meticulously check the import statements within the file, cross-referencing them with the project's component structure and export declarations. This will help me identify any missing or incorrectly referenced components.
+
+
+**Resolving Import Issues**
+
+I've identified the root cause of the TypeScript errors: missing imports. Specifically, `DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuContent`, and `DropdownMenuItem` are not being recognized. I'll add the necessary import statement from the `shadcn/ui` library, mirroring the pattern used in `IncidentManager.tsx`.  This is a quick and straightforward fix.
+
+
+**Implementing the Fix**
+
+Now that I've added the import statement to `MaintenanceManager.tsx`, the TypeScript errors should be resolved. The fix is straightforward; I've simply added the necessary import for the `shadcn/ui` dropdown components. I'm confident this will eliminate the "cannot find name" errors reported. I'll now proceed to verify the changes by checking for any lingering errors.
+
+
+**Adding the Necessary Imports**
+
+I've reviewed `MaintenanceManager.tsx` and identified the missing imports for the `DropdownMenu` components, just as anticipated. I've added the following line to the file: `import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';`. This straightforward action addresses the root cause of the compile-time errors. I anticipate successful compilation now.
+
+
+</think>Of course. I've identified that the errors are due to missing imports for the `DropdownMenu` components. I'll add the necessary import statement to resolve them.
+
+Here are the changes:
+
+<dyad-write path="src/components/admin/MaintenanceManager.tsx" description="Adding missing imports for DropdownMenu components.">
+import { useState } from 'react';
+import { useMaintenances, Maintenance } from '@/hooks/useMaintenances';
+import { useServices } from '@/hooks/useServices';
+import { supabase } from '@/integrations/supabase/client';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PlusCircle, Edit, Trash2, MoreHorizontal } from 'lucide-react';
+import MaintenanceForm, { MaintenanceFormValues } from './MaintenanceForm';
+import { showSuccess, showError } from '@/utils/toast';
+import { format } from 'date-fns';
+import { fr, enUS } from 'date-fns/locale';
+import { useSession } from '@/contexts/AuthContext';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
+const MaintenanceManager = () => {
+  const { t, i18n } = useTranslation();
+  const { session } = useSession();
+  const { maintenances, loading: maintenancesLoading, refreshMaintenances } = useMaintenances();
+  const { services, loading: servicesLoading } = useServices();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedMaintenance, setSelectedMaintenance] = useState<Maintenance | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [maintenanceToDelete, setMaintenanceToDelete] = useState<string | null>(null);
+
+  const currentLocale = i18n.language === 'fr' ? fr : enUS;
+
+  const handleFormSubmit = async (values: MaintenanceFormValues) => {
+    if (!session?.user) {
+      showError("Vous devez être connecté pour effectuer cette action.");
+      return;
     }
+
+    setIsSubmitting(true);
+    const maintenanceData = {
+      ...values,
+      author_id: session.user.id,
+      updated_at: new Date().toISOString(),
+    };
+
+    let error;
+    if (selectedMaintenance) {
+      ({ error } = await supabase.from('scheduled_maintenances').update(maintenanceData).eq('id', selectedMaintenance.id));
+    } else {
+      ({ error } = await supabase.from('scheduled_maintenances').insert(maintenanceData));
+    }
+
+    if (error) {
+      showError(t('error_saving_maintenance'));
+      console.error(error);
+    } else {
+      showSuccess(t('maintenance_saved_successfully'));
+      setIsSheetOpen(false);
+      setSelectedMaintenance(null);
+      refreshMaintenances();
+    }
+    setIsSubmitting(false);
+  };
+
+  const confirmDelete = (maintenanceId: string) => {
+    setMaintenanceToDelete(maintenanceId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!maintenanceToDelete) return;
+    
+    const { error } = await supabase.from('scheduled_maintenances').delete().eq('id', maintenanceToDelete);
+    
+    if (error) {
+      showError(t('error_deleting_maintenance'));
+    } else {
+      showSuccess(t('maintenance_deleted_successfully'));
+      refreshMaintenances();
+    }
+    
+    setIsDeleteDialogOpen(false);
+    setMaintenanceToDelete(null);
+  };
+
+  const openCreateForm = () => {
+    setSelectedMaintenance(null);
+    setIsSheetOpen(true);
+  };
+
+  const openEditForm = (maintenance: Maintenance) => {
+    setSelectedMaintenance(maintenance);
+    setIsSheetOpen(true);
+  };
+
+  const loading = maintenancesLoading || servicesLoading;
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader><Skeleton className="h-8 w-48" /></CardHeader>
+        <CardContent><Skeleton className="h-96 w-full" /></CardContent>
+      </Card>
+    );
   }
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>{t('manage_maintenance')}</CardTitle>
+          <Button onClick={openCreateForm}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            {t('schedule_maintenance')}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('title')}</TableHead>
+                <TableHead>{t('service')}</TableHead>
+                <TableHead>{t('start_time')}</TableHead>
+                <TableHead>{t('end_time')}</TableHead>
+                <TableHead className="text-right">{t('actions')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {maintenances.map((maintenance) => (
+                <TableRow key={maintenance.id}>
+                  <TableCell className="font-medium">{maintenance.title}</TableCell>
+                  <TableCell>{maintenance.services ? t(maintenance.services.name.toLowerCase().replace(/ /g, '_')) : t('all_services')}</TableCell>
+                  <TableCell>{format(new Date(maintenance.start_time), 'PPpp', { locale: currentLocale })}</TableCell>
+                  <TableCell>{format(new Date(maintenance.end_time), 'PPpp', { locale: currentLocale })}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEditForm(maintenance)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          <span>{t('edit')}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => confirmDelete(maintenance.id)} className="text-destructive">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>{t('delete')}</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent className="sm:max-w-lg w-full">
+          <SheetHeader>
+            <SheetTitle>{selectedMaintenance ? t('edit_maintenance') : t('schedule_maintenance')}</SheetTitle>
+            <SheetDescription>
+              {selectedMaintenance ? t('edit_maintenance_desc') : t('schedule_maintenance_desc')}
+            </SheetDescription>
+          </SheetHeader>
+          <MaintenanceForm
+            maintenance={selectedMaintenance}
+            services={services}
+            onSubmit={handleFormSubmit}
+            onCancel={() => setIsSheetOpen(false)}
+            isSubmitting={isSubmitting}
+          />
+        </SheetContent>
+      </Sheet>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('confirm_delete_title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('confirm_delete_maintenance')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setMaintenanceToDelete(null)}>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+              {t('delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
 };
 
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    fallbackLng: 'fr',
-    debug: false,
-    interpolation: {
-      escapeValue: false,
-    },
-    detection: {
-      // Options de détection
-      order: ['querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag'],
-      caches: ['localStorage', 'cookie'],
-    },
-  });
-
-export default i18n;
+export default MaintenanceManager;

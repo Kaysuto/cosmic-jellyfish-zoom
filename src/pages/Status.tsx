@@ -4,13 +4,15 @@ import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 
-import { useServices, type Service } from '@/hooks/useServices';
-import { useIncidents, type Incident } from '@/hooks/useIncidents';
+import { useServices } from '@/hooks/useServices';
+import { useIncidents } from '@/hooks/useIncidents';
+import { useMaintenances } from '@/hooks/useMaintenances';
 
 import OverallStatus from '@/components/status/OverallStatus';
 import ServicesStatus from '@/components/status/ServicesStatus';
 import IncidentHistory from '@/components/status/IncidentHistory';
 import UptimeHistory from '@/components/status/UptimeHistory';
+import ScheduledMaintenances from '@/components/status/ScheduledMaintenances';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -18,11 +20,12 @@ const Status = () => {
   const { t, i18n } = useTranslation();
   const { services, loading: servicesLoading } = useServices();
   const { incidents, loading: incidentsLoading } = useIncidents();
+  const { maintenances, loading: maintenancesLoading } = useMaintenances();
   
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
 
-  const loading = servicesLoading || incidentsLoading;
+  const loading = servicesLoading || incidentsLoading || maintenancesLoading;
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
   useEffect(() => {
@@ -71,6 +74,10 @@ const Status = () => {
       className="container mx-auto px-4 py-8 flex-grow flex flex-col"
     >
       <OverallStatus status={overallStatus} lastUpdated={lastUpdated ? `${t('last_updated')} ${formatDistanceToNow(lastUpdated, { addSuffix: true, locale: currentLocale })}` : ''} />
+      
+      <div className="mt-8">
+        <ScheduledMaintenances maintenances={maintenances} />
+      </div>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 flex-grow">
         <div className="flex flex-col gap-8">

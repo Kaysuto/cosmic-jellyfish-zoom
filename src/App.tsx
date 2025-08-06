@@ -15,12 +15,32 @@ import { ThemeProvider } from "@/components/theme-provider";
 import MainLayout from "@/components/layout/MainLayout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useEffect } from "react";
+import { useAudioStore } from "./stores/audioStore";
 
 const queryClient = new QueryClient();
 
 // Composant wrapper pour la détection de langue
 const AppWrapper = () => {
   useLanguageDetection();
+  const { setTracks, setCurrentTrackIndex } = useAudioStore();
+
+  useEffect(() => {
+    const fetchTracks = async () => {
+      try {
+        const response = await fetch('/audio/tracks.json');
+        const tracks = await response.json();
+        setTracks(tracks);
+        // Select a random track after loading
+        const randomTrackIndex = Math.floor(Math.random() * tracks.length);
+        setCurrentTrackIndex(randomTrackIndex);
+      } catch (error) {
+        console.error("Failed to fetch audio tracks:", error);
+      }
+    };
+
+    fetchTracks();
+  }, [setTracks, setCurrentTrackIndex]);
   
   return (
     <QueryClientProvider client={queryClient}>

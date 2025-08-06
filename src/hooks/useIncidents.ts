@@ -13,6 +13,7 @@ export interface Incident {
   status: 'investigating' | 'identified' | 'monitoring' | 'resolved';
   created_at: string;
   updated_at: string;
+  resolved_at: string | null;
   services: { name: string } | null;
   profiles: { first_name: string | null, last_name: string | null, email: string | null, avatar_url: string | null } | null;
 }
