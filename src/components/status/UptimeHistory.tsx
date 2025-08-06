@@ -1,325 +1,119 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect, useMemo, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  Legend
-} from 'recharts';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Loader2 } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { subDays, format } from 'date-fns';
+import { fr, enUS } from 'date-fns/locale';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface Service {
-  id: string;
-  name: string;
-}
-
-interface UptimeHistoryProps {
-  services: Service[];
-}
-
-interface UptimeDataPoint {
+type UptimeRecord = {
   date: string;
-  uptime: number;
-  formattedDate: string;
-}
+  uptime_percentage: number;
+};
 
-const UptimeHistory: React.FC<UptimeHistoryProps> = ({ services }) => {
-  const { t } = useTranslation();
-  const [history, setHistory] = useState<any[]>([]);
+const UptimeHistory = ({ serviceId, children }: { serviceId: string | null; children?: ReactNode }) => {
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
-  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
-  const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('week');
+  const [uptimeData, setUptimeData] = useState<UptimeRecord[]>([]);
+  const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month'>('day');
+
+  const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
   useEffect(() => {
-    if (services.length > 0 && !selectedServiceId) {
-      setSelectedServiceId(services[0].id);
-    }
-  }, [services, selectedServiceId]);
-
-  useEffect(() => {
-    const fetchHistory = async () => {
-      if (!selectedServiceId) {
-        setHistory([]);
+    const fetchUptimeHistory = async () => {
+      if (!serviceId) {
+        setUptimeData([]);
         setLoading(false);
         return;
       }
 
       setLoading(true);
+      const daysToFetch = timeRange === 'month' ? 90 : timeRange === 'week' ? 30 : 7;
+      const startDate = subDays(new Date(), daysToFetch);
+
       const { data, error } = await supabase
         .from('uptime_history')
-        .select('*')
-        .eq('service_id', selectedServiceId)
-        .order('date', { ascending: true })
-        .limit(365); // Fetch up to a year of data
+        .select('date, uptime_percentage')
+        .eq('service_id', serviceId)
+        .gte('date', startDate.toISOString())
+        .order('date', { ascending: true });
 
       if (error) {
         console.error('Error fetching uptime history:', error);
-        setHistory([]);
+        setUptimeData([]);
       } else {
-        setHistory(data || []);
+        setUptimeData(data as UptimeRecord[]);
       }
       setLoading(false);
     };
 
-    fetchHistory();
-  }, [selectedServiceId]);
+    fetchUptimeHistory();
+  }, [serviceId, timeRange]);
 
-  const chartData: UptimeDataPoint[] = history.map(record => ({
-    date: record.date,
-    uptime: record.uptime_percentage,
-    formattedDate: new Date(record.date).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }),
-  }));
+  const chartData = useMemo(() => {
+    return uptimeData.map(item => ({
+      ...item,
+      date: format(new Date(item.date), 'd MMM', { locale: currentLocale }),
+    }));
+  }, [uptimeData, currentLocale]);
 
-  const getGroupedData = () => {
-    if (chartData.length === 0) return [];
-    
-    switch (timeRange) {
-      case 'day':
-        return chartData.slice(-30);
-      
-      case 'week':
-        const weeklyData: Record<string, { total: number; count: number }> = {};
-        chartData.slice(-90).forEach(point => {
-          const date = new Date(point.date);
-          const monday = new Date(date);
-          const day = monday.getDay();
-          const diff = monday.getDate() - day + (day === 0 ? -6 : 1);
-          monday.setDate(diff);
-          monday.setHours(0, 0, 0, 0);
-          
-          const weekKey = monday.toISOString().split('T')[0];
-          if (!weeklyData[weekKey]) {
-            weeklyData[weekKey] = { total: 0, count: 0 };
-          }
-          weeklyData[weekKey].total += point.uptime;
-          weeklyData[weekKey].count++;
-        });
-        
-        return Object.entries(weeklyData).map(([week, { total, count }]) => ({
-          date: week,
-          uptime: parseFloat((total / count).toFixed(2)),
-          formattedDate: `Semaine du ${new Date(week).toLocaleDateString()}`
-        }));
-      
-      case 'month':
-        const monthlyData: Record<string, { total: number; count: number }> = {};
-        chartData.forEach(point => {
-          const date = new Date(point.date);
-          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-          if (!monthlyData[monthKey]) {
-            monthlyData[monthKey] = { total: 0, count: 0 };
-          }
-          monthlyData[monthKey].total += point.uptime;
-          monthlyData[monthKey].count++;
-        });
-        
-        return Object.entries(monthlyData).map(([month, { total, count }]) => ({
-          date: month,
-          uptime: parseFloat((total / count).toFixed(2)),
-          formattedDate: new Date(`${month}-01`).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-        }));
-      
-      case 'year':
-        const yearlyData: Record<string, { total: number; count: number }> = {};
-        chartData.forEach(point => {
-          const date = new Date(point.date);
-          const yearKey = date.getFullYear().toString();
-          if (!yearlyData[yearKey]) {
-            yearlyData[yearKey] = { total: 0, count: 0 };
-          }
-          yearlyData[yearKey].total += point.uptime;
-          yearlyData[yearKey].count++;
-        });
-        
-        return Object.entries(yearlyData).map(([year, { total, count }]) => ({
-          date: year,
-          uptime: parseFloat((total / count).toFixed(2)),
-          formattedDate: `Année ${year}`
-        }));
-      
-      default:
-        return chartData.slice(-30);
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-background p-2 border rounded shadow-lg text-sm">
+          <p className="font-bold">{label}</p>
+          <p style={{ color: payload[0].color }}>
+            {`${t('uptime_legend')}: ${payload[0].value.toFixed(2)}%`}
+          </p>
+        </div>
+      );
     }
+    return null;
   };
-  
-  const groupedData = getGroupedData();
-  
-  const stats = groupedData.length > 0 ? {
-    average: groupedData.reduce((sum, point) => sum + point.uptime, 0) / groupedData.length,
-    min: Math.min(...groupedData.map(point => point.uptime)),
-    max: Math.max(...groupedData.map(point => point.uptime))
-  } : { average: 0, min: 0, max: 0 };
-  
-  const formatXAxis = (value: string) => {
-    switch (timeRange) {
-      case 'day':
-        return new Date(value).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-      case 'week':
-        const date = new Date(value);
-        const weekNumber = Math.ceil((((date.getTime() - new Date(date.getFullYear(), 0, 1).getTime()) / 86400000) + new Date(date.getFullYear(), 0, 1).getDay() + 1) / 7);
-        return `Sem. ${weekNumber}`;
-      case 'month':
-        return new Date(`${value}-01`).toLocaleDateString('fr-FR', { month: 'short' });
-      case 'year':
-        return value;
-      default:
-        return value;
+
+  const renderChart = () => {
+    if (loading) {
+      return <Skeleton className="h-[300px] w-full" />;
     }
+    if (chartData.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+          {t('no_uptime_history')}
+        </div>
+      );
+    }
+
+    return (
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+          <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} domain={[80, 100]} tickFormatter={(value) => `${value}%`} />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend formatter={() => t('uptime_legend')} />
+          <Line type="monotone" dataKey="uptime_percentage" name={t('uptime_legend')} stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
+        </LineChart>
+      </ResponsiveContainer>
+    );
   };
 
   return (
-    <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 shadow-xl">
-      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-green-500" />
-          <CardTitle className="text-xl">
-            {t('uptime_history')}
-          </CardTitle>
+    <Card>
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex-grow">
+            <CardTitle>{t('uptime_history')}</CardTitle>
+            {children && <div className="mt-2">{children}</div>}
         </div>
-        
-        {services.length > 0 && (
-          <Select onValueChange={setSelectedServiceId} value={selectedServiceId || ''}>
-            <SelectTrigger className="w-full sm:w-[220px] bg-gray-900 border-gray-700 text-white focus:ring-blue-500">
-              <SelectValue placeholder={t('select_service')} />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-900 border-gray-700 text-white">
-              {services.map(service => (
-                <SelectItem key={service.id} value={service.id} className="focus:bg-gray-700">
-                  {service.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        <div className="flex items-center gap-1 self-start sm:self-center shrink-0">
+          <Button size="sm" variant={timeRange === 'day' ? 'secondary' : 'ghost'} onClick={() => setTimeRange('day')}>{t('time_range_day')}</Button>
+          <Button size="sm" variant={timeRange === 'week' ? 'secondary' : 'ghost'} onClick={() => setTimeRange('week')}>{t('time_range_week')}</Button>
+          <Button size="sm" variant={timeRange === 'month' ? 'secondary' : 'ghost'} onClick={() => setTimeRange('month')}>{t('time_range_month')}</Button>
+        </div>
       </CardHeader>
-      
-      <CardContent className="relative">
-        {loading && (
-          <div className="absolute inset-0 bg-gray-800/80 flex items-center justify-center z-10 rounded-b-xl">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
-          </div>
-        )}
-        <div className="min-h-[480px] flex flex-col">
-          {history.length > 0 ? (
-            <>
-              <div className="flex flex-wrap gap-2 mb-6 justify-center">
-                <Button
-                  variant={timeRange === 'day' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTimeRange('day')}
-                  className="rounded-full text-xs"
-                >
-                  {t('time_range_day')}
-                </Button>
-                <Button
-                  variant={timeRange === 'week' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTimeRange('week')}
-                  className="rounded-full text-xs"
-                >
-                  {t('time_range_week')}
-                </Button>
-                <Button
-                  variant={timeRange === 'month' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTimeRange('month')}
-                  className="rounded-full text-xs"
-                >
-                  {t('time_range_month')}
-                </Button>
-                <Button
-                  variant={timeRange === 'year' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTimeRange('year')}
-                  className="rounded-full text-xs"
-                >
-                  {t('time_range_year')}
-                </Button>
-              </div>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={groupedData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fontSize: 12, fill: '#9CA3AF' }}
-                      tickFormatter={formatXAxis}
-                      interval={timeRange === 'year' ? 0 : 'preserveStartEnd'}
-                    />
-                    <YAxis 
-                      domain={[99.5, 100]} 
-                      tick={{ fontSize: 12, fill: '#9CA3AF' }}
-                      tickFormatter={(value) => `${value}%`}
-                      width={40}
-                    />
-                    <Tooltip 
-                      formatter={(value) => [`${value}%`, 'Uptime']}
-                      labelFormatter={(value) => {
-                        if (timeRange === 'day') {
-                          return `Date: ${new Date(value).toLocaleDateString()}`;
-                        }
-                        const dataPoint = groupedData.find(d => d.date === value);
-                        return dataPoint ? dataPoint.formattedDate : value;
-                      }}
-                      contentStyle={{ 
-                        backgroundColor: '#1F2937', 
-                        border: '1px solid #374151', 
-                        borderRadius: '0.5rem',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
-                        color: '#F9FAFB'
-                      }}
-                    />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="uptime" 
-                      name="Disponibilité"
-                      stroke="#22c55e" 
-                      activeDot={{ r: 6, fill: '#22c55e' }} 
-                      strokeWidth={3}
-                      dot={{ r: 3, fill: '#22c55e' }}
-                      animationDuration={500}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-700">
-                <div className="text-center p-4 bg-gray-900/50 rounded-xl border border-gray-700/50">
-                  <p className="text-sm text-gray-400">{t('average')}</p>
-                  <p className="text-2xl font-bold text-green-500 mt-1">{stats.average.toFixed(2)}%</p>
-                </div>
-                <div className="text-center p-4 bg-gray-900/50 rounded-xl border border-gray-700/50">
-                  <p className="text-sm text-gray-400">{t('maximum')}</p>
-                  <p className="text-2xl font-bold text-green-500 mt-1">{stats.max.toFixed(2)}%</p>
-                </div>
-                <div className="text-center p-4 bg-gray-900/50 rounded-xl border border-gray-700/50">
-                  <p className="text-sm text-gray-400">{t('minimum')}</p>
-                  <p className="text-2xl font-bold text-yellow-500 mt-1">{stats.min.toFixed(2)}%</p>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex-grow flex items-center justify-center">
-              <p className="text-center text-gray-400">{t('no_uptime_history')}</p>
-            </div>
-          )}
-        </div>
+      <CardContent>
+        {renderChart()}
       </CardContent>
     </Card>
   );
