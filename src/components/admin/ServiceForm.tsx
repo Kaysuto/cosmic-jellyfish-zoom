@@ -11,6 +11,7 @@ import { Service } from '@/hooks/useServices';
 const serviceSchema = z.object({
   name: z.string().min(1, { message: 'Le nom est requis' }),
   description: z.string().optional(),
+  url: z.string().url({ message: "L'URL n'est pas valide" }).optional().or(z.literal('')),
 });
 
 export type ServiceFormValues = z.infer<typeof serviceSchema>;
@@ -30,6 +31,7 @@ const ServiceForm = ({ service, onSubmit, onCancel, isSubmitting }: ServiceFormP
     defaultValues: {
       name: service?.name || '',
       description: service?.description || '',
+      url: service?.url || '',
     },
   });
 
@@ -57,6 +59,19 @@ const ServiceForm = ({ service, onSubmit, onCancel, isSubmitting }: ServiceFormP
               <FormLabel>{t('description')}</FormLabel>
               <FormControl>
                 <Textarea {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="url"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>URL de surveillance</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="https://example.com" />
               </FormControl>
               <FormMessage />
             </FormItem>

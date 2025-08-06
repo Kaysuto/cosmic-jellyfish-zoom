@@ -10,6 +10,7 @@ export interface Service {
   uptime_percentage: number;
   created_at: string;
   updated_at: string;
+  url: string | null;
 }
 
 export const useServices = () => {
