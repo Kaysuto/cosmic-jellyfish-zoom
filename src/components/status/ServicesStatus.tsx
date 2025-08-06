@@ -1,6 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Service = {
   id: string;
@@ -43,7 +48,14 @@ const ServicesStatus = ({ services }: ServicesStatusProps) => {
             return (
               <div key={service.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-muted/50 rounded-md gap-2">
                 <div className="flex items-center">
-                  <span className={cn("h-3 w-3 rounded-full mr-3 shrink-0", statusConfig.color)}></span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className={cn("h-3 w-3 rounded-full mr-3 shrink-0 cursor-pointer", statusConfig.color)}></span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t(statusConfig.textKey)}</p>
+                    </TooltipContent>
+                  </Tooltip>
                   <span className="font-medium text-foreground">{t(service.name.toLowerCase().replace(/ /g, '_'))}</span>
                 </div>
                 <div className="flex items-center gap-4 pl-6 sm:pl-0">
