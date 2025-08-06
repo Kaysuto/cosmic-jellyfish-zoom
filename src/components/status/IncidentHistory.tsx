@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, CheckCircle, ShieldAlert, Eye, Wrench, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -73,8 +73,8 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
           {t('incident_history')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow overflow-hidden">
-        <ScrollArea className="h-full pr-4">
+      <CardContent className="flex-grow flex flex-col overflow-hidden py-4">
+        <ScrollArea className="flex-grow pr-4">
           {incidents.length === 0 ? (
             <div className="text-center py-8 flex flex-col items-center justify-center h-full">
               <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
@@ -122,10 +122,8 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
             </div>
           )}
         </ScrollArea>
-      </CardContent>
-      {totalPages > 1 && (
-        <CardFooter className="flex-shrink-0">
-          <div className="flex items-center justify-center w-full gap-2 text-white">
+        {totalPages > 1 && (
+          <div className="flex-shrink-0 flex items-center justify-center w-full gap-2 text-white pt-4">
             <Button
               variant="outline"
               size="sm"
@@ -148,8 +146,8 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
               Suivant
             </Button>
           </div>
-        </CardFooter>
-      )}
+        )}
+      </CardContent>
     </Card>
   );
 };
