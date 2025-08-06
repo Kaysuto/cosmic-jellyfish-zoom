@@ -74,6 +74,9 @@ const ServiceForm = ({ service, onSubmit, onCancel, isSubmitting }: ServiceFormP
                 <Input {...field} placeholder="https://example.com" />
               </FormControl>
               <FormMessage />
+              <p className="text-xs text-muted-foreground">
+                Laissez vide si le service n'a pas d'URL à surveiller. Le statut sera défini sur "En maintenance".
+              </p>
             </FormItem>
           )}
         />

@@ -28,12 +28,19 @@ const ServiceManager = () => {
     operational: { text: t('operational'), className: 'bg-green-500/20 text-green-500 border-green-500/30' },
     degraded: { text: t('degraded'), className: 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30' },
     downtime: { text: t('downtime'), className: 'bg-red-500/20 text-red-500 border-red-500/30' },
+    maintenance: { text: 'En maintenance', className: 'bg-gray-500/20 text-gray-500 border-gray-500/30' },
   };
 
   const handleFormSubmit = async (values: ServiceFormValues) => {
     setIsSubmitting(true);
+    
+    // Déterminer le statut initial basé sur la présence d'une URL
+    const initialStatus = values.url && values.url.trim() !== '' ? 'operational' : 'maintenance';
+    
     const serviceData = {
       ...values,
+      url: values.url && values.url.trim() !== '' ? values.url : null,
+      status: selectedService ? selectedService.status : initialStatus,
       updated_at: new Date().toISOString(),
     };
 
@@ -113,6 +120,7 @@ const ServiceManager = () => {
               <TableRow>
                 <TableHead>{t('service')}</TableHead>
                 <TableHead>{t('status')}</TableHead>
+                <TableHead>URL</TableHead>
                 <TableHead className="text-right">{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
@@ -124,9 +132,16 @@ const ServiceManager = () => {
                     <div className="text-sm text-muted-foreground">{service.description}</div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={cn('border', statusConfig[service.status].className)}>
-                      {statusConfig[service.status].text}
+                    <Badge variant="outline" className={cn('border', statusConfig[service.status as keyof typeof statusConfig]?.className || statusConfig.maintenance.className)}>
+                      {statusConfig[service.status as keyof typeof statusConfig]?.text || statusConfig.maintenance.text}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {service.url ? (
+                      <span className="text-xs text-green-600">✓ Surveillé</span>
+                    ) : (
+                      <span className="text-xs text-gray-500">Non surveillé</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>

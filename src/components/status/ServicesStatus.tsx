@@ -13,7 +13,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 type Service = {
   id: string;
   name: string;
-  status: 'operational' | 'degraded' | 'downtime';
+  status: 'operational' | 'degraded' | 'downtime' | 'maintenance';
   uptime_percentage: number;
 };
 
@@ -33,6 +33,10 @@ const statusIndicatorConfig = {
   downtime: {
     color: 'bg-red-500',
     textKey: 'downtime',
+  },
+  maintenance: {
+    color: 'bg-gray-500',
+    textKey: 'maintenance',
   },
 };
 
@@ -80,7 +84,7 @@ const ServicesStatus = ({ services }: ServicesStatusProps) => {
                   <span className="font-medium text-foreground">{t(service.name.toLowerCase().replace(/ /g, '_'))}</span>
                 </div>
                 <div className="flex items-center gap-4 pl-6 sm:pl-0">
-                  {service.status !== 'downtime' && (
+                  {service.status !== 'downtime' && service.status !== 'maintenance' && (
                     <span className="text-sm text-muted-foreground">{t('uptime')} {service.uptime_percentage.toFixed(2)}%</span>
                   )}
                   <span className="text-sm font-semibold text-foreground">{t(statusConfig.textKey)}</span>

@@ -6,7 +6,7 @@ export interface Service {
   id: string;
   name: string;
   description: string;
-  status: 'operational' | 'degraded' | 'downtime';
+  status: 'operational' | 'degraded' | 'downtime' | 'maintenance';
   uptime_percentage: number;
   created_at: string;
   updated_at: string;
