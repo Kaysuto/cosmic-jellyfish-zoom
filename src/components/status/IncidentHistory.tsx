@@ -66,67 +66,65 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
   }, [paginatedIncidents, currentLocale]);
 
   return (
-    <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 shadow-xl flex flex-col">
-      <CardHeader>
+    <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 shadow-xl flex flex-col h-full">
+      <CardHeader className="flex-shrink-0">
         <CardTitle className="flex items-center gap-2 text-xl text-white">
           <AlertCircle className="h-5 w-5 text-red-400" />
           {t('incident_history')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="h-[550px]">
-          <div className="p-6 pr-4">
-            {incidents.length === 0 ? (
-              <div className="text-center py-8 flex flex-col items-center justify-center h-full">
-                <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-                  <CheckCircle className="h-8 w-8 text-green-400" />
-                </div>
-                <p className="text-gray-400">{t('no_incidents')}</p>
+      <CardContent className="flex-grow overflow-hidden">
+        <ScrollArea className="h-full pr-4">
+          {incidents.length === 0 ? (
+            <div className="text-center py-8 flex flex-col items-center justify-center h-full">
+              <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
+                <CheckCircle className="h-8 w-8 text-green-400" />
               </div>
-            ) : (
-              <div className="space-y-8">
-                {groupedIncidents.map(([month, monthIncidents]) => (
-                  <div key={month}>
-                    <h3 className="text-lg font-semibold text-gray-300 mb-4 sticky top-0 bg-gray-800/50 py-2 backdrop-blur-sm">{month}</h3>
-                    <div className="relative border-l-2 border-gray-700 ml-3">
-                      {monthIncidents.map((incident, index) => {
-                        const config = statusConfig[incident.status];
-                        return (
-                          <div key={incident.id} className="mb-8 pl-8 relative">
-                            <div className={cn("absolute -left-[13px] top-1 h-6 w-6 rounded-full flex items-center justify-center", config.className)}>
-                              <config.Icon className="h-4 w-4" />
+              <p className="text-gray-400">{t('no_incidents')}</p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {groupedIncidents.map(([month, monthIncidents]) => (
+                <div key={month}>
+                  <h3 className="text-lg font-semibold text-gray-300 mb-4 sticky top-0 bg-gray-800/50 py-2 backdrop-blur-sm">{month}</h3>
+                  <div className="relative border-l-2 border-gray-700 ml-3">
+                    {monthIncidents.map((incident, index) => {
+                      const config = statusConfig[incident.status];
+                      return (
+                        <div key={incident.id} className="mb-8 pl-8 relative">
+                          <div className={cn("absolute -left-[13px] top-1 h-6 w-6 rounded-full flex items-center justify-center", config.className)}>
+                            <config.Icon className="h-4 w-4" />
+                          </div>
+                          <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-700/50">
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-medium text-white">{incident.title}</h4>
+                              <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border", config.className)}>
+                                {config.label}
+                              </Badge>
                             </div>
-                            <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-700/50">
-                              <div className="flex justify-between items-start mb-2">
-                                <h4 className="font-medium text-white">{incident.title}</h4>
-                                <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border", config.className)}>
-                                  {config.label}
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-gray-400 mb-3">{incident.description}</p>
-                              <div className="flex justify-between items-center text-xs text-gray-500">
-                                <span>{format(new Date(incident.created_at), 'd MMMM yyyy, HH:mm', { locale: currentLocale })}</span>
-                                {incident.updated_at !== incident.created_at && (
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="h-3 w-3" />
-                                    {t('updated')} {formatDistanceToNow(new Date(incident.updated_at), { addSuffix: true, locale: currentLocale })}
-                                  </span>
-                                )}
-                              </div>
+                            <p className="text-sm text-gray-400 mb-3">{incident.description}</p>
+                            <div className="flex justify-between items-center text-xs text-gray-500">
+                              <span>{format(new Date(incident.created_at), 'd MMMM yyyy, HH:mm', { locale: currentLocale })}</span>
+                              {incident.updated_at !== incident.created_at && (
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {t('updated')} {formatDistanceToNow(new Date(incident.updated_at), { addSuffix: true, locale: currentLocale })}
+                                </span>
+                              )}
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </ScrollArea>
       </CardContent>
       {totalPages > 1 && (
-        <CardFooter>
+        <CardFooter className="flex-shrink-0">
           <div className="flex items-center justify-center w-full gap-2 text-white">
             <Button
               variant="outline"
