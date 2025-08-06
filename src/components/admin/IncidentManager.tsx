@@ -37,6 +37,8 @@ const IncidentManager = () => {
     setIsSubmitting(true);
     const incidentData = {
       ...values,
+      title_en: values.title_en || null,
+      description_en: values.description_en || null,
       updated_at: new Date().toISOString(),
     };
 

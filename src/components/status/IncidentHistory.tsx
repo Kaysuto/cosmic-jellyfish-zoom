@@ -45,12 +45,16 @@ const IncidentItem = ({ incident }: { incident: ApiIncident }) => {
   const authorName = incident.profiles?.first_name || t('system_update');
   const authorInitial = authorName.charAt(0).toUpperCase();
 
+  const isFrench = i18n.language === 'fr';
+  const title = (isFrench || !incident.title_en) ? incident.title : incident.title_en;
+  const description = (isFrench || !incident.description_en) ? incident.description : incident.description_en;
+
   return (
     <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-700/50 flex flex-col justify-between">
       <div>
         <div className="flex justify-between items-start mb-2 gap-2">
           <div className="flex-grow">
-            <h4 className="font-medium text-white">{incident.title}</h4>
+            <h4 className="font-medium text-white">{title}</h4>
             {incident.services?.name && (
               <p className="text-xs text-gray-400 mt-1">
                 {t('Service')}: {t(incident.services.name.toLowerCase().replace(/ /g, '_'))}
@@ -62,7 +66,7 @@ const IncidentItem = ({ incident }: { incident: ApiIncident }) => {
             {statusConfig.label}
           </Badge>
         </div>
-        <p className="text-sm text-gray-400 mb-3">{incident.description}</p>
+        <p className="text-sm text-gray-400 mb-3">{description}</p>
       </div>
       <div className="text-xs text-gray-500 border-t border-gray-700/50 pt-3 mt-3 flex justify-between items-center">
         <div>

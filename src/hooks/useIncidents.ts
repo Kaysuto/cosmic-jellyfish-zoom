@@ -7,7 +7,9 @@ export interface Incident {
   service_id: string | null;
   author_id: string | null;
   title: string;
+  title_en: string | null;
   description: string;
+  description_en: string | null;
   status: 'investigating' | 'identified' | 'monitoring' | 'resolved';
   created_at: string;
   updated_at: string;

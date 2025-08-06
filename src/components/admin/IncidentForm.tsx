@@ -10,10 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Incident } from '@/hooks/useIncidents';
 import { Service } from '@/hooks/useServices';
 import { Profile } from '@/hooks/useProfile';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const incidentSchema = z.object({
   title: z.string().min(1, { message: 'Le titre est requis' }),
   description: z.string().min(1, { message: 'La description est requise' }),
+  title_en: z.string().nullable().optional(),
+  description_en: z.string().nullable().optional(),
   status: z.enum(['investigating', 'identified', 'monitoring', 'resolved']),
   service_id: z.string().nullable(),
   author_id: z.string().uuid("L'auteur est requis."),
@@ -39,6 +42,8 @@ const IncidentForm = ({ incident, services, admins, currentUserId, onSubmit, onC
     defaultValues: {
       title: incident?.title || '',
       description: incident?.description || '',
+      title_en: incident?.title_en || '',
+      description_en: incident?.description_en || '',
       status: incident?.status || 'investigating',
       service_id: incident?.service_id || null,
       author_id: incident?.author_id || currentUserId,
@@ -48,32 +53,61 @@ const IncidentForm = ({ incident, services, admins, currentUserId, onSubmit, onC
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('title')}</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('description')}</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <Tabs defaultValue="fr" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="fr">Français</TabsTrigger>
+            <TabsTrigger value="en">English</TabsTrigger>
+          </TabsList>
+          <TabsContent value="fr" className="space-y-4 pt-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('title')}</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('description')}</FormLabel>
+                  <FormControl><Textarea {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </TabsContent>
+          <TabsContent value="en" className="space-y-4 pt-4">
+            <FormField
+              control={form.control}
+              name="title_en"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('title')}</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description_en"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('description')}</FormLabel>
+                  <FormControl><Textarea {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </TabsContent>
+        </Tabs>
+
         <FormField
           control={form.control}
           name="status"
