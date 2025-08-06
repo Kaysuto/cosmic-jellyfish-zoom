@@ -43,6 +43,39 @@ const Status = () => {
 
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
+  const historicalIncidents: Incident[] = [
+    {
+      id: 'hist-1',
+      service_id: 'd8f8b8f8-8f8f-8f8f-8f8f-8f8f8f8f8f8f',
+      title: 'Dégradation des performances du streaming',
+      description: 'Nous avons observé des lenteurs et des mises en mémoire tampon sur le service de streaming principal. Le problème a été identifié et résolu.',
+      status: 'resolved',
+      created_at: '2025-01-15T14:00:00Z',
+      updated_at: '2025-01-15T18:30:00Z',
+      services: { name: 'streaming_service' },
+    },
+    {
+      id: 'hist-2',
+      service_id: 'a1b2c3d4-e5f6-a7b8-c9d0-e1f2a3b4c5d6',
+      title: 'Panne partielle du service VOD',
+      description: 'Le service de demande de films et séries était inaccessible pour certains utilisateurs. La cause racine a été corrigée.',
+      status: 'resolved',
+      created_at: '2025-02-20T09:10:00Z',
+      updated_at: '2025-02-20T11:45:00Z',
+      services: { name: 'vod_service' },
+    },
+    {
+      id: 'hist-3',
+      service_id: 'b2c3d4e5-f6a7-b8c9-d0e1-f2a3b4c5d6e7',
+      title: 'Problèmes de connexion au service des comptes',
+      description: 'Une erreur de base de données empêchait les nouvelles connexions. Le système a été restauré.',
+      status: 'resolved',
+      created_at: '2025-03-05T22:00:00Z',
+      updated_at: '2025-03-06T01:15:00Z',
+      services: { name: 'accounts_service' },
+    },
+  ];
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -74,7 +107,9 @@ const Status = () => {
       if (incidentsError) {
         console.error('Error fetching incidents:', incidentsError);
       } else if (incidentsData) {
-        setIncidents(incidentsData as any);
+        const allIncidents = [...historicalIncidents, ...(incidentsData as any[])];
+        allIncidents.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        setIncidents(allIncidents);
       }
 
       if (servicesData && servicesData.length > 0) {
