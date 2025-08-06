@@ -6,6 +6,10 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      // ... (toutes les traductions existantes)
+      "spotify_title": "Musique d'ambiance",
+      "discord_title": "Rejoignez-nous sur Discord",
+      "discord_online": "{{count}} en ligne",
       // Navigation
       "home": "Accueil",
       "status": "Statut",
@@ -187,6 +191,10 @@ const resources = {
   },
   en: {
     translation: {
+      // ... (toutes les traductions existantes)
+      "spotify_title": "Ambiant Music",
+      "discord_title": "Join us on Discord",
+      "discord_online": "{{count}} online",
       // Navigation
       "home": "Home",
       "status": "Status",

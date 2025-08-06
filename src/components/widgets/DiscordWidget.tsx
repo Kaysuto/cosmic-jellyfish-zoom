@@ -5,7 +5,7 @@ const DiscordWidget = () => {
 
   return (
     <div className="w-full">
-      <h3 className="text-lg font-semibold mb-4 text-white text-center sm:text-left">Rejoignez-nous sur Discord</h3>
+      <h3 className="text-lg font-semibold mb-4 text-white text-center sm:text-left">{t('discord_title')}</h3>
       <iframe
         src="https://ptb.discord.com/widget?id=1027968386640117770&theme=dark"
         width="100%"

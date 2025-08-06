@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Menu, LayoutDashboard, User, Settings, LogOut } from "lucide-react";
@@ -20,7 +20,26 @@ const Navbar = () => {
   const { session } = useSession();
   const { profile } = useProfile();
   
-  const [discordOnline] = useState(24);
+  const [discordOnline, setDiscordOnline] = useState(0);
+
+  useEffect(() => {
+    const fetchDiscordCount = async () => {
+      try {
+        const response = await fetch('https://discord.com/api/guilds/1027968386640117770/widget.json');
+        const data = await response.json();
+        if (data.presence_count) {
+          setDiscordOnline(data.presence_count);
+        }
+      } catch (error) {
+        console.error("Failed to fetch Discord presence count:", error);
+      }
+    };
+
+    fetchDiscordCount();
+    const interval = setInterval(fetchDiscordCount, 60000); // Met à jour toutes les minutes
+
+    return () => clearInterval(interval);
+  }, []);
 
   const navItems = [
     { to: "/", label: t('home') },
@@ -124,7 +143,7 @@ const Navbar = () => {
               </svg>
               <span className="absolute -top-1 -right-1 bg-green-500 rounded-full h-2 w-2"></span>
             </div>
-            <span className="text-xs font-medium">{discordOnline} en ligne</span>
+            <span className="text-xs font-medium">{t('discord_online', { count: discordOnline })}</span>
           </Button>
 
           <div className="md:hidden">
