@@ -41,13 +41,12 @@ serve(async (req) => {
       let response_time_ms: number | null = null;
 
       try {
-        // Use a timeout for the fetch request
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
         
         const startTime = Date.now();
         const response = await fetch(service.url, { 
-          method: 'GET', // Changed from HEAD to GET for better compatibility
+          method: 'GET',
           redirect: 'follow',
           signal: controller.signal 
         });
@@ -56,7 +55,8 @@ serve(async (req) => {
         clearTimeout(timeoutId);
         response_time_ms = endTime - startTime;
 
-        if (!response.ok) {
+        // Condition améliorée : vérifie si la réponse n'est pas OK OU si une erreur réseau s'est produite
+        if (!response.ok || response.type === 'error') {
           live_status = 'downtime';
           check_status = 'down';
         }
