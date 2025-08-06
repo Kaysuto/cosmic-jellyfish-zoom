@@ -22,15 +22,26 @@ const Navbar = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { session } = useSession();
   const { profile } = useProfile();
-  const { tracks } = useAudioStore();
+  const { tracks, setTracks } = useAudioStore(); // Utilisation de setTracks du store
   
-  // Statut Discord (simulé)
   const [discordOnline, setDiscordOnline] = useState(24);
 
   const navItems = [
     { to: "/", label: t('home') },
     { to: "/status", label: t('status') },
   ];
+
+  useEffect(() => {
+    const fetchAudioTracks = async () => {
+      const fetchedTracks = [
+        { name: 'Chill Vibes', url: 'https://storage.googleapis.com/jelly-status/musics/chill.mp3' },
+        { name: 'Lofi Beats', url: 'https://storage.googleapis.com/jelly-status/musics/lofi.mp3' },
+      ];
+      setTracks(fetchedTracks);
+    };
+
+    fetchAudioTracks();
+  }, [setTracks]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -100,13 +111,10 @@ const Navbar = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/60 backdrop-blur-lg border-b border-white/10">
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        {/* Partie gauche */}
         <div className="flex-1 flex justify-start items-center gap-4">
-          {/* Mini lecteur audio */}
-          <CustomAudioPlayer tracks={tracks} />
+          <CustomAudioPlayer />
         </div>
 
-        {/* Partie centrale - Navigation */}
         <div className="hidden md:flex flex-1 justify-center">
           <div className="flex items-center gap-2 bg-gray-800/50 border border-gray-700/60 rounded-full p-1 shadow-md">
             {navItems.map((item) => (
@@ -119,9 +127,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Partie droite - Discord */}
         <div className="flex-1 flex justify-end items-center gap-4">
-          {/* Badge Discord */}
           <Button 
             variant="outline" 
             size="sm" 
@@ -137,7 +143,6 @@ const Navbar = () => {
             <span className="text-xs font-medium">{discordOnline} en ligne</span>
           </Button>
 
-          {/* Menu mobile */}
           <div className="md:hidden">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>

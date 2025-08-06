@@ -9,9 +9,10 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   global: {
-    fetch: (...args: any) => {
-      console.log('supabase fetch', ...args)
-      return fetch(...args)
+    // Correction du typage pour les arguments de fetch
+    fetch: (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      console.log('supabase fetch', input, init)
+      return fetch(input, init)
     },
   },
 });

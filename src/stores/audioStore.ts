@@ -8,6 +8,7 @@ interface AudioState {
   setCurrentTrackIndex: (index: number) => void;
   setIsPlaying: (isPlaying: boolean) => void;
   setVolume: (volume: number) => void;
+  setTracks: (tracks: { name: string; url: string }[]) => void; // Ajout de setTracks
 }
 
 export const useAudioStore = create<AudioState>((set) => ({
@@ -21,4 +22,5 @@ export const useAudioStore = create<AudioState>((set) => ({
   setCurrentTrackIndex: (index) => set({ currentTrackIndex: index }),
   setIsPlaying: (isPlaying) => set({ isPlaying: isPlaying }),
   setVolume: (volume) => set({ volume: volume }),
+  setTracks: (tracks) => set({ tracks }), // Implémentation de setTracks
 }));
