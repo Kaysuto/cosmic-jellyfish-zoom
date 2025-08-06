@@ -1,19 +1,50 @@
-import { Auth } from '@supabase/auth-ui-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
-import { useSession } from '@/contexts/AuthContext';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 import { motion } from 'framer-motion';
+
+import { supabase } from '@/integrations/supabase/client';
+import { useSession } from '@/contexts/AuthContext';
+import { showSuccess, showError } from '@/utils/toast';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft } from 'lucide-react';
+import { MadeWithDyad } from '@/components/made-with-dyad';
 
 const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { session } = useSession();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const loginSchema = z.object({
+    email: z.string().email({ message: t('invalid_email') }),
+    password: z.string().min(1, { message: "Le mot de passe est requis." }),
+  });
+
+  const signupSchema = z.object({
+    email: z.string().email({ message: t('invalid_email') }),
+    password: z.string().min(6, { message: t('password_too_short') }),
+    first_name: z.string().min(1, { message: t('first_name_required') }),
+    last_name: z.string().min(1, { message: t('last_name_required') }),
+  });
+
+  const loginForm = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  const signupForm = useForm<z.infer<typeof signupSchema>>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: { email: '', password: '', first_name: '', last_name: '' },
+  });
 
   useEffect(() => {
     if (session) {
@@ -21,15 +52,48 @@ const Login = () => {
     }
   }, [session, navigate]);
 
+  const onLoginSubmit = async (values: z.infer<typeof loginSchema>) => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: values.email,
+      password: values.password,
+    });
+    if (error) {
+      showError(error.message);
+    } else {
+      showSuccess("Connexion réussie !");
+      navigate('/admin');
+    }
+    setIsLoading(false);
+  };
+
+  const onSignupSubmit = async (values: z.infer<typeof signupSchema>) => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email: values.email,
+      password: values.password,
+      options: {
+        data: {
+          first_name: values.first_name,
+          last_name: values.last_name,
+        },
+      },
+    });
+    if (error) {
+      showError(error.message);
+    } else {
+      showSuccess("Compte créé ! Veuillez vérifier vos e-mails pour confirmer votre inscription.");
+    }
+    setIsLoading(false);
+  };
+
   return (
     <div className="relative min-h-screen flex flex-col bg-gray-900 text-white">
-      {/* Fond animé */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-transparent to-gray-900 opacity-80"></div>
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
       </div>
 
-      {/* Bouton de retour */}
       <div className="absolute top-4 left-4 z-20">
         <Button asChild variant="ghost" className="text-white hover:bg-white/10 hover:text-white">
           <Link to="/">
@@ -46,54 +110,58 @@ const Login = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="w-full max-w-md"
         >
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
-              {t('admin_login')}
-            </h1>
-          </div>
-          <div className="p-8 space-y-8 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg shadow-xl">
-            <Auth
-              supabaseClient={supabase}
-              providers={[]}
-              appearance={{
-                className: {
-                  container: 'space-y-6',
-                  label: 'text-sm font-medium text-gray-300',
-                  input: 'flex h-10 w-full rounded-md border border-gray-600 bg-gray-900/50 px-3 py-2 text-sm text-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 disabled:cursor-not-allowed disabled:opacity-50',
-                  button: 'inline-flex items-center justify-center rounded-md text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 h-10 px-4 py-2 w-full',
-                  anchor: 'text-sm text-blue-400 hover:text-blue-300 hover:underline',
-                  message: 'text-sm text-red-400 mt-2',
-                  divider: 'bg-gray-600'
-                }
-              }}
-              localization={{
-                variables: {
-                  sign_in: {
-                    email_label: t('email_address'),
-                    password_label: t('password'),
-                    button_label: t('sign_in'),
-                    link_text: t('already_have_account'),
-                    email_input_placeholder: t('email_placeholder'),
-                    password_input_placeholder: t('password_placeholder'),
-                  },
-                  sign_up: {
-                    email_label: t('email_address'),
-                    password_label: t('password'),
-                    button_label: t('sign_up'),
-                    link_text: t('dont_have_account'),
-                    email_input_placeholder: t('email_placeholder'),
-                    password_input_placeholder: t('password_placeholder'),
-                  },
-                  forgotten_password: {
-                    email_label: t('email_address'),
-                    button_label: t('send_instructions'),
-                    link_text: t('forgot_password'),
-                    email_input_placeholder: t('email_placeholder'),
-                  },
-                },
-              }}
-            />
-          </div>
+          <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 text-white">
+            <CardHeader className="text-center">
+              <CardTitle className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
+                {t('admin_login')}
+              </CardTitle>
+              <CardDescription className="text-gray-400 pt-2">
+                Accédez à votre tableau de bord
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="signin" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-gray-900/50">
+                  <TabsTrigger value="signin">{t('sign_in')}</TabsTrigger>
+                  <TabsTrigger value="signup">{t('sign_up')}</TabsTrigger>
+                </TabsList>
+                <TabsContent value="signin" className="pt-6">
+                  <Form {...loginForm}>
+                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                      <FormField control={loginForm.control} name="email" render={({ field }) => (
+                        <FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" placeholder={t('email_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <FormField control={loginForm.control} name="password" render={({ field }) => (
+                        <FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" placeholder={t('password_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_in')}</Button>
+                    </form>
+                  </Form>
+                </TabsContent>
+                <TabsContent value="signup" className="pt-6">
+                  <Form {...signupForm}>
+                    <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField control={signupForm.control} name="first_name" render={({ field }) => (
+                          <FormItem><FormLabel>{t('first_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={signupForm.control} name="last_name" render={({ field }) => (
+                          <FormItem><FormLabel>{t('last_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                      <FormField control={signupForm.control} name="email" render={({ field }) => (
+                        <FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <FormField control={signupForm.control} name="password" render={({ field }) => (
+                        <FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_up')}</Button>
+                    </form>
+                  </Form>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </motion.div>
       </main>
 
