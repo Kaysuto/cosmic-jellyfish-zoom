@@ -64,6 +64,9 @@ const resources = {
       "no_url_provided": "Aucune URL fournie",
       "scheduled_maintenance": "Maintenance planifiée",
       "all_services": "Tous les services",
+      "page": "Page",
+      "previous": "Précédent",
+      "next": "Suivant",
       
       // Composants
       "made_with_dyad": "Fait avec Dyad",
@@ -259,6 +262,9 @@ const resources = {
       "no_url_provided": "No URL provided",
       "scheduled_maintenance": "Scheduled Maintenance",
       "all_services": "All services",
+      "page": "Page",
+      "previous": "Previous",
+      "next": "Next",
 
       // Components
       "made_with_dyad": "Made with Dyad",

@@ -133,10 +133,10 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
             className="bg-gray-700/50 border-gray-600 hover:bg-gray-600/50 disabled:opacity-50"
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Précédent
+            {t('previous')}
           </Button>
           <span className="text-sm text-gray-400 font-mono">
-            Page {currentPage} / {totalPages}
+            {t('page')} {currentPage} / {totalPages}
           </span>
           <Button
             variant="outline"
@@ -145,7 +145,7 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
             disabled={currentPage === totalPages}
             className="bg-gray-700/50 border-gray-600 hover:bg-gray-600/50 disabled:opacity-50"
           >
-            Suivant
+            {t('next')}
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
