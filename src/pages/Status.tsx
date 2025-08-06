@@ -92,20 +92,18 @@ const Status = () => {
           <ServicesStatus services={services} />
           {selectedService && (
             <UptimeHistory service={selectedService}>
-              {services.length > 0 && (
-                <Select value={selectedServiceId ?? ''} onValueChange={setSelectedServiceId}>
-                  <SelectTrigger className="w-full sm:w-[250px]">
-                    <SelectValue placeholder={t('select_service')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {services.map((service) => (
-                      <SelectItem key={service.id} value={service.id}>
-                        {t(service.name.toLowerCase().replace(/ /g, '_'))}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              <Select value={selectedServiceId ?? ''} onValueChange={setSelectedServiceId}>
+                <SelectTrigger className="w-full sm:w-[250px]">
+                  <SelectValue placeholder={t('select_service')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {t(service.name.toLowerCase().replace(/ /g, '_'))}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </UptimeHistory>
           )}
         </div>

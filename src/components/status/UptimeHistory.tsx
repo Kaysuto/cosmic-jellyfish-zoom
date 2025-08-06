@@ -9,6 +9,7 @@ import { subDays, format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Service } from '@/hooks/useServices';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type UptimeRecord = {
   date: string;
@@ -54,6 +55,16 @@ const UptimeHistory = ({ service, children }: { service: Service; children?: Rea
   const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month'>('day');
 
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
+
+  const handleSelectOpenChange = (isOpen: boolean) => {
+    if (isOpen) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.documentElement.style.setProperty('--removed-body-scroll-bar-size', `${scrollbarWidth}px`);
+      document.documentElement.setAttribute('data-radix-select-visible', 'true');
+    } else {
+      document.documentElement.removeAttribute('data-radix-select-visible');
+    }
+  };
 
   useEffect(() => {
     const fetchUptimeHistory = async () => {
@@ -178,7 +189,22 @@ const UptimeHistory = ({ service, children }: { service: Service; children?: Rea
         <div className="flex-grow">
             <CardTitle>{t('uptime_history')}</CardTitle>
             <NextUpdateTimer />
-            {children && <div className="mt-2">{children}</div>}
+            {children && (
+              <div className="mt-2">
+                <Select
+                  value={service.id ?? ''}
+                  onValueChange={(value) => {
+                    const childSelect = children as React.ReactElement<any>;
+                    if (childSelect && childSelect.props.onValueChange) {
+                      childSelect.props.onValueChange(value);
+                    }
+                  }}
+                  onOpenChange={handleSelectOpenChange}
+                >
+                  {children}
+                </Select>
+              </div>
+            )}
         </div>
         <div className="flex items-center gap-1 self-start sm:self-center shrink-0">
           <Button size="sm" variant={timeRange === 'day' ? 'secondary' : 'ghost'} onClick={() => setTimeRange('day')}>{t('time_range_day')}</Button>
