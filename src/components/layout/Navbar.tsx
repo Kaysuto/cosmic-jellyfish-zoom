@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu, LayoutDashboard, User, Settings } from "lucide-react";
+import { Menu, LayoutDashboard, User, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -10,9 +10,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { getGravatarURL } from "@/lib/gravatar";
+import { supabase } from "@/integrations/supabase/client";
 
 const Navbar = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { session } = useSession();
   const { profile } = useProfile();
@@ -21,6 +23,11 @@ const Navbar = () => {
     { to: "/", label: t('home') },
     { to: "/status", label: t('status') },
   ];
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
 
   const desktopNavLinkClasses = ({ isActive }: { isActive: boolean }) =>
     cn(
@@ -62,6 +69,11 @@ const Navbar = () => {
         <DropdownMenuItem asChild><Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span></Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/admin/profile"><User className="mr-2 h-4 w-4" /><span>Profil</span></Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link to="/admin/settings"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></Link></DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>{t('logout')}</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -122,6 +134,12 @@ const Navbar = () => {
                         <NavLink to="/admin" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><LayoutDashboard className="mr-3 h-5 w-5" />{t('admin_dashboard')}</NavLink>
                         <NavLink to="/admin/profile" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
                         <NavLink to="/admin/settings" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><Settings className="mr-3 h-5 w-5" />{t('settings')}</NavLink>
+                        <div className="px-4 pt-2">
+                          <Button onClick={handleLogout} variant="destructive" className="w-full justify-start">
+                            <LogOut className="mr-3 h-5 w-5" />
+                            {t('logout')}
+                          </Button>
+                        </div>
                       </div>
                     ) : (
                       <NavLink to="/login" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>

@@ -15,14 +15,14 @@ const Settings = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Button asChild variant="outline">
+        <Button asChild variant="ghost">
           <Link to="/admin">
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t('return_to_dashboard')}
           </Link>
         </Button>
       </div>
-      <Card>
+      <Card className="max-w-2xl mx-auto">
         <CardHeader>
           <CardTitle>{t('language_settings')}</CardTitle>
           <CardDescription>{t('select_language_desc')}</CardDescription>
