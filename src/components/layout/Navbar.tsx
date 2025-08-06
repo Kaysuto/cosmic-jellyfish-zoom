@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu, LayoutDashboard, User, Settings, LogOut, Disc3, Volume2, SkipBack, Play, Pause, SkipForward } from "lucide-react";
+import { Menu, LayoutDashboard, User, Settings, LogOut, Volume2, SkipBack, Play, Pause, SkipForward } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -13,6 +13,7 @@ import { getGravatarURL } from "@/lib/gravatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
+import CustomAudioPlayer from "@/components/CustomAudioPlayer";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -20,11 +21,6 @@ const Navbar = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { session } = useSession();
   const { profile } = useProfile();
-  
-  // État du lecteur audio
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState("Titre de la musique");
-  const [volume, setVolume] = useState(50);
   
   // Statut Discord (simulé)
   const [discordOnline, setDiscordOnline] = useState(24);
@@ -38,9 +34,6 @@ const Navbar = () => {
     await supabase.auth.signOut();
     navigate('/');
   };
-
-  const togglePlay = () => setIsPlaying(!isPlaying);
-  const handleVolumeChange = (value: number[]) => setVolume(value[0]);
 
   const desktopNavLinkClasses = ({ isActive }: { isActive: boolean }) =>
     cn(
@@ -102,55 +95,19 @@ const Navbar = () => {
     );
   };
 
+  const audioTracks = [
+    { name: 'Track 1', url: 'https://example.com/track1.mp3' },
+    { name: 'Track 2', url: 'https://example.com/track2.mp3' },
+    { name: 'Track 3', url: 'https://example.com/track3.mp3' },
+  ];
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/60 backdrop-blur-lg border-b border-white/10">
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Partie gauche */}
         <div className="flex-1 flex justify-start items-center gap-4">
           {/* Mini lecteur audio */}
-          <div className="hidden md:flex items-center gap-3 bg-gray-800/30 rounded-full px-3 py-1.5 border border-gray-700/60">
-            <Disc3 className="h-4 w-4 text-purple-400" />
-            
-            <div className="text-xs truncate max-w-[120px]">
-              {currentTrack.length > 15 
-                ? `${currentTrack.substring(0, 15)}...` 
-                : currentTrack}
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <button className="p-1 text-gray-400 hover:text-white">
-                <SkipBack className="h-3 w-3" />
-              </button>
-              
-              <button 
-                className="p-1 text-white"
-                onClick={togglePlay}
-              >
-                {isPlaying ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-              </button>
-              
-              <button className="p-1 text-gray-400 hover:text-white">
-                <SkipForward className="h-3 w-3" />
-              </button>
-            </div>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="p-1 text-gray-400 hover:text-white">
-                  <Volume2 className="h-3 w-3" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-40 bg-gray-800 border-gray-700">
-                <Slider
-                  defaultValue={[volume]}
-                  max={100}
-                  step={1}
-                  onValueChange={handleVolumeChange}
-                  className="cursor-pointer"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+          <CustomAudioPlayer tracks={audioTracks} />
         </div>
 
         {/* Partie centrale - Navigation */}
