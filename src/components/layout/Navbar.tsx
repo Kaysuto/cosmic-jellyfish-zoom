@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu, LayoutDashboard, User, Settings, LogOut } from "lucide-react";
+import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -21,6 +21,21 @@ const Navbar = () => {
   const { profile } = useProfile();
   
   const [discordOnline, setDiscordOnline] = useState(0);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuTimerRef = useRef<number | null>(null);
+
+  const handleUserMenuEnter = () => {
+    if (userMenuTimerRef.current) {
+      clearTimeout(userMenuTimerRef.current);
+    }
+    setIsUserMenuOpen(true);
+  };
+
+  const handleUserMenuLeave = () => {
+    userMenuTimerRef.current = window.setTimeout(() => {
+      setIsUserMenuOpen(false);
+    }, 200);
+  };
 
   useEffect(() => {
     const fetchDiscordCount = async () => {
@@ -69,36 +84,39 @@ const Navbar = () => {
     );
 
   const UserMenu = () => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button className={cn(desktopNavLinkClasses({ isActive: false }), "flex items-center gap-2")}>
-          <Avatar className="h-6 w-6">
-            <AvatarImage src={profile?.avatar_url || getGravatarURL(profile?.email)} alt={profile?.first_name || 'Avatar'} />
-            <AvatarFallback>{profile?.first_name?.charAt(0) || 'U'}</AvatarFallback>
-          </Avatar>
-          <span className="text-white hidden sm:inline">
-            Bonjour, {profile?.first_name || 'Admin'}
-          </span>
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{profile?.first_name} {profile?.last_name}</p>
-            <p className="text-xs leading-none text-muted-foreground">{profile?.email}</p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild><Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span></Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link to="/admin/profile"><User className="mr-2 h-4 w-4" /><span>Profil</span></Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link to="/admin/settings"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></Link></DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>{t('logout')}</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div onMouseEnter={handleUserMenuEnter} onMouseLeave={handleUserMenuLeave}>
+      <DropdownMenu open={isUserMenuOpen} onOpenChange={setIsUserMenuOpen}>
+        <DropdownMenuTrigger asChild>
+          <button className={cn(desktopNavLinkClasses({ isActive: false }), "flex items-center gap-2")}>
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={profile?.avatar_url || getGravatarURL(profile?.email)} alt={profile?.first_name || 'Avatar'} />
+              <AvatarFallback>{profile?.first_name?.charAt(0) || 'U'}</AvatarFallback>
+            </Avatar>
+            <span className="text-white hidden sm:inline">
+              Bonjour, {profile?.first_name || 'Admin'}
+            </span>
+            <ChevronDown className={`h-4 w-4 text-gray-400 hidden sm:inline transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{profile?.first_name} {profile?.last_name}</p>
+              <p className="text-xs leading-none text-muted-foreground">{profile?.email}</p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild><Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span></Link></DropdownMenuItem>
+          <DropdownMenuItem asChild><Link to="/admin/profile"><User className="mr-2 h-4 w-4" /><span>Profil</span></Link></DropdownMenuItem>
+          <DropdownMenuItem asChild><Link to="/admin/settings"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></Link></DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>{t('logout')}</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 
   const AuthLinks = () => {
