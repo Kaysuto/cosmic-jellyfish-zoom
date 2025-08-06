@@ -1,58 +1,57 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Clock } from 'lucide-react';
+import { AlertCircle, CheckCircle, ShieldAlert, Eye, Wrench, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Incident as ApiIncident } from '@/hooks/useIncidents';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-interface Incident {
-  id: string;
-  title: string;
-  status: 'resolved' | 'investigating' | 'monitoring' | 'identified';
-  createdAt: string;
-  updatedAt: string;
-  description: string;
-}
+import { format, formatDistanceToNow } from 'date-fns';
+import { fr, enUS } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface IncidentHistoryProps {
   incidents: ApiIncident[];
 }
 
 const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
-  const { t } = useTranslation();
-  
-  const convertedIncidents: Incident[] = incidents.map(incident => ({
-    id: incident.id,
-    title: incident.title,
-    status: incident.status,
-    createdAt: incident.created_at,
-    updatedAt: incident.updated_at,
-    description: incident.description || ''
-  }));
+  const { t, i18n } = useTranslation();
+  const currentLocale = i18n.language === 'fr' ? fr : enUS;
   
   const statusConfig = {
     resolved: { 
       label: t('resolved'), 
-      variant: 'default',
-      color: 'bg-green-500/10 text-green-500 border-green-500/20'
+      Icon: CheckCircle,
+      className: 'text-green-400 border-green-500/30 bg-green-500/10',
     },
     investigating: { 
       label: t('investigating'), 
-      variant: 'secondary',
-      color: 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+      Icon: ShieldAlert,
+      className: 'text-blue-400 border-blue-500/30 bg-blue-500/10',
     },
     monitoring: { 
       label: t('monitoring'), 
-      variant: 'secondary',
-      color: 'bg-purple-500/10 text-purple-500 border-purple-500/20'
+      Icon: Eye,
+      className: 'text-purple-400 border-purple-500/30 bg-purple-500/10',
     },
     identified: { 
       label: t('identified'), 
-      variant: 'secondary',
-      color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+      Icon: Wrench,
+      className: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10',
     },
   };
+
+  const groupedIncidents = useMemo(() => {
+    const groups = incidents.reduce((acc, incident) => {
+      const month = format(new Date(incident.created_at), 'MMMM yyyy', { locale: currentLocale });
+      const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
+      if (!acc[capitalizedMonth]) {
+        acc[capitalizedMonth] = [];
+      }
+      acc[capitalizedMonth].push(incident);
+      return acc;
+    }, {} as Record<string, ApiIncident[]>);
+    return Object.entries(groups);
+  }, [incidents, currentLocale]);
 
   return (
     <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 shadow-xl flex flex-col h-full">
@@ -64,42 +63,52 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden">
         <ScrollArea className="h-full pr-4">
-          <div className="space-y-4">
-            {convertedIncidents.length === 0 ? (
-              <div className="text-center py-8 flex flex-col items-center justify-center h-full">
-                <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-                  <AlertCircle className="h-8 w-8 text-green-400" />
-                </div>
-                <p className="text-gray-400">{t('no_incidents')}</p>
+          {incidents.length === 0 ? (
+            <div className="text-center py-8 flex flex-col items-center justify-center h-full">
+              <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
+                <CheckCircle className="h-8 w-8 text-green-400" />
               </div>
-            ) : (
-              convertedIncidents.map((incident) => {
-                const config = statusConfig[incident.status];
-                return (
-                  <div key={incident.id} className="border-l-2 border-gray-600 pl-4 py-3 hover:bg-gray-700/30 rounded-r-lg transition-all duration-200">
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-medium text-white">{incident.title}</h3>
-                      <Badge className={`px-3 py-1 text-xs font-medium rounded-full border ${config.color}`}>
-                        {config.label}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-400 mt-2">{incident.description}</p>
-                    <div className="flex justify-between items-center mt-3">
-                      <div className="flex items-center text-xs text-gray-500">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {new Date(incident.createdAt).toLocaleString()}
-                      </div>
-                      {incident.updatedAt !== incident.createdAt && (
-                        <span className="text-xs text-gray-500">
-                          {t('updated')} {new Date(incident.updatedAt).toLocaleString()}
-                        </span>
-                      )}
-                    </div>
+              <p className="text-gray-400">{t('no_incidents')}</p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {groupedIncidents.map(([month, monthIncidents]) => (
+                <div key={month}>
+                  <h3 className="text-lg font-semibold text-gray-300 mb-4 sticky top-0 bg-gray-800/50 py-2 backdrop-blur-sm">{month}</h3>
+                  <div className="relative border-l-2 border-gray-700 ml-3">
+                    {monthIncidents.map((incident, index) => {
+                      const config = statusConfig[incident.status];
+                      return (
+                        <div key={incident.id} className="mb-8 pl-8 relative">
+                          <div className={cn("absolute -left-[13px] top-1 h-6 w-6 rounded-full flex items-center justify-center", config.className)}>
+                            <config.Icon className="h-4 w-4" />
+                          </div>
+                          <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-700/50">
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-medium text-white">{incident.title}</h4>
+                              <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border", config.className)}>
+                                {config.label}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-gray-400 mb-3">{incident.description}</p>
+                            <div className="flex justify-between items-center text-xs text-gray-500">
+                              <span>{format(new Date(incident.created_at), 'd MMMM yyyy, HH:mm', { locale: currentLocale })}</span>
+                              {incident.updated_at !== incident.created_at && (
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {t('updated')} {formatDistanceToNow(new Date(incident.updated_at), { addSuffix: true, locale: currentLocale })}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </ScrollArea>
       </CardContent>
     </Card>
