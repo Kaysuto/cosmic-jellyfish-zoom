@@ -200,7 +200,16 @@ const resources = {
       "time_range_day": "Day",
       "time_range_week": "Week",
       "time_range_month": "Month",
-      "time_range_year": "<dyad-problem-report summary="81 problems">
+      "time_range_year": "Year",
+      "average": "Average",
+      "maximum": "Maximum",
+      "minimum": "Minimum",
+      "Service": "Service",
+      "system_wide_incident": "System-wide incident",
+      "url_monitoring": "Monitoring URL",
+      "no_url_provided": "No URL provided",
+      
+      // Composants<dyad-problem-report summary="81 problems">
 <problem file="src/pages/Status.tsx" line="103" column="1" code="1128">Declaration or statement expected.</problem>
 <problem file="src/pages/Status.tsx" line="105" column="2" code="17008">JSX element 'dyad-write' has no corresponding closing tag.</problem>
 <problem file="src/pages/Status.tsx" line="111" column="5" code="1005">'}' expected.</problem>
@@ -282,14 +291,9 @@ const resources = {
 <problem file="src/pages/Status.tsx" line="185" column="12" code="2695">Left side of comma operator is unused and has no side effects.</problem>
 <problem file="src/pages/Status.tsx" line="185" column="22" code="2304">Cannot find name 'loading'.</problem>
 <problem file="src/pages/Status.tsx" line="185" column="31" code="2304">Cannot find name 'refreshServices'.</problem>
-</dyad-problem-report>It seems like the previous response might have been incomplete or had some residual issues. I've carefully reviewed the TypeScript errors you provided and made the necessary corrections.
+</dyad-problem-report>You're right! It seems I made a mistake in the previous response by including the Dyad-specific tags (`</dyad-file>`, `<dyad-write>`) directly within the code blocks. This is incorrect and caused the TypeScript errors. My apologies for that oversight!
 
-The primary issues were related to:
-
-*   **Incorrect JSX syntax**: The presence of `<dyad-write>` and `</dyad-file>` tags within the TypeScript code was causing syntax errors. These are not valid JSX or TypeScript constructs.
-*   **Missing imports**: Some necessary types and functions were not imported correctly.
-*   **Type mismatches**: There were instances where types were not correctly inferred or used.
-*   **Scope issues**: Variables and functions were not always accessible in the correct scope.
+I've corrected the files to remove those tags and ensure the code is valid TypeScript and React. The functionality remains the same, but the syntax errors are now resolved.
 
 Here are the corrected files:
 
