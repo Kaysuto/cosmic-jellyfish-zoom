@@ -47,8 +47,19 @@ export const useIncidents = () => {
           schema: 'public',
           table: 'incidents',
         },
-        () => {
-          fetchIncidents();
+        (payload) => {
+          console.log('Incident realtime update:', payload);
+          
+          if (payload.eventType === 'DELETE') {
+            const deletedIncident = payload.old as Partial<Incident>;
+            console.log('Incident deleted:', deletedIncident.id);
+            setIncidents(currentIncidents => 
+              currentIncidents.filter(i => i.id !== deletedIncident.id)
+            );
+          } else {
+            // Pour les autres événements, on refetch pour avoir les données complètes avec les jointures
+            fetchIncidents();
+          }
         }
       )
       .subscribe();
@@ -58,5 +69,10 @@ export const useIncidents = () => {
     };
   }, [fetchIncidents]);
 
-  return { incidents, loading };
+  // Fonction pour forcer le rafraîchissement
+  const refreshIncidents = useCallback(() => {
+    fetchIncidents();
+  }, [fetchIncidents]);
+
+  return { incidents, loading, refreshIncidents };
 };

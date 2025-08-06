@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils';
 const IncidentManager = () => {
   const { t, i18n } = useTranslation();
   const { session } = useSession();
-  const { incidents, loading: incidentsLoading } = useIncidents();
+  const { incidents, loading: incidentsLoading, refreshIncidents } = useIncidents();
   const { services, loading: servicesLoading } = useServices();
   const { admins, loading: adminsLoading } = useAdmins();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -69,6 +69,8 @@ const IncidentManager = () => {
       showSuccess(t('incident_saved_successfully'));
       setIsSheetOpen(false);
       setSelectedIncident(null);
+      // Forcer le rafraîchissement après création/modification
+      setTimeout(() => refreshIncidents(), 100);
     }
     setIsSubmitting(false);
   };
@@ -80,13 +82,18 @@ const IncidentManager = () => {
 
   const handleDelete = async () => {
     if (!incidentToDelete) return;
+    
     const { error } = await supabase.from('incidents').delete().eq('id', incidentToDelete);
+    
     if (error) {
       showError(t('error_deleting_incident'));
       console.error(error);
     } else {
       showSuccess(t('incident_deleted_successfully'));
+      // Forcer le rafraîchissement après suppression
+      setTimeout(() => refreshIncidents(), 100);
     }
+    
     setIsDeleteDialogOpen(false);
     setIncidentToDelete(null);
   };

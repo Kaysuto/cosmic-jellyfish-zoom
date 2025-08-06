@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 
 const ServiceManager = () => {
   const { t } = useTranslation();
-  const { services, loading } = useServices();
+  const { services, loading, refreshServices } = useServices();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -50,6 +50,8 @@ const ServiceManager = () => {
       showSuccess(t('service_saved_successfully'));
       setIsSheetOpen(false);
       setSelectedService(null);
+      // Forcer le rafraîchissement après création/modification
+      setTimeout(() => refreshServices(), 100);
     }
     setIsSubmitting(false);
   };
@@ -61,12 +63,17 @@ const ServiceManager = () => {
 
   const handleDelete = async () => {
     if (!serviceToDelete) return;
+    
     const { error } = await supabase.from('services').delete().eq('id', serviceToDelete);
+    
     if (error) {
       showError(t('error_deleting_service'));
     } else {
       showSuccess(t('service_deleted_successfully'));
+      // Forcer le rafraîchissement après suppression
+      setTimeout(() => refreshServices(), 100);
     }
+    
     setIsDeleteDialogOpen(false);
     setServiceToDelete(null);
   };

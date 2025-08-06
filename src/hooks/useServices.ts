@@ -37,6 +37,8 @@ export const useServices = () => {
     fetchServices();
 
     const handleRealtimeUpdate = (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
+      console.log('Realtime update received:', payload);
+      
       if (payload.eventType === 'UPDATE') {
         const updatedService = payload.new as Service;
         setServices(currentServices =>
@@ -47,6 +49,7 @@ export const useServices = () => {
         setServices(currentServices => [...currentServices, newService].sort((a, b) => a.name.localeCompare(b.name)));
       } else if (payload.eventType === 'DELETE') {
         const deletedService = payload.old as Partial<Service>;
+        console.log('Service deleted:', deletedService.id);
         setServices(currentServices => currentServices.filter(s => s.id !== deletedService.id));
       }
     };
@@ -69,5 +72,10 @@ export const useServices = () => {
     };
   }, [fetchServices]);
 
-  return { services, loading };
+  // Fonction pour forcer le rafraîchissement
+  const refreshServices = useCallback(() => {
+    fetchServices();
+  }, [fetchServices]);
+
+  return { services, loading, refreshServices };
 };
