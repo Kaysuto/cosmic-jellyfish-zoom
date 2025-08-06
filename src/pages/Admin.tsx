@@ -5,13 +5,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ServiceManager from '@/components/admin/ServiceManager';
 import IncidentManager from '@/components/admin/IncidentManager';
-import { Settings, LogOut, Server, ShieldAlert, CheckCircle, Clock, Wrench } from 'lucide-react';
+import MaintenanceManager from '@/components/admin/MaintenanceManager';
+import UserManager from '@/components/admin/UserManager';
+import { Settings, LogOut, Server, ShieldAlert, CheckCircle, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useServices } from '@/hooks/useServices';
 import { useIncidents } from '@/hooks/useIncidents';
 import { Skeleton } from '@/components/ui/skeleton';
 import { differenceInMinutes } from 'date-fns';
-import MaintenanceManager from '@/components/admin/MaintenanceManager';
 
 const Admin = () => {
   const { t } = useTranslation();
@@ -97,10 +98,11 @@ const Admin = () => {
       <AdminStats />
 
       <Tabs defaultValue="services" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="services">{t('manage_services')}</TabsTrigger>
           <TabsTrigger value="incidents">{t('manage_incidents')}</TabsTrigger>
           <TabsTrigger value="maintenance">{t('manage_maintenance')}</TabsTrigger>
+          <TabsTrigger value="users">{t('manage_users')}</TabsTrigger>
         </TabsList>
         <TabsContent value="services" className="mt-4">
           <ServiceManager />
@@ -110,6 +112,9 @@ const Admin = () => {
         </TabsContent>
         <TabsContent value="maintenance" className="mt-4">
           <MaintenanceManager />
+        </TabsContent>
+        <TabsContent value="users" className="mt-4">
+          <UserManager />
         </TabsContent>
       </Tabs>
     </div>

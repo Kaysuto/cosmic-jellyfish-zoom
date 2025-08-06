@@ -9,6 +9,7 @@ export interface Profile {
   email: string | null;
   role: string | null;
   avatar_url: string | null;
+  updated_at: string;
 }
 
 export const useProfile = () => {
