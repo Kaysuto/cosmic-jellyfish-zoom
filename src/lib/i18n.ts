@@ -136,7 +136,8 @@ const resources = {
       "password_updated_successfully": "Mot de passe mis à jour avec succès.",
       "role": "Rôle",
       "admin_role": "Administrateur",
-      "user_role": "Utilisateur"
+      "user_role": "Utilisateur",
+      "member_since": "Membre depuis"
     }
   },
   en: {
@@ -271,7 +272,8 @@ const resources = {
       "password_updated_successfully": "Password updated successfully.",
       "role": "Role",
       "admin_role": "Administrator",
-      "user_role": "User"
+      "user_role": "User",
+      "member_since": "Member since"
     }
   }
 };

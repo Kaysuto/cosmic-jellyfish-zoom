@@ -32,7 +32,7 @@ const Navbar = () => {
 
   const mobileNavLinkClasses = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "block w-full text-left px-4 py-3 text-lg font-medium transition-colors duration-200 rounded-md",
+      "flex items-center w-full text-left px-4 py-3 text-lg font-medium transition-colors duration-200 rounded-md",
       isActive
         ? "bg-blue-600 text-white"
         : "text-gray-300 hover:bg-gray-700"
@@ -41,15 +41,15 @@ const Navbar = () => {
   const UserMenu = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 rounded-full px-2">
-          <Avatar className="h-8 w-8">
+        <button className={cn(desktopNavLinkClasses({ isActive: false }), "flex items-center gap-2")}>
+          <Avatar className="h-6 w-6">
             <AvatarImage src={getGravatarURL(profile?.email)} alt={profile?.first_name || 'Avatar'} />
             <AvatarFallback>{profile?.first_name?.charAt(0) || 'U'}</AvatarFallback>
           </Avatar>
-          <span className="ml-2 hidden sm:block text-white">
+          <span className="text-white hidden sm:inline">
             Bonjour, {profile?.first_name || 'Admin'}
           </span>
-        </Button>
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
@@ -59,15 +59,9 @@ const Navbar = () => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span></Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/admin/profile"><User className="mr-2 h-4 w-4" /><span>Profil</span></Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/admin/settings"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></Link>
-        </DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span></Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/admin/profile"><User className="mr-2 h-4 w-4" /><span>Profil</span></Link></DropdownMenuItem>
+        <DropdownMenuItem asChild><Link to="/admin/settings"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></Link></DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -96,12 +90,11 @@ const Navbar = () => {
                 {item.label}
               </NavLink>
             ))}
+            <div className="border-l border-gray-700 h-6 mx-1"></div>
+            <AuthLinks />
           </div>
         </div>
         <div className="flex-1 flex justify-end">
-          <div className="hidden md:block">
-            <AuthLinks />
-          </div>
           <div className="md:hidden">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
@@ -110,9 +103,32 @@ const Navbar = () => {
                   <span className="sr-only">Open menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-gray-900 border-l-gray-800 w-[250px] sm:w-[300px]">
-                <div className="flex flex-col gap-4 pt-10">
-                  {/* Mobile nav items */}
+              <SheetContent side="right" className="bg-gray-900 border-l-gray-800 w-[280px]">
+                <div className="flex flex-col h-full">
+                  <div className="flex-grow space-y-2 pt-10">
+                    {navItems.map((item) => (
+                      <NavLink key={item.to} to={item.to} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
+                        {item.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                  <div className="flex-shrink-0 border-t border-gray-700 pt-4 pb-6">
+                    {session && profile ? (
+                      <div className="space-y-2">
+                        <div className="px-4">
+                          <p className="font-medium text-white">{profile.first_name} {profile.last_name}</p>
+                          <p className="text-sm text-gray-400">{profile.email}</p>
+                        </div>
+                        <NavLink to="/admin" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><LayoutDashboard className="mr-3 h-5 w-5" />{t('admin_dashboard')}</NavLink>
+                        <NavLink to="/admin/profile" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
+                        <NavLink to="/admin/settings" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><Settings className="mr-3 h-5 w-5" />{t('settings')}</NavLink>
+                      </div>
+                    ) : (
+                      <NavLink to="/login" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
+                        {t('login')}
+                      </NavLink>
+                    )}
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>

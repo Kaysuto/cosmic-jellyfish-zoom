@@ -10,15 +10,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, User, Mail, KeyRound } from 'lucide-react';
+import { ArrowLeft, User, Mail, KeyRound, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getGravatarURL } from '@/lib/gravatar';
 import { Badge } from '@/components/ui/badge';
+import { useSession } from '@/contexts/AuthContext';
+import { format } from 'date-fns';
+import { fr, enUS } from 'date-fns/locale';
 
 const Profile = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { profile, loading: profileLoading } = useProfile();
+  const { session } = useSession();
+  const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
   const profileSchema = z.object({
     first_name: z.string().min(1, { message: t('first_name_required') }),
@@ -94,11 +99,22 @@ const Profile = () => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-6">
-        <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('role')}</h3>
-        <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'}>
-          {profile?.role === 'admin' ? t('admin_role') : t('user_role')}
-        </Badge>
+      <CardContent className="p-6 space-y-4">
+        <div>
+          <h3 className="text-xs font-semibold text-muted-foreground mb-1">{t('role')}</h3>
+          <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'}>
+            {profile?.role === 'admin' ? t('admin_role') : t('user_role')}
+          </Badge>
+        </div>
+        {session?.user?.created_at && (
+          <div>
+            <h3 className="text-xs font-semibold text-muted-foreground mb-1">{t('member_since')}</h3>
+            <div className="flex items-center gap-2 text-sm text-foreground">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span>{format(new Date(session.user.created_at), 'd MMMM yyyy', { locale: currentLocale })}</span>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -114,9 +130,9 @@ const Profile = () => {
               <Skeleton className="h-4 w-48" />
             </div>
           </CardHeader>
-          <CardContent className="p-6">
-            <Skeleton className="h-4 w-16 mb-2" />
-            <Skeleton className="h-6 w-20" />
+          <CardContent className="p-6 space-y-4">
+            <Skeleton className="h-6 w-20 mb-2" />
+            <Skeleton className="h-6 w-32" />
           </CardContent>
         </Card>
       </div>
