@@ -173,7 +173,7 @@ const Navbar = () => {
             variant="outline" 
             size="sm" 
             className="hidden md:flex items-center gap-2 bg-gray-800/30 border-gray-700/60 hover:bg-gray-700/50 rounded-full px-3 py-1.5"
-            onClick={() => window.open('https://discord.gg/your-invite-link', '_blank')}
+            onClick={() => window.open('https://ptb.discord.com/channels/1027968386640117770/1234313061993676860', '_blank')}
           >
             <div className="relative">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
