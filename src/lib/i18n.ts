@@ -50,6 +50,8 @@ const resources = {
       "average": "Moyenne",
       "maximum": "Maximum",
       "minimum": "Minimum",
+      "Service": "Service",
+      "system_wide_incident": "Incident général",
       
       // Composants
       "made_with_dyad": "Fait avec Dyad",
@@ -107,6 +109,8 @@ const resources = {
       "average": "Average",
       "maximum": "Maximum",
       "minimum": "Minimum",
+      "Service": "Service",
+      "system_wide_incident": "System-wide incident",
       
       // Composants
       "made_with_dyad": "Made with Dyad",

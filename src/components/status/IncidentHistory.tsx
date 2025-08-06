@@ -1,10 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle, ShieldAlert, Eye, Wrench, Clock } from 'lucide-react';
+import { AlertCircle, CheckCircle, ShieldAlert, Eye, Wrench, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Incident as ApiIncident } from '@/hooks/useIncidents';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -14,21 +13,13 @@ interface IncidentHistoryProps {
   incidents: ApiIncident[];
 }
 
-const INCIDENTS_PER_PAGE = 3;
-
 const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
   const { t, i18n } = useTranslation();
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const totalPages = Math.ceil(incidents.length / INCIDENTS_PER_PAGE);
+  const currentIncident = incidents.length > 0 ? incidents[currentIndex] : null;
 
-  const paginatedIncidents = useMemo(() => {
-    const startIndex = (currentPage - 1) * INCIDENTS_PER_PAGE;
-    const endIndex = startIndex + INCIDENTS_PER_PAGE;
-    return incidents.slice(startIndex, endIndex);
-  }, [incidents, currentPage]);
-  
   const statusConfig = {
     resolved: { 
       label: t('resolved'), 
@@ -52,18 +43,43 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
     },
   };
 
-  const groupedIncidents = useMemo(() => {
-    const groups = paginatedIncidents.reduce((acc, incident) => {
-      const month = format(new Date(incident.created_at), 'MMMM yyyy', { locale: currentLocale });
-      const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
-      if (!acc[capitalizedMonth]) {
-        acc[capitalizedMonth] = [];
-      }
-      acc[capitalizedMonth].push(incident);
-      return acc;
-    }, {} as Record<string, ApiIncident[]>);
-    return Object.entries(groups);
-  }, [paginatedIncidents, currentLocale]);
+  const renderIncident = (incident: ApiIncident) => {
+    const config = statusConfig[incident.status];
+    return (
+      <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-700/50 h-full flex flex-col justify-between">
+        <div>
+          <div className="flex justify-between items-start mb-2 gap-2">
+            <div className="flex-grow">
+              <h4 className="font-medium text-white">{incident.title}</h4>
+              {incident.services?.name ? (
+                <p className="text-xs text-gray-400 mt-1">
+                  {t('Service')}: {t(incident.services.name.toLowerCase().replace(/ /g, '_'))}
+                </p>
+              ) : (
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('system_wide_incident')}
+                </p>
+              )}
+            </div>
+            <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border shrink-0", config.className)}>
+              <config.Icon className="h-3 w-3 mr-1.5" />
+              {config.label}
+            </Badge>
+          </div>
+          <p className="text-sm text-gray-400 mb-3">{incident.description}</p>
+        </div>
+        <div className="text-xs text-gray-500 border-t border-gray-700/50 pt-3 mt-3">
+          <p className="font-semibold text-gray-400 mb-1">{format(new Date(incident.created_at), 'd MMMM yyyy, HH:mm', { locale: currentLocale })}</p>
+          {incident.updated_at !== incident.created_at && (
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {t('updated')} {formatDistanceToNow(new Date(incident.updated_at), { addSuffix: true, locale: currentLocale })}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 shadow-xl flex flex-col h-full">
@@ -73,81 +89,45 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
           {t('incident_history')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow flex flex-col overflow-hidden py-4">
-        <ScrollArea className="flex-grow pr-4">
-          {incidents.length === 0 ? (
-            <div className="text-center py-8 flex flex-col items-center justify-center h-full">
-              <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-                <CheckCircle className="h-8 w-8 text-green-400" />
-              </div>
-              <p className="text-gray-400">{t('no_incidents')}</p>
+      <CardContent className="flex-grow flex flex-col justify-center overflow-hidden py-4">
+        {incidents.length === 0 ? (
+          <div className="text-center py-8 flex flex-col items-center justify-center h-full">
+            <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
+              <CheckCircle className="h-8 w-8 text-green-400" />
             </div>
-          ) : (
-            <div className="space-y-8">
-              {groupedIncidents.map(([month, monthIncidents]) => (
-                <div key={month}>
-                  <h3 className="text-lg font-semibold text-gray-300 mb-4 sticky top-0 bg-gray-800/50 py-2 backdrop-blur-sm">{month}</h3>
-                  <div className="relative border-l-2 border-gray-700 ml-3">
-                    {monthIncidents.map((incident, index) => {
-                      const config = statusConfig[incident.status];
-                      return (
-                        <div key={incident.id} className="mb-8 pl-8 relative">
-                          <div className={cn("absolute -left-[13px] top-1 h-6 w-6 rounded-full flex items-center justify-center", config.className)}>
-                            <config.Icon className="h-4 w-4" />
-                          </div>
-                          <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-700/50">
-                            <div className="flex justify-between items-start mb-2">
-                              <h4 className="font-medium text-white">{incident.title}</h4>
-                              <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border", config.className)}>
-                                {config.label}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-gray-400 mb-3">{incident.description}</p>
-                            <div className="flex justify-between items-center text-xs text-gray-500">
-                              <span>{format(new Date(incident.created_at), 'd MMMM yyyy, HH:mm', { locale: currentLocale })}</span>
-                              {incident.updated_at !== incident.created_at && (
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  {t('updated')} {formatDistanceToNow(new Date(incident.updated_at), { addSuffix: true, locale: currentLocale })}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-        {totalPages > 1 && (
-          <div className="flex-shrink-0 flex items-center justify-center w-full gap-2 text-white pt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(p => p - 1)}
-              disabled={currentPage === 1}
-              className="bg-gray-700/50 border-gray-600 hover:bg-gray-600/50 disabled:opacity-50"
-            >
-              Précédent
-            </Button>
-            <span className="text-sm text-gray-400">
-              Page {currentPage} sur {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(p => p + 1)}
-              disabled={currentPage === totalPages}
-              className="bg-gray-700/50 border-gray-600 hover:bg-gray-600/50 disabled:opacity-50"
-            >
-              Suivant
-            </Button>
+            <p className="text-gray-400">{t('no_incidents')}</p>
           </div>
+        ) : (
+          currentIncident && renderIncident(currentIncident)
         )}
       </CardContent>
+      {incidents.length > 1 && (
+        <div className="flex-shrink-0 flex items-center justify-between w-full gap-2 text-white p-4 border-t border-gray-700/50">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentIndex(p => p - 1)}
+            disabled={currentIndex === 0}
+            className="bg-gray-700/50 border-gray-600 hover:bg-gray-600/50 disabled:opacity-50"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Précédent
+          </Button>
+          <span className="text-sm text-gray-400 font-mono">
+            {currentIndex + 1} / {incidents.length}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentIndex(p => p + 1)}
+            disabled={currentIndex >= incidents.length - 1}
+            className="bg-gray-700/50 border-gray-600 hover:bg-gray-600/50 disabled:opacity-50"
+          >
+            Suivant
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      )}
     </Card>
   );
 };
