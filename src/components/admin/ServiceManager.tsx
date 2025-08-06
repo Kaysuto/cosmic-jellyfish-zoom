@@ -4,32 +4,30 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 import ServiceForm, { ServiceFormValues } from './ServiceForm';
 import { showSuccess, showError } from '@/utils/toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 
 const ServiceManager = () => {
   const { t } = useTranslation();
   const { services, loading } = useServices();
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
 
-  const handleStatusChange = async (serviceId: string, status: Service['status']) => {
-    const { error } = await supabase
-      .from('services')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', serviceId);
-
-    if (error) {
-      showError(t('error_updating_service'));
-    } else {
-      showSuccess(t('service_updated_successfully'));
-    }
+  const statusConfig = {
+    operational: { text: t('operational'), className: 'bg-green-500/20 text-green-500 border-green-500/30' },
+    degraded: { text: t('degraded'), className: 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30' },
+    downtime: { text: t('downtime'), className: 'bg-red-500/20 text-red-500 border-red-500/30' },
   };
 
   const handleFormSubmit = async (values: ServiceFormValues) => {
@@ -50,110 +48,137 @@ const ServiceManager = () => {
       showError(t('error_saving_service'));
     } else {
       showSuccess(t('service_saved_successfully'));
-      setIsFormOpen(false);
+      setIsSheetOpen(false);
       setSelectedService(null);
     }
     setIsSubmitting(false);
   };
 
-  const handleDelete = async (serviceId: string) => {
-    const { error } = await supabase.from('services').delete().eq('id', serviceId);
+  const confirmDelete = (serviceId: string) => {
+    setServiceToDelete(serviceId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!serviceToDelete) return;
+    const { error } = await supabase.from('services').delete().eq('id', serviceToDelete);
     if (error) {
       showError(t('error_deleting_service'));
     } else {
       showSuccess(t('service_deleted_successfully'));
     }
+    setIsDeleteDialogOpen(false);
+    setServiceToDelete(null);
   };
 
   const openCreateForm = () => {
     setSelectedService(null);
-    setIsFormOpen(true);
+    setIsSheetOpen(true);
   };
 
   const openEditForm = (service: Service) => {
     setSelectedService(service);
-    setIsFormOpen(true);
+    setIsSheetOpen(true);
   };
 
   if (loading) {
-    return <Skeleton className="h-96 w-full" />;
+    return (
+      <Card>
+        <CardHeader><Skeleton className="h-8 w-48" /></CardHeader>
+        <CardContent><Skeleton className="h-64 w-full" /></CardContent>
+      </Card>
+    );
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>{t('manage_services')}</CardTitle>
-        <Button onClick={openCreateForm}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          {t('create_service')}
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {services.map((service) => (
-            <div key={service.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-muted/50 rounded-md gap-4">
-              <div className="flex-grow">
-                <p className="font-medium">{t(service.name.toLowerCase().replace(/ /g, '_'))}</p>
-                <p className="text-sm text-muted-foreground">{service.description}</p>
-              </div>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <div className="w-full sm:w-40">
-                  <Select
-                    value={service.status}
-                    onValueChange={(newStatus: Service['status']) => handleStatusChange(service.id, newStatus)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('status')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="operational">{t('operational')}</SelectItem>
-                      <SelectItem value="degraded">{t('degraded')}</SelectItem>
-                      <SelectItem value="downtime">{t('downtime')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button variant="ghost" size="icon" onClick={() => openEditForm(service)}>
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{t('confirm_delete_title')}</AlertDialogTitle>
-                      <AlertDialogDescription>{t('confirm_delete_service')}</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDelete(service.id)} className="bg-destructive hover:bg-destructive/90">
-                        {t('delete')}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>{t('manage_services')}</CardTitle>
+          <Button onClick={openCreateForm}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            {t('create_service')}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('service')}</TableHead>
+                <TableHead>{t('status')}</TableHead>
+                <TableHead className="text-right">{t('actions')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {services.map((service) => (
+                <TableRow key={service.id}>
+                  <TableCell>
+                    <div className="font-medium">{t(service.name.toLowerCase().replace(/ /g, '_'))}</div>
+                    <div className="text-sm text-muted-foreground">{service.description}</div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={cn('border', statusConfig[service.status].className)}>
+                      {statusConfig[service.status].text}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEditForm(service)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          <span>{t('edit')}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => confirmDelete(service.id)} className="text-destructive">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>{t('delete')}</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selectedService ? t('edit_service') : t('create_service')}</DialogTitle>
-          </DialogHeader>
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent className="sm:max-w-lg">
+          <SheetHeader>
+            <SheetTitle>{selectedService ? t('edit_service') : t('create_service')}</SheetTitle>
+            <SheetDescription>
+              {selectedService ? t('edit_service_desc') : t('create_service_desc')}
+            </SheetDescription>
+          </SheetHeader>
           <ServiceForm
             service={selectedService}
             onSubmit={handleFormSubmit}
-            onCancel={() => setIsFormOpen(false)}
+            onCancel={() => setIsSheetOpen(false)}
             isSubmitting={isSubmitting}
           />
-        </DialogContent>
-      </Dialog>
-    </Card>
+        </SheetContent>
+      </Sheet>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('confirm_delete_title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('confirm_delete_service')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setServiceToDelete(null)}>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+              {t('delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

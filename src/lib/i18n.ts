@@ -139,7 +139,16 @@ const resources = {
       "user_role": "Utilisateur",
       "member_since": "Membre depuis",
       "assign_to": "Assigner à",
-      "select_admin": "Sélectionner un administrateur"
+      "select_admin": "Sélectionner un administrateur",
+      "total_services": "Services au total",
+      "operational_services": "Services opérationnels",
+      "active_incidents": "Incidents actifs",
+      "actions": "Actions",
+      "edit": "Modifier",
+      "edit_service_desc": "Modifiez les détails de ce service ci-dessous.",
+      "create_service_desc": "Remplissez les détails pour créer un nouveau service.",
+      "edit_incident_desc": "Modifiez les détails de cet incident ci-dessous.",
+      "create_incident_desc": "Remplissez les détails pour créer un nouvel incident."
     }
   },
   en: {
@@ -277,7 +286,16 @@ const resources = {
       "user_role": "User",
       "member_since": "Member since",
       "assign_to": "Assign to",
-      "select_admin": "Select an administrator"
+      "select_admin": "Select an administrator",
+      "total_services": "Total Services",
+      "operational_services": "Operational Services",
+      "active_incidents": "Active Incidents",
+      "actions": "Actions",
+      "edit": "Edit",
+      "edit_service_desc": "Edit the details of this service below.",
+      "create_service_desc": "Fill in the details to create a new service.",
+      "edit_incident_desc": "Edit the details of this incident below.",
+      "create_incident_desc": "Fill in the details to create a new incident."
     }
   }
 };

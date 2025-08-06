@@ -5,16 +5,58 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ServiceManager from '@/components/admin/ServiceManager';
 import IncidentManager from '@/components/admin/IncidentManager';
-import { Settings, LogOut } from 'lucide-react';
+import { Settings, LogOut, Server, ShieldAlert, CheckCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useServices } from '@/hooks/useServices';
+import { useIncidents } from '@/hooks/useIncidents';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Admin = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { services, loading: servicesLoading } = useServices();
+  const { incidents, loading: incidentsLoading } = useIncidents();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/');
   };
+
+  const operationalServices = services.filter(s => s.status === 'operational').length;
+  const activeIncidents = incidents.filter(i => i.status !== 'resolved').length;
+  const loading = servicesLoading || incidentsLoading;
+
+  const AdminStats = () => (
+    <div className="grid gap-4 md:grid-cols-3 mb-8">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">{t('total_services')}</CardTitle>
+          <Server className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          {loading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">{services.length}</div>}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">{t('operational_services')}</CardTitle>
+          <CheckCircle className="h-4 w-4 text-green-500" />
+        </CardHeader>
+        <CardContent>
+          {loading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">{operationalServices}</div>}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">{t('active_incidents')}</CardTitle>
+          <ShieldAlert className="h-4 w-4 text-yellow-500" />
+        </CardHeader>
+        <CardContent>
+          {loading ? <Skeleton className="h-8 w-12" /> : <div className="text-2xl font-bold">{activeIncidents}</div>}
+        </CardContent>
+      </Card>
+    </div>
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -34,6 +76,8 @@ const Admin = () => {
         </div>
       </div>
       
+      <AdminStats />
+
       <Tabs defaultValue="services" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="services">{t('manage_services')}</TabsTrigger>
