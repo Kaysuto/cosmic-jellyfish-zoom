@@ -14,17 +14,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Terminal } from 'lucide-react';
 import { MadeWithDyad } from '@/components/made-with-dyad';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal } from 'lucide-react';
 
 const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
+  const [view, setView] = useState<'signin' | 'signup'>('signin');
   const [allowRegistrations, setAllowRegistrations] = useState(false);
   const [checkingSettings, setCheckingSettings] = useState(true);
 
@@ -112,6 +111,42 @@ const Login = () => {
     setIsLoading(false);
   };
 
+  const SignInForm = (
+    <Form {...loginForm}>
+      <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+        <FormField control={loginForm.control} name="email" render={({ field }) => (
+          <FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" placeholder={t('email_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
+        )} />
+        <FormField control={loginForm.control} name="password" render={({ field }) => (
+          <FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" placeholder={t('password_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
+        )} />
+        <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_in')}</Button>
+      </form>
+    </Form>
+  );
+
+  const SignUpForm = (
+    <Form {...signupForm}>
+      <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField control={signupForm.control} name="first_name" render={({ field }) => (
+            <FormItem><FormLabel>{t('first_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+          )} />
+          <FormField control={signupForm.control} name="last_name" render={({ field }) => (
+            <FormItem><FormLabel>{t('last_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+          )} />
+        </div>
+        <FormField control={signupForm.control} name="email" render={({ field }) => (
+          <FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+        )} />
+        <FormField control={signupForm.control} name="password" render={({ field }) => (
+          <FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+        )} />
+        <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_up')}</Button>
+      </form>
+    </Form>
+  );
+
   return (
     <div className="relative min-h-screen flex flex-col bg-gray-900 text-white">
       <div className="absolute inset-0 z-0">
@@ -138,10 +173,10 @@ const Login = () => {
           <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 text-white">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
-                {t('admin_login')}
+                {view === 'signin' ? t('admin_login') : t('sign_up')}
               </CardTitle>
               <CardDescription className="text-gray-400 pt-2">
-                Accédez à votre tableau de bord
+                {view === 'signin' ? 'Accédez à votre tableau de bord' : 'Créez un nouveau compte'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -150,48 +185,26 @@ const Login = () => {
                   <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                 </div>
               ) : (
-                <Tabs defaultValue="signin" className="w-full">
-                  <TabsList className={`grid w-full ${allowRegistrations ? 'grid-cols-2' : 'grid-cols-1'} bg-gray-900/50`}>
-                    <TabsTrigger value="signin">{t('sign_in')}</TabsTrigger>
-                    {allowRegistrations && <TabsTrigger value="signup">{t('sign_up')}</TabsTrigger>}
-                  </TabsList>
-                  <TabsContent value="signin" className="pt-6">
-                    <Form {...loginForm}>
-                      <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                        <FormField control={loginForm.control} name="email" render={({ field }) => (
-                          <FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" placeholder={t('email_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                        <FormField control={loginForm.control} name="password" render={({ field }) => (
-                          <FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" placeholder={t('password_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                        <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_in')}</Button>
-                      </form>
-                    </Form>
-                  </TabsContent>
+                <div className="space-y-4">
+                  {view === 'signin' ? SignInForm : SignUpForm}
+                  
                   {allowRegistrations && (
-                    <TabsContent value="signup" className="pt-6">
-                      <Form {...signupForm}>
-                        <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField control={signupForm.control} name="first_name" render={({ field }) => (
-                              <FormItem><FormLabel>{t('first_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={signupForm.control} name="last_name" render={({ field }) => (
-                              <FormItem><FormLabel>{t('last_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                          </div>
-                          <FormField control={signupForm.control} name="email" render={({ field }) => (
-                            <FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
-                          )} />
-                          <FormField control={signupForm.control} name="password" render={({ field }) => (
-                            <FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
-                          )} />
-                          <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_up')}</Button>
-                        </form>
-                      </Form>
-                    </TabsContent>
+                    <div className="text-center text-sm text-gray-400">
+                      {view === 'signin' ? (
+                        <>
+                          {t('dont_have_account')}{' '}
+                          <Button variant="link" className="p-0 h-auto text-blue-400" onClick={() => setView('signup')}>{t('sign_up')}</Button>
+                        </>
+                      ) : (
+                        <>
+                          {t('already_have_account')}{' '}
+                          <Button variant="link" className="p-0 h-auto text-blue-400" onClick={() => setView('signin')}>{t('sign_in')}</Button>
+                        </>
+                      )}
+                    </div>
                   )}
-                  {!allowRegistrations && (
+
+                  {!allowRegistrations && view === 'signin' && (
                      <Alert className="mt-6 bg-blue-900/30 border-blue-500/30 text-blue-300">
                         <Terminal className="h-4 w-4" />
                         <AlertTitle>Information</AlertTitle>
@@ -200,7 +213,7 @@ const Login = () => {
                         </AlertDescription>
                       </Alert>
                   )}
-                </Tabs>
+                </div>
               )}
             </CardContent>
           </Card>
