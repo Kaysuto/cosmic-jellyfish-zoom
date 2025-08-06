@@ -92,7 +92,7 @@ const Status = () => {
   }, []);
 
   const overallStatus = useMemo(() => {
-    if (services.length === 0) return 'operational';
+    if (services.length === 0) return 'all_systems_operational';
     const hasDowntime = services.some(s => s.status === 'downtime');
     if (hasDowntime) return 'major_outage';
     const hasDegraded = services.some(s => s.status === 'degraded');
