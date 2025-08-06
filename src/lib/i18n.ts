@@ -209,194 +209,118 @@ const resources = {
       "url_monitoring": "Monitoring URL",
       "no_url_provided": "No URL provided",
       
-      // Composants<dyad-problem-report summary="81 problems">
-<problem file="src/pages/Status.tsx" line="103" column="1" code="1128">Declaration or statement expected.</problem>
-<problem file="src/pages/Status.tsx" line="105" column="2" code="17008">JSX element 'dyad-write' has no corresponding closing tag.</problem>
-<problem file="src/pages/Status.tsx" line="111" column="5" code="1005">'}' expected.</problem>
-<problem file="src/pages/Status.tsx" line="119" column="1" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="121" column="32" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="122" column="3" code="1109">Expression expected.</problem>
-<problem file="src/pages/Status.tsx" line="122" column="51" code="1003">Identifier expected.</problem>
-<problem file="src/pages/Status.tsx" line="122" column="53" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="125" column="47" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="126" column="21" code="1005">'}' expected.</problem>
-<problem file="src/pages/Status.tsx" line="133" column="75" code="1005">'}' expected.</problem>
-<problem file="src/pages/Status.tsx" line="135" column="5" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="136" column="30" code="1005">'}' expected.</problem>
-<problem file="src/pages/Status.tsx" line="137" column="5" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="139" column="3" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="141" column="17" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="142" column="20" code="1005">'}' expected.</problem>
-<problem file="src/pages/Status.tsx" line="144" column="75" code="1003">Identifier expected.</problem>
-<problem file="src/pages/Status.tsx" line="144" column="77" code="1005">'...' expected.</problem>
-<problem file="src/pages/Status.tsx" line="144" column="81" code="1005">',' expected.</problem>
-<problem file="src/pages/Status.tsx" line="144" column="96" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="144" column="97" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="144" column="101" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="145" column="56" code="1005">'}' expected.</problem>
-<problem file="src/pages/Status.tsx" line="148" column="9" code="1109">Expression expected.</problem>
-<problem file="src/pages/Status.tsx" line="149" column="38" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="150" column="34" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="152" column="7" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="153" column="9" code="1109">Expression expected.</problem>
-<problem file="src/pages/Status.tsx" line="154" column="38" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="154" column="86" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="155" column="7" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="156" column="9" code="1109">Expression expected.</problem>
-<problem file="src/pages/Status.tsx" line="156" column="55" code="17008">JSX element 'Service' has no corresponding closing tag.</problem>
-<problem file="src/pages/Status.tsx" line="158" column="38" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="158" column="66" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="159" column="7" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="160" column="5" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="167" column="16" code="1005">'}' expected.</problem>
-<problem file="src/pages/Status.tsx" line="170" column="9" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="175" column="16" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="176" column="38" code="1005">'}' expected.</problem>
-<problem file="src/pages/Status.tsx" line="177" column="5" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="178" column="3" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="181" column="43" code="1382">Unexpected token. Did you mean `{'&gt;'}` or `&amp;gt;`?</problem>
-<problem file="src/pages/Status.tsx" line="182" column="20" code="1005">'}' expected.</problem>
-<problem file="src/pages/Status.tsx" line="183" column="3" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="186" column="1" code="1381">Unexpected token. Did you mean `{'}'}` or `&amp;rbrace;`?</problem>
-<problem file="src/pages/Status.tsx" line="186" column="3" code="1005">'&lt;/' expected.</problem>
-<problem file="src/pages/Status.tsx" line="103" column="3" code="2304">Cannot find name 'dyad'.</problem>
-<problem file="src/pages/Status.tsx" line="103" column="3" code="2365">Operator '&gt;' cannot be applied to types 'number' and 'Element'.</problem>
-<problem file="src/pages/Status.tsx" line="103" column="8" code="2552">Cannot find name 'file'. Did you mean 'File'?</problem>
-<problem file="src/pages/Status.tsx" line="105" column="1" code="2339">Property 'dyad-write' does not exist on type 'JSX.IntrinsicElements'.</problem>
-<problem file="src/pages/Status.tsx" line="106" column="10" code="2695">Left side of comma operator is unused and has no side effects.</problem>
-<problem file="src/pages/Status.tsx" line="106" column="10" code="2695">Left side of comma operator is unused and has no side effects.</problem>
-<problem file="src/pages/Status.tsx" line="106" column="31" code="2304">Cannot find name 'useCallback'.</problem>
-<problem file="src/pages/Status.tsx" line="107" column="10" code="2304">Cannot find name 'supabase'.</problem>
-<problem file="src/pages/Status.tsx" line="108" column="10" code="2304">Cannot find name 'RealtimeChannel'.</problem>
-<problem file="src/pages/Status.tsx" line="108" column="10" code="2695">Left side of comma operator is unused and has no side effects.</problem>
-<problem file="src/pages/Status.tsx" line="108" column="27" code="2304">Cannot find name 'RealtimePostgresChangesPayload'.</problem>
-<problem file="src/pages/Status.tsx" line="111" column="3" code="2304">Cannot find name 'id'.</problem>
-<problem file="src/pages/Status.tsx" line="122" column="44" code="2693">'Service' only refers to a type, but is being used as a value here.</problem>
-<problem file="src/pages/Status.tsx" line="126" column="5" code="2304">Cannot find name 'setLoading'.</problem>
-<problem file="src/pages/Status.tsx" line="127" column="13" code="2304">Cannot find name 'data'.</problem>
-<problem file="src/pages/Status.tsx" line="127" column="13" code="2695">Left side of comma operator is unused and has no side effects.</problem>
-<problem file="src/pages/Status.tsx" line="127" column="19" code="2552">Cannot find name 'error'. Did you mean 'Error'?</problem>
-<problem file="src/pages/Status.tsx" line="133" column="69" code="2304">Cannot find name 'error'.</problem>
-<problem file="src/pages/Status.tsx" line="136" column="7" code="2304">Cannot find name 'setServices'.</problem>
-<problem file="src/pages/Status.tsx" line="136" column="19" code="2304">Cannot find name 'data'.</problem>
-<problem file="src/pages/Status.tsx" line="142" column="5" code="2304">Cannot find name 'fetchServices'.</problem>
-<problem file="src/pages/Status.tsx" line="144" column="78" code="2304">Cannot find name 'key'.</problem>
-<problem file="src/pages/Status.tsx" line="145" column="48" code="2304">Cannot find name 'payload'.</problem>
-<problem file="src/pages/Status.tsx" line="156" column="55" code="2693">'Service' only refers to a type, but is being used as a value here.</problem>
-<problem file="src/pages/Status.tsx" line="176" column="7" code="2304">Cannot find name 'supabase'.</problem>
-<problem file="src/pages/Status.tsx" line="176" column="30" code="2304">Cannot find name 'channel'.</problem>
-<problem file="src/pages/Status.tsx" line="182" column="5" code="2304">Cannot find name 'fetchServices'.</problem>
-<problem file="src/pages/Status.tsx" line="185" column="12" code="2304">Cannot find name 'services'.</problem>
-<problem file="src/pages/Status.tsx" line="185" column="12" code="2695">Left side of comma operator is unused and has no side effects.</problem>
-<problem file="src/pages/Status.tsx" line="185" column="12" code="2695">Left side of comma operator is unused and has no side effects.</problem>
-<problem file="src/pages/Status.tsx" line="185" column="22" code="2304">Cannot find name 'loading'.</problem>
-<problem file="src/pages/Status.tsx" line="185" column="31" code="2304">Cannot find name 'refreshServices'.</problem>
-</dyad-problem-report>You're right! It seems I made a mistake in the previous response by including the Dyad-specific tags (`</dyad-file>`, `<dyad-write>`) directly within the code blocks. This is incorrect and caused the TypeScript errors. My apologies for that oversight!
+      // Composants
+      "made_with_dyad": "Made with Dyad",
+      "made_with_love": "Made with",
+      "by_kaysuto": "by Kaysuto Kimiya",
+      
+      // Messages d'erreur
+      "page_not_found": "Oops! Page not found",
+      "return_home": "Return to Home",
 
-I've corrected the files to remove those tags and ensure the code is valid TypeScript and React. The functionality remains the same, but the syntax errors are now resolved.
-
-Here are the corrected files:
-
-<dyad-write path="src/pages/Status.tsx" description="Fixing TypeScript errors in Status page and useServices hook">
-import { useState, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
-import { formatDistanceToNow } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
-
-import { useServices, type Service } from '@/hooks/useServices';
-import { useIncidents, type Incident } from '@/hooks/useIncidents';
-
-import OverallStatus from '@/components/status/OverallStatus';
-import ServicesStatus from '@/components/status/ServicesStatus';
-import IncidentHistory from '@/components/status/IncidentHistory';
-import UptimeHistory from '@/components/status/UptimeHistory';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-const Status = () => {
-  const { t, i18n } = useTranslation();
-  const { services, loading: servicesLoading } = useServices();
-  const { incidents, loading: incidentsLoading } = useIncidents();
-  
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
-
-  const loading = servicesLoading || incidentsLoading;
-  const currentLocale = i18n.language === 'fr' ? fr : enUS;
-
-  useEffect(() => {
-    if (services && services.length > 0) {
-      if (!selectedServiceId) {
-        setSelectedServiceId(services[0].id);
-      }
-
-      const mostRecentUpdate = services.reduce((latest, service) => {
-        const serviceDate = new Date(service.updated_at);
-        return serviceDate > latest ? serviceDate : latest;
-      }, new Date(0));
-      setLastUpdated(mostRecentUpdate);
+      // Admin & Auth
+      "admin_login": "Admin Login",
+      "email_address": "Email address",
+      "password": "Password",
+      "sign_in": "Sign in",
+      "sign_up": "Sign up",
+      "already_have_account": "Already have an account? Sign in",
+      "dont_have_account": "Don't have an account? Sign up",
+      "forgot_password": "Forgot your password?",
+      "send_instructions": "Send instructions",
+      "admin_dashboard": "Dashboard",
+      "logout": "Logout",
+      "admin_dashboard_wip": "Management tools for services and incidents will be available here soon.",
+      "manage_services": "Manage Services",
+      "manage_incidents": "Manage Incidents",
+      "create_incident": "Create Incident",
+      "edit_incident": "Edit Incident",
+      "delete_incident": "Delete Incident",
+      "create_service": "Create Service",
+      "edit_service": "Edit Service",
+      "delete_service": "Delete Service",
+      "title": "Title",
+      "description": "Description",
+      "service": "Service",
+      "save": "Save",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "confirm_delete_title": "Are you sure?",
+      "confirm_delete_incident": "This action is irreversible. The incident will be permanently deleted.",
+      "confirm_delete_service": "This action is irreversible. The service will be permanently deleted.",
+      "no_service_affected": "No specific service",
+      "return_to_dashboard": "Return to Dashboard",
+      "language_settings": "Language Settings",
+      "select_language_desc": "Choose the display language for the entire site.",
+      "error_updating_service": "Error updating service status.",
+      "service_updated_successfully": "Service status updated successfully.",
+      "error_saving_incident": "Error saving incident.",
+      "incident_saved_successfully": "Incident saved successfully.",
+      "error_deleting_incident": "Error deleting incident.",
+      "incident_deleted_successfully": "Incident deleted successfully.",
+      "error_saving_service": "Error saving service.",
+      "service_saved_successfully": "Service saved successfully.",
+      "error_deleting_service": "Error deleting service.",
+      "service_deleted_successfully": "Service deleted successfully.",
+      "personal_information": "Personal Information",
+      "update_your_personal_information": "Update your first and last name.",
+      "first_name": "First Name",
+      "last_name": "Last Name",
+      "save_changes": "Save Changes",
+      "change_email": "Change Email Address",
+      "update_your_email_address": "A confirmation email will be sent to your new address.",
+      "update_email": "Update Email",
+      "change_password": "Change Password",
+      "update_your_password": "Make sure to use a secure password.",
+      "new_password": "New Password",
+      "confirm_new_password": "Confirm New Password",
+      "update_password": "Update Password",
+      "first_name_required": "First name is required.",
+      "last_name_required": "Last name is required.",
+      "invalid_email": "Invalid email address.",
+      "password_too_short": "Password must be at least 6 characters.",
+      "passwords_do_not_match": "Passwords do not match.",
+      "error_updating_profile": "Error updating profile.",
+      "profile_updated_successfully": "Profile updated successfully.",
+      "error_updating_email": "Error updating email.",
+      "email_update_confirmation_sent": "Confirmation email sent. Please check your new inbox.",
+      "error_updating_password": "Error updating password.",
+      "password_updated_successfully": "Password updated successfully.",
+      "role": "Role",
+      "admin_role": "Administrator",
+      "user_role": "User",
+      "member_since": "Member since",
+      "assign_to": "Assign to",
+      "select_admin": "Select an administrator",
+      "total_services": "Total Services",
+      "operational_services": "Operational Services",
+      "active_incidents": "Active Incidents",
+      "actions": "Actions",
+      "edit": "Edit",
+      "edit_service_desc": "Edit the details of this service below.",
+      "create_service_desc": "Fill in the details to create a new service.",
+      "edit_incident_desc": "Edit the details of this incident below.",
+      "create_incident_desc": "Fill in the details to create a new incident."
     }
-  }, [services, selectedServiceId]);
-
-  const overallStatus = useMemo(() => {
-    if (services.length === 0) return 'all_systems_operational';
-    const hasDowntime = services.some(s => s.status === 'downtime');
-    if (hasDowntime) return 'major_outage';
-    const hasDegraded = services.some(s => s.status === 'degraded');
-    if (hasDegraded) return 'partial_outage';
-    return 'all_systems_operational';
-  }, [services]);
-
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Skeleton className="h-24 w-full mb-8" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-8">
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-96 w-full" />
-          </div>
-          <Skeleton className="h-full w-full min-h-[400px]" />
-        </div>
-      </div>
-    );
   }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 py-8 flex-grow flex flex-col"
-    >
-      <OverallStatus status={overallStatus} lastUpdated={lastUpdated ? `${t('last_updated')} ${formatDistanceToNow(lastUpdated, { addSuffix: true, locale: currentLocale })}` : ''} />
-
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 flex-grow">
-        <div className="flex flex-col gap-8">
-          <ServicesStatus services={services} />
-          <UptimeHistory serviceId={selectedServiceId}>
-            {services.length > 0 && selectedServiceId && (
-              <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
-                <SelectTrigger className="w-full sm:w-[250px]">
-                  <SelectValue placeholder={t('select_service')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {services.map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {t(service.name.toLowerCase().replace(/ /g, '_'))}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </UptimeHistory>
-        </div>
-        
-        <IncidentHistory incidents={incidents} />
-      </div>
-    </motion.div>
-  );
 };
 
-export default Status;
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources,
+    fallbackLng: 'fr',
+    debug: false,
+    interpolation: {
+      escapeValue: false,
+    },
+    detection: {
+      // Options de détection
+      order: ['querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag'],
+      caches: ['localStorage', 'cookie'],
+    },
+  });
+
+export default i18n;
