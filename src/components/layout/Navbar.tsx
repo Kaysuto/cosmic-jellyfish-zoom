@@ -102,24 +102,30 @@ const Navbar = () => {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-56"
-        align="end"
-        forceMount
         onMouseEnter={handleUserMenuEnter}
         onMouseLeave={handleUserMenuLeave}
+        className="w-56 bg-gray-900/80 backdrop-blur-lg border border-gray-700/60 text-gray-300 rounded-xl shadow-2xl p-2"
+        align="end"
+        forceMount
       >
-        <DropdownMenuLabel className="font-normal">
+        <DropdownMenuLabel className="font-normal px-2 py-1.5">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{profile?.first_name} {profile?.last_name}</p>
-            <p className="text-xs leading-none text-muted-foreground">{profile?.email}</p>
+            <p className="text-sm font-medium leading-none text-white">{profile?.first_name} {profile?.last_name}</p>
+            <p className="text-xs leading-none text-gray-400">{profile?.email}</p>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild><Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span></Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link to="/admin/profile"><User className="mr-2 h-4 w-4" /><span>Profil</span></Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link to="/admin/settings"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></Link></DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
+        <DropdownMenuSeparator className="my-2 bg-gray-700/50" />
+        <DropdownMenuItem asChild className="rounded-md focus:bg-gray-700/50 focus:text-white cursor-pointer">
+          <Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span></Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="rounded-md focus:bg-gray-700/50 focus:text-white cursor-pointer">
+          <Link to="/admin/profile"><User className="mr-2 h-4 w-4" /><span>Profil</span></Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="rounded-md focus:bg-gray-700/50 focus:text-white cursor-pointer">
+          <Link to="/admin/settings"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="my-2 bg-gray-700/50" />
+        <DropdownMenuItem onClick={handleLogout} className="rounded-md text-red-400 focus:text-red-400 focus:bg-red-500/10 cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>{t('logout')}</span>
         </DropdownMenuItem>
