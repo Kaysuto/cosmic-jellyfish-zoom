@@ -95,13 +95,9 @@ const Status = () => {
         }
       }
 
-      const ninetyDaysAgo = new Date();
-      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-
       const { data: incidentsData, error: incidentsError } = await supabase
         .from('incidents')
         .select('*, services(name)')
-        .gte('created_at', ninetyDaysAgo.toISOString())
         .order('created_at', { ascending: false });
 
       if (incidentsError) {

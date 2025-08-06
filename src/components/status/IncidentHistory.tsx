@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useMemo, useState } from 'react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, CheckCircle, ShieldAlert, Eye, Wrench, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -8,14 +8,26 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface IncidentHistoryProps {
   incidents: ApiIncident[];
 }
 
+const INCIDENTS_PER_PAGE = 3;
+
 const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
   const { t, i18n } = useTranslation();
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(incidents.length / INCIDENTS_PER_PAGE);
+
+  const paginatedIncidents = useMemo(() => {
+    const startIndex = (currentPage - 1) * INCIDENTS_PER_PAGE;
+    const endIndex = startIndex + INCIDENTS_PER_PAGE;
+    return incidents.slice(startIndex, endIndex);
+  }, [incidents, currentPage]);
   
   const statusConfig = {
     resolved: { 
@@ -41,7 +53,7 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
   };
 
   const groupedIncidents = useMemo(() => {
-    const groups = incidents.reduce((acc, incident) => {
+    const groups = paginatedIncidents.reduce((acc, incident) => {
       const month = format(new Date(incident.created_at), 'MMMM yyyy', { locale: currentLocale });
       const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
       if (!acc[capitalizedMonth]) {
@@ -51,7 +63,7 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
       return acc;
     }, {} as Record<string, ApiIncident[]>);
     return Object.entries(groups);
-  }, [incidents, currentLocale]);
+  }, [paginatedIncidents, currentLocale]);
 
   return (
     <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 shadow-xl flex flex-col h-full">
@@ -111,6 +123,33 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
           )}
         </ScrollArea>
       </CardContent>
+      {totalPages > 1 && (
+        <CardFooter>
+          <div className="flex items-center justify-center w-full gap-2 text-white">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => p - 1)}
+              disabled={currentPage === 1}
+              className="bg-gray-700/50 border-gray-600 hover:bg-gray-600/50 disabled:opacity-50"
+            >
+              Précédent
+            </Button>
+            <span className="text-sm text-gray-400">
+              Page {currentPage} sur {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => p + 1)}
+              disabled={currentPage === totalPages}
+              className="bg-gray-700/50 border-gray-600 hover:bg-gray-600/50 disabled:opacity-50"
+            >
+              Suivant
+            </Button>
+          </div>
+        </CardFooter>
+      )}
     </Card>
   );
 };
