@@ -27,7 +27,7 @@ const Index = () => {
             {t('welcome')}
           </h1>
           <p className="mt-6 text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-            {t('description')}
+            {t('homepage_description')}
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/status">
