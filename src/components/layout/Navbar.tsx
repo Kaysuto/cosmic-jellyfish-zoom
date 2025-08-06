@@ -27,8 +27,9 @@ const Navbar = () => {
       try {
         const response = await fetch('https://discord.com/api/guilds/1027968386640117770/widget.json');
         const data = await response.json();
-        if (data.presence_count) {
-          setDiscordOnline(data.presence_count);
+        if (data.members) {
+          const onlineUsers = data.members.filter((member: { bot: boolean }) => !member.bot);
+          setDiscordOnline(onlineUsers.length);
         }
       } catch (error) {
         console.error("Failed to fetch Discord presence count:", error);
