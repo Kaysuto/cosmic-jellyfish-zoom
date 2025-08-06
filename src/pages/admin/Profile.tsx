@@ -10,14 +10,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, User, Mail, KeyRound } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getGravatarURL } from '@/lib/gravatar';
+import { Badge } from '@/components/ui/badge';
 
 const Profile = () => {
   const { t } = useTranslation();
   const { profile, loading: profileLoading } = useProfile();
 
-  // Schéma et formulaire pour les informations personnelles
   const profileSchema = z.object({
     first_name: z.string().min(1, { message: t('first_name_required') }),
     last_name: z.string().min(1, { message: t('last_name_required') }),
@@ -30,7 +32,6 @@ const Profile = () => {
     },
   });
 
-  // Schéma et formulaire pour l'email
   const emailSchema = z.object({
     email: z.string().email({ message: t('invalid_email') }),
   });
@@ -41,7 +42,6 @@ const Profile = () => {
     },
   });
 
-  // Schéma et formulaire pour le mot de passe
   const passwordSchema = z.object({
     password: z.string().min(6, { message: t('password_too_short') }),
     confirmPassword: z.string(),
@@ -76,88 +76,136 @@ const Profile = () => {
     }
   };
 
-  if (profileLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8 space-y-6">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-48 w-full" />
-        <Skeleton className="h-48 w-full" />
-        <Skeleton className="h-48 w-full" />
+  const UserProfileCard = () => (
+    <Card className="overflow-hidden">
+      <CardHeader className="bg-muted/30 p-6">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-20 w-20 border-4 border-background">
+            <AvatarImage src={getGravatarURL(profile?.email, 160)} />
+            <AvatarFallback className="text-3xl">
+              {profile?.first_name?.charAt(0)}{profile?.last_name?.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">
+              {profile?.first_name} {profile?.last_name}
+            </h2>
+            <p className="text-sm text-muted-foreground">{profile?.email}</p>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-6">
+        <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('role')}</h3>
+        <Badge variant={profile?.role === 'admin' ? 'default' : 'secondary'}>
+          {profile?.role === 'admin' ? t('admin_role') : t('user_role')}
+        </Badge>
+      </CardContent>
+    </Card>
+  );
+
+  const LoadingSkeleton = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-1">
+        <Card>
+          <CardHeader className="flex items-center gap-4 p-6">
+            <Skeleton className="h-20 w-20 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <Skeleton className="h-4 w-16 mb-2" />
+            <Skeleton className="h-6 w-20" />
+          </CardContent>
+        </Card>
       </div>
-    );
-  }
+      <div className="lg:col-span-2 space-y-6">
+        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-56 w-full" />
+      </div>
+    </div>
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Button asChild variant="outline">
+        <Button asChild variant="ghost">
           <Link to="/admin">
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t('return_to_dashboard')}
           </Link>
         </Button>
       </div>
-      <div className="space-y-6">
-        {/* Informations personnelles */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('personal_information')}</CardTitle>
-            <CardDescription>{t('update_your_personal_information')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...profileForm}>
-              <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
-                <FormField control={profileForm.control} name="first_name" render={({ field }) => (
-                  <FormItem><FormLabel>{t('first_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={profileForm.control} name="last_name" render={({ field }) => (
-                  <FormItem><FormLabel>{t('last_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <Button type="submit" disabled={profileForm.formState.isSubmitting}>{t('save_changes')}</Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
 
-        {/* Changer l'email */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('change_email')}</CardTitle>
-            <CardDescription>{t('update_your_email_address')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...emailForm}>
-              <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
-                <FormField control={emailForm.control} name="email" render={({ field }) => (
-                  <FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <Button type="submit" disabled={emailForm.formState.isSubmitting}>{t('update_email')}</Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+      {profileLoading ? <LoadingSkeleton /> : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="lg:col-span-1 space-y-6">
+            <UserProfileCard />
+          </div>
 
-        {/* Changer le mot de passe */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('change_password')}</CardTitle>
-            <CardDescription>{t('update_your_password')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...passwordForm}>
-              <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
-                <FormField control={passwordForm.control} name="password" render={({ field }) => (
-                  <FormItem><FormLabel>{t('new_password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={passwordForm.control} name="confirmPassword" render={({ field }) => (
-                  <FormItem><FormLabel>{t('confirm_new_password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <Button type="submit" disabled={passwordForm.formState.isSubmitting}>{t('update_password')}</Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
+          <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><User className="h-5 w-5" /> {t('personal_information')}</CardTitle>
+                <CardDescription>{t('update_your_personal_information')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...profileForm}>
+                  <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField control={profileForm.control} name="first_name" render={({ field }) => (
+                        <FormItem><FormLabel>{t('first_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <FormField control={profileForm.control} name="last_name" render={({ field }) => (
+                        <FormItem><FormLabel>{t('last_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                    </div>
+                    <Button type="submit" disabled={profileForm.formState.isSubmitting}>{t('save_changes')}</Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5" /> {t('change_email')}</CardTitle>
+                <CardDescription>{t('update_your_email_address')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...emailForm}>
+                  <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
+                    <FormField control={emailForm.control} name="email" render={({ field }) => (
+                      <FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <Button type="submit" disabled={emailForm.formState.isSubmitting}>{t('update_email')}</Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5" /> {t('change_password')}</CardTitle>
+                <CardDescription>{t('update_your_password')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...passwordForm}>
+                  <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                    <FormField control={passwordForm.control} name="password" render={({ field }) => (
+                      <FormItem><FormLabel>{t('new_password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={passwordForm.control} name="confirmPassword" render={({ field }) => (
+                      <FormItem><FormLabel>{t('confirm_new_password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <Button type="submit" disabled={passwordForm.formState.isSubmitting}>{t('update_password')}</Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

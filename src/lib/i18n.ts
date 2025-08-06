@@ -133,7 +133,10 @@ const resources = {
       "error_updating_email": "Erreur lors de la mise à jour de l'e-mail.",
       "email_update_confirmation_sent": "E-mail de confirmation envoyé. Veuillez vérifier votre nouvelle boîte de réception.",
       "error_updating_password": "Erreur lors de la mise à jour du mot de passe.",
-      "password_updated_successfully": "Mot de passe mis à jour avec succès."
+      "password_updated_successfully": "Mot de passe mis à jour avec succès.",
+      "role": "Rôle",
+      "admin_role": "Administrateur",
+      "user_role": "Utilisateur"
     }
   },
   en: {
@@ -265,7 +268,10 @@ const resources = {
       "error_updating_email": "Error updating email.",
       "email_update_confirmation_sent": "Confirmation email sent. Please check your new inbox.",
       "error_updating_password": "Error updating password.",
-      "password_updated_successfully": "Password updated successfully."
+      "password_updated_successfully": "Password updated successfully.",
+      "role": "Role",
+      "admin_role": "Administrator",
+      "user_role": "User"
     }
   }
 };
