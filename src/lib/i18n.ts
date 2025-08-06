@@ -7,6 +7,7 @@ const resources = {
   fr: {
     translation: {
       // ... (toutes les traductions existantes)
+      "page_not_found_desc": "Désolé, la page que vous recherchez semble avoir disparu dans le néant.",
       "spotify_title": "Musique d'ambiance",
       "discord_title": "Rejoignez-nous sur Discord",
       "discord_online": "{{count}} en ligne",
@@ -205,6 +206,7 @@ const resources = {
   en: {
     translation: {
       // ... (toutes les traductions existantes)
+      "page_not_found_desc": "Sorry, the page you are looking for seems to have vanished into thin air.",
       "spotify_title": "Ambiant Music",
       "discord_title": "Join us on Discord",
       "discord_online": "{{count}} online",
