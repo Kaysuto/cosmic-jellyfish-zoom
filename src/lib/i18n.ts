@@ -11,11 +11,9 @@ const resources = {
       "status": "Statut",
       
       // Page d'accueil
-      "welcome": "Bienvenue sur Jelly",
-      "description": "Votre plateforme pour des expériences extraordinaires",
+      "welcome": "Statut en temps réel des services Jelly",
+      "description": "Cette page fournit des informations détaillées sur la disponibilité de nos systèmes. En cas d'incident, vous trouverez ici toutes les mises à jour.",
       "view_status": "Voir le statut du système",
-      "our_mission": "Notre Mission",
-      "mission_description": "Nous nous engageons à fournir une plateforme fiable et performante pour vos expériences numériques.",
       
       // Page de statut
       "status_title": "Statut des services",
@@ -69,11 +67,9 @@ const resources = {
       "status": "Status",
       
       // Page d'accueil
-      "welcome": "Welcome to Jelly",
-      "description": "Your platform for amazing experiences",
+      "welcome": "Real-time status of Jelly services",
+      "description": "This page provides detailed information on our systems' availability. In case of an incident, you will find all updates here.",
       "view_status": "View System Status",
-      "our_mission": "Our Mission",
-      "mission_description": "We are committed to providing a reliable and high-performance platform for your digital experiences.",
       
       // Page de statut
       "status_title": "Service Status",
