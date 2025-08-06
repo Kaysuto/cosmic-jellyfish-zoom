@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Disc3, Volume2, SkipBack, Play, Pause, SkipForward } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Slider } from "@/components/ui/slider";
 import { useAudioStore } from "@/stores/audioStore";
 
@@ -113,16 +114,37 @@ const CustomAudioPlayer = () => {
     );
   }
 
-  const displayName = currentTrack.name.length > 20 
+  const isTruncated = currentTrack.name.length > 20;
+  const displayName = isTruncated 
     ? `${currentTrack.name.substring(0, 20)}...` 
     : currentTrack.name;
+
+  const TrackName = () => {
+    if (isLoading) {
+      return <>Chargement...</>;
+
+    }
+    if (isTruncated) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>{displayName}</span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{currentTrack.name}</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+    return <>{displayName}</>;
+  };
 
   return (
     <div className="flex items-center gap-3 bg-gray-800/30 rounded-full px-3 py-1.5 border border-gray-700/60">
       <Disc3 className={`h-4 w-4 text-purple-400 ${isPlaying ? 'animate-spin' : ''}`} />
       
       <div className="text-xs truncate max-w-[120px] text-white">
-        {isLoading ? 'Chargement...' : displayName}
+        <TrackName />
       </div>
       
       <div className="flex items-center gap-1">
@@ -157,16 +179,16 @@ const CustomAudioPlayer = () => {
         </button>
       </div>
       
-      <Popover>
-        <PopoverTrigger asChild>
+      <HoverCard openDelay={100} closeDelay={100}>
+        <HoverCardTrigger asChild>
           <button 
             className="p-1 text-gray-400 hover:text-white disabled:opacity-50 transition-colors" 
             disabled={!tracks || tracks.length === 0}
           >
             <Volume2 className="h-3 w-3" />
           </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-40 bg-gray-800 border-gray-700">
+        </HoverCardTrigger>
+        <HoverCardContent className="w-40 bg-gray-800 border-gray-700">
           <div className="space-y-2">
             <div className="text-xs text-gray-400 text-center">Volume: {volume}%</div>
             <Slider
@@ -177,8 +199,8 @@ const CustomAudioPlayer = () => {
               className="cursor-pointer"
             />
           </div>
-        </PopoverContent>
-      </Popover>
+        </HoverCardContent>
+      </HoverCard>
 
       <audio 
         ref={audioRef} 
