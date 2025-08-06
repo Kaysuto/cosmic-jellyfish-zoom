@@ -2,13 +2,13 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { ArrowRight, Zap } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 const Index = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-gray-900 text-white">
+    <div className="relative flex-grow w-full overflow-hidden bg-gray-900 text-white flex flex-col">
       {/* Fond animé */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-transparent to-gray-900 opacity-80"></div>
@@ -16,7 +16,7 @@ const Index = () => {
       </div>
 
       {/* Contenu principal */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-4">
+      <div className="relative z-10 flex flex-col items-center justify-center flex-grow text-center px-4">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

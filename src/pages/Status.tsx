@@ -102,13 +102,14 @@ const Status = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-24">
-        <Skeleton className="h-12 w-1/2 mb-4" />
-        <Skeleton className="h-8 w-1/4 mb-8" />
-        <div className="space-y-8">
-          <Skeleton className="h-48 w-full" />
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-64 w-full" />
+      <div className="container mx-auto px-4 py-8">
+        <Skeleton className="h-24 w-full mb-8" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-8">
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-96 w-full" />
+          </div>
+          <Skeleton className="h-full w-full min-h-[400px]" />
         </div>
       </div>
     );
@@ -119,29 +120,32 @@ const Status = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 py-24"
+      className="container mx-auto px-4 py-8 flex-grow flex flex-col"
     >
       <OverallStatus status={overallStatus} lastUpdated={lastUpdated ? `${t('last_updated')} ${formatDistanceToNow(lastUpdated, { addSuffix: true, locale: currentLocale })}` : ''} />
 
-      <div className="mt-12 space-y-8">
-        <ServicesStatus services={services} />
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 flex-grow">
+        <div className="flex flex-col gap-8">
+          <ServicesStatus services={services} />
+          <UptimeHistory serviceId={selectedServiceId}>
+            {services.length > 0 && selectedServiceId && (
+              <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
+                <SelectTrigger className="w-full sm:w-[250px]">
+                  <SelectValue placeholder={t('select_service')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {t(service.name.toLowerCase().replace(/ /g, '_'))}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </UptimeHistory>
+        </div>
+        
         <IncidentHistory incidents={incidents} />
-        <UptimeHistory serviceId={selectedServiceId}>
-          {services.length > 0 && selectedServiceId && (
-            <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
-              <SelectTrigger className="w-full sm:w-[250px]">
-                <SelectValue placeholder={t('select_service')} />
-              </SelectTrigger>
-              <SelectContent>
-                {services.map((service) => (
-                  <SelectItem key={service.id} value={service.id}>
-                    {t(service.name.toLowerCase().replace(/ /g, '_'))}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </UptimeHistory>
       </div>
     </motion.div>
   );
