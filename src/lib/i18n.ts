@@ -83,6 +83,9 @@ const resources = {
       "create_incident": "Créer un incident",
       "edit_incident": "Modifier l'incident",
       "delete_incident": "Supprimer l'incident",
+      "create_service": "Créer un service",
+      "edit_service": "Modifier le service",
+      "delete_service": "Supprimer le service",
       "title": "Titre",
       "description": "Description",
       "service": "Service",
@@ -92,6 +95,7 @@ const resources = {
       "delete": "Supprimer",
       "confirm_delete_title": "Êtes-vous sûr ?",
       "confirm_delete_incident": "Cette action est irréversible. L'incident sera supprimé définitivement.",
+      "confirm_delete_service": "Cette action est irréversible. Le service sera supprimé définitivement.",
       "no_service_affected": "Aucun service spécifique",
       "return_to_dashboard": "Retour au tableau de bord",
       "language_settings": "Paramètres de langue",
@@ -101,7 +105,11 @@ const resources = {
       "error_saving_incident": "Erreur lors de l'enregistrement de l'incident.",
       "incident_saved_successfully": "Incident enregistré avec succès.",
       "error_deleting_incident": "Erreur lors de la suppression de l'incident.",
-      "incident_deleted_successfully": "Incident supprimé avec succès."
+      "incident_deleted_successfully": "Incident supprimé avec succès.",
+      "error_saving_service": "Erreur lors de l'enregistrement du service.",
+      "service_saved_successfully": "Service enregistré avec succès.",
+      "error_deleting_service": "Erreur lors de la suppression du service.",
+      "service_deleted_successfully": "Service supprimé avec succès."
     }
   },
   en: {
@@ -183,6 +191,9 @@ const resources = {
       "create_incident": "Create Incident",
       "edit_incident": "Edit Incident",
       "delete_incident": "Delete Incident",
+      "create_service": "Create Service",
+      "edit_service": "Edit Service",
+      "delete_service": "Delete Service",
       "title": "Title",
       "description": "Description",
       "service": "Service",
@@ -192,6 +203,7 @@ const resources = {
       "delete": "Delete",
       "confirm_delete_title": "Are you sure?",
       "confirm_delete_incident": "This action is irreversible. The incident will be permanently deleted.",
+      "confirm_delete_service": "This action is irreversible. The service will be permanently deleted.",
       "no_service_affected": "No specific service",
       "return_to_dashboard": "Return to Dashboard",
       "language_settings": "Language Settings",
@@ -201,7 +213,11 @@ const resources = {
       "error_saving_incident": "Error saving incident.",
       "incident_saved_successfully": "Incident saved successfully.",
       "error_deleting_incident": "Error deleting incident.",
-      "incident_deleted_successfully": "Incident deleted successfully."
+      "incident_deleted_successfully": "Incident deleted successfully.",
+      "error_saving_service": "Error saving service.",
+      "service_saved_successfully": "Service saved successfully.",
+      "error_deleting_service": "Error deleting service.",
+      "service_deleted_successfully": "Service deleted successfully."
     }
   }
 };

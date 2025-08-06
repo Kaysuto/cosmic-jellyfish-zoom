@@ -1,0 +1,78 @@
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Service } from '@/hooks/useServices';
+
+const serviceSchema = z.object({
+  name: z.string().min(1, { message: 'Le nom est requis' }),
+  description: z.string().optional(),
+});
+
+export type ServiceFormValues = z.infer<typeof serviceSchema>;
+
+interface ServiceFormProps {
+  service?: Service | null;
+  onSubmit: (values: ServiceFormValues) => void;
+  onCancel: () => void;
+  isSubmitting: boolean;
+}
+
+const ServiceForm = ({ service, onSubmit, onCancel, isSubmitting }: ServiceFormProps) => {
+  const { t } = useTranslation();
+
+  const form = useForm<ServiceFormValues>({
+    resolver: zodResolver(serviceSchema),
+    defaultValues: {
+      name: service?.name || '',
+      description: service?.description || '',
+    },
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('title')}</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('description')}</FormLabel>
+              <FormControl>
+                <Textarea {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting}>
+            {t('cancel')}
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? t('saving') : t('save')}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+};
+
+export default ServiceForm;

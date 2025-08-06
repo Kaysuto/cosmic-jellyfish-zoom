@@ -13,9 +13,11 @@ import IncidentForm, { IncidentFormValues } from './IncidentForm';
 import { showSuccess, showError } from '@/utils/toast';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
+import { useSession } from '@/contexts/AuthContext';
 
 const IncidentManager = () => {
   const { t, i18n } = useTranslation();
+  const { session } = useSession();
   const { incidents, loading: incidentsLoading } = useIncidents();
   const { services, loading: servicesLoading } = useServices();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -25,9 +27,15 @@ const IncidentManager = () => {
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
   const handleFormSubmit = async (values: IncidentFormValues) => {
+    if (!session?.user) {
+      showError("Vous devez être connecté pour effectuer cette action.");
+      return;
+    }
+
     setIsSubmitting(true);
     const incidentData = {
       ...values,
+      author_id: session.user.id,
       updated_at: new Date().toISOString(),
     };
 
