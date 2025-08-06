@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { RealtimeChannel } from '@supabase/supabase-js';
+import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 export interface Service {
   id: string;
@@ -36,6 +36,21 @@ export const useServices = () => {
   useEffect(() => {
     fetchServices();
 
+    const handleRealtimeUpdate = (payload: RealtimePostgresChangesPayload<{ [key: string]: any }>) => {
+      if (payload.eventType === 'UPDATE') {
+        const updatedService = payload.new as Service;
+        setServices(currentServices =>
+          currentServices.map(s => (s.id === updatedService.id ? updatedService : s))
+        );
+      } else if (payload.eventType === 'INSERT') {
+        const newService = payload.new as Service;
+        setServices(currentServices => [...currentServices, newService].sort((a, b) => a.name.localeCompare(b.name)));
+      } else if (payload.eventType === 'DELETE') {
+        const deletedService = payload.old as Partial<Service>;
+        setServices(currentServices => currentServices.filter(s => s.id !== deletedService.id));
+      }
+    };
+
     const channel: RealtimeChannel = supabase
       .channel('services-changes')
       .on(
@@ -45,9 +60,7 @@ export const useServices = () => {
           schema: 'public',
           table: 'services',
         },
-        () => {
-          fetchServices();
-        }
+        handleRealtimeUpdate
       )
       .subscribe();
 
