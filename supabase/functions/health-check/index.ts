@@ -12,6 +12,7 @@ const corsHeaders = {
 interface Service {
   id: string;
   url: string | null;
+  status: string;
 }
 
 serve(async (req) => {
@@ -27,57 +28,40 @@ serve(async (req) => {
 
     const { data: services, error: servicesError } = await supabaseAdmin
       .from('services')
-      .select('id, url');
+      .select('id, url, status');
 
     if (servicesError) throw servicesError;
 
     const checks = services.map(async (service: Service) => {
-      if (!service.url) {
-        return; // Ignore services without a URL
+      // Ne pas vérifier les services en maintenance
+      if (!service.url || service.status === 'maintenance') {
+        return;
       }
 
-      let live_status: 'operational' | 'downtime' = 'operational';
       let check_status: 'up' | 'down' = 'up';
       let response_time_ms: number | null = null;
 
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
         
         const startTime = Date.now();
-        const response = await fetch(service.url, { 
-          method: 'GET',
-          redirect: 'follow',
-          signal: controller.signal 
-        });
+        const response = await fetch(service.url, { method: 'GET', redirect: 'follow', signal: controller.signal });
         const endTime = Date.now();
         
         clearTimeout(timeoutId);
         response_time_ms = endTime - startTime;
 
-        // Condition améliorée : vérifie si la réponse n'est pas OK OU si une erreur réseau s'est produite
         if (!response.ok || response.type === 'error') {
-          live_status = 'downtime';
           check_status = 'down';
         }
       } catch (e) {
         console.error(`Error pinging ${service.url}:`, e.message);
-        live_status = 'downtime';
         check_status = 'down';
         response_time_ms = null;
       }
 
-      // 1. Update the live status of the service
-      const { error: updateError } = await supabaseAdmin
-        .from('services')
-        .update({ status: live_status, updated_at: new Date().toISOString() })
-        .eq('id', service.id);
-      
-      if (updateError) {
-        console.error(`Error updating service ${service.id}:`, updateError.message);
-      }
-
-      // 2. Insert a record into the health check history
+      // Insérer uniquement le résultat. Le trigger s'occupera du reste.
       const { error: insertError } = await supabaseAdmin
         .from('health_check_results')
         .insert({

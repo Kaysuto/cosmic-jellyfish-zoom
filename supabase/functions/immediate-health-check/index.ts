@@ -25,56 +25,59 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get the service details
     const { data: service, error: serviceError } = await supabaseAdmin
       .from('services')
-      .select('id, url')
+      .select('id, url, status')
       .eq('id', service_id)
       .single();
 
     if (serviceError) throw serviceError;
-    if (!service || !service.url) {
-      // If no URL, it's considered in maintenance, no need to check
-      return new Response(JSON.stringify({ message: 'Service has no URL to check.' }), {
+    
+    if (!service.url || service.status === 'maintenance') {
+      return new Response(JSON.stringify({ message: 'Service has no URL to check or is in maintenance.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
     }
 
-    let live_status: 'operational' | 'downtime' = 'operational';
+    let check_status: 'up' | 'down' = 'up';
+    let response_time_ms: number | null = null;
     
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
       
-      const response = await fetch(service.url, { 
-        method: 'GET',
-        redirect: 'follow',
-        signal: controller.signal 
-      });
+      const startTime = Date.now();
+      const response = await fetch(service.url, { method: 'GET', redirect: 'follow', signal: controller.signal });
+      const endTime = Date.now();
       
       clearTimeout(timeoutId);
+      response_time_ms = endTime - startTime;
 
       if (!response.ok || response.type === 'error') {
-        live_status = 'downtime';
+        check_status = 'down';
       }
     } catch (e) {
       console.error(`Immediate check error for ${service.url}:`, e.message);
-      live_status = 'downtime';
+      check_status = 'down';
+      response_time_ms = null;
     }
 
-    // Update the live status of the service
-    const { error: updateError } = await supabaseAdmin
-      .from('services')
-      .update({ status: live_status, updated_at: new Date().toISOString() })
-      .eq('id', service.id);
-    
-    if (updateError) {
-      console.error(`Error updating service ${service.id}:`, updateError.message);
-      throw updateError;
+    // Insérer le résultat. Le trigger fera le reste.
+    const { error: insertError } = await supabaseAdmin
+      .from('health_check_results')
+      .insert({
+        service_id: service.id,
+        status: check_status,
+        response_time_ms: response_time_ms
+      });
+
+    if (insertError) {
+      console.error(`Error inserting health check for service ${service.id}:`, insertError.message);
+      throw insertError;
     }
 
-    return new Response(JSON.stringify({ message: `Service ${service_id} checked. Status: ${live_status}` }), {
+    return new Response(JSON.stringify({ message: `Service ${service_id} check initiated.` }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
