@@ -188,7 +188,15 @@ const resources = {
       "qbittorrent": "qBittorrent",
       "homepage": "Page d'accueil",
       "status_page": "Page de statut",
-      "admin_panel": "Panneau d'administration"
+      "admin_panel": "Panneau d'administration",
+      "registration_settings": "Paramètres d'inscription",
+      "allow_new_registrations_desc": "Contrôlez si de nouveaux utilisateurs peuvent s'inscrire sur le site.",
+      "allow_new_registrations": "Autoriser les nouvelles inscriptions",
+      "error_loading_settings": "Erreur lors du chargement des paramètres.",
+      "error_updating_setting": "Erreur lors de la mise à jour du paramètre.",
+      "registrations_enabled": "Les inscriptions sont maintenant activées.",
+      "registrations_disabled": "Les inscriptions sont maintenant désactivées.",
+      "registrations_are_closed": "Les inscriptions sont actuellement fermées. Veuillez contacter un administrateur."
     }
   },
   en: {
@@ -375,7 +383,15 @@ const resources = {
       "qbittorrent": "qBittorrent",
       "homepage": "Homepage",
       "status_page": "Status Page",
-      "admin_panel": "Admin Panel"
+      "admin_panel": "Admin Panel",
+      "registration_settings": "Registration Settings",
+      "allow_new_registrations_desc": "Control whether new users can sign up on the site.",
+      "allow_new_registrations": "Allow new registrations",
+      "error_loading_settings": "Error loading settings.",
+      "error_updating_setting": "Error updating setting.",
+      "registrations_enabled": "Registrations are now enabled.",
+      "registrations_disabled": "Registrations are now disabled.",
+      "registrations_are_closed": "Registrations are currently closed. Please contact an administrator."
     }
   }
 };

@@ -15,14 +15,39 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { MadeWithDyad } from '@/components/made-with-dyad';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Terminal } from 'lucide-react';
 
 const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
+  const [allowRegistrations, setAllowRegistrations] = useState(false);
+  const [checkingSettings, setCheckingSettings] = useState(true);
+
+  useEffect(() => {
+    const checkRegistrationStatus = async () => {
+      setCheckingSettings(true);
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'allow_registrations')
+        .single();
+
+      if (error) {
+        console.error("Error fetching registration status:", error);
+        setAllowRegistrations(false);
+      } else {
+        setAllowRegistrations(data.value === 'true');
+      }
+      setCheckingSettings(false);
+    };
+
+    checkRegistrationStatus();
+  }, []);
 
   const loginSchema = z.object({
     email: z.string().email({ message: t('invalid_email') }),
@@ -120,46 +145,63 @@ const Login = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-gray-900/50">
-                  <TabsTrigger value="signin">{t('sign_in')}</TabsTrigger>
-                  <TabsTrigger value="signup">{t('sign_up')}</TabsTrigger>
-                </TabsList>
-                <TabsContent value="signin" className="pt-6">
-                  <Form {...loginForm}>
-                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                      <FormField control={loginForm.control} name="email" render={({ field }) => (
-                        <FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" placeholder={t('email_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
-                      )} />
-                      <FormField control={loginForm.control} name="password" render={({ field }) => (
-                        <FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" placeholder={t('password_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
-                      )} />
-                      <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_in')}</Button>
-                    </form>
-                  </Form>
-                </TabsContent>
-                <TabsContent value="signup" className="pt-6">
-                  <Form {...signupForm}>
-                    <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField control={signupForm.control} name="first_name" render={({ field }) => (
-                          <FormItem><FormLabel>{t('first_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              {checkingSettings ? (
+                <div className="flex items-center justify-center h-48">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                </div>
+              ) : (
+                <Tabs defaultValue="signin" className="w-full">
+                  <TabsList className={`grid w-full ${allowRegistrations ? 'grid-cols-2' : 'grid-cols-1'} bg-gray-900/50`}>
+                    <TabsTrigger value="signin">{t('sign_in')}</TabsTrigger>
+                    {allowRegistrations && <TabsTrigger value="signup">{t('sign_up')}</TabsTrigger>}
+                  </TabsList>
+                  <TabsContent value="signin" className="pt-6">
+                    <Form {...loginForm}>
+                      <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                        <FormField control={loginForm.control} name="email" render={({ field }) => (
+                          <FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" placeholder={t('email_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
-                        <FormField control={signupForm.control} name="last_name" render={({ field }) => (
-                          <FormItem><FormLabel>{t('last_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormField control={loginForm.control} name="password" render={({ field }) => (
+                          <FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" placeholder={t('password_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
-                      </div>
-                      <FormField control={signupForm.control} name="email" render={({ field }) => (
-                        <FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
-                      )} />
-                      <FormField control={signupForm.control} name="password" render={({ field }) => (
-                        <FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
-                      )} />
-                      <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_up')}</Button>
-                    </form>
-                  </Form>
-                </TabsContent>
-              </Tabs>
+                        <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_in')}</Button>
+                      </form>
+                    </Form>
+                  </TabsContent>
+                  {allowRegistrations && (
+                    <TabsContent value="signup" className="pt-6">
+                      <Form {...signupForm}>
+                        <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField control={signupForm.control} name="first_name" render={({ field }) => (
+                              <FormItem><FormLabel>{t('first_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={signupForm.control} name="last_name" render={({ field }) => (
+                              <FormItem><FormLabel>{t('last_name')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                          </div>
+                          <FormField control={signupForm.control} name="email" render={({ field }) => (
+                            <FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={signupForm.control} name="password" render={({ field }) => (
+                            <FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_up')}</Button>
+                        </form>
+                      </Form>
+                    </TabsContent>
+                  )}
+                  {!allowRegistrations && (
+                     <Alert className="mt-6 bg-blue-900/30 border-blue-500/30 text-blue-300">
+                        <Terminal className="h-4 w-4" />
+                        <AlertTitle>Information</AlertTitle>
+                        <AlertDescription>
+                          {t('registrations_are_closed')}
+                        </AlertDescription>
+                      </Alert>
+                  )}
+                </Tabs>
+              )}
             </CardContent>
           </Card>
         </motion.div>
