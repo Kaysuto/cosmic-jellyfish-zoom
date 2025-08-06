@@ -13,6 +13,7 @@ import { Service } from '@/hooks/useServices';
 type UptimeRecord = {
   date: string;
   uptime_percentage: number;
+  avg_response_time_ms: number | null;
 };
 
 const NextUpdateTimer = () => {
@@ -68,7 +69,7 @@ const UptimeHistory = ({ service, children }: { service: Service; children?: Rea
 
       const { data, error } = await supabase
         .from('uptime_history')
-        .select('date, uptime_percentage')
+        .select('date, uptime_percentage, avg_response_time_ms')
         .eq('service_id', service.id)
         .gte('date', startDate.toISOString())
         .order('date', { ascending: true });
@@ -120,6 +121,11 @@ const UptimeHistory = ({ service, children }: { service: Service; children?: Rea
           <p style={{ color: payload[0].color }}>
             {`${t('uptime_legend')}: ${payload[0].value.toFixed(2)}%`}
           </p>
+          {payload[1] && payload[1].value !== null && (
+            <p style={{ color: payload[1].color }}>
+              {`${t('ping_legend')}: ${payload[1].value}ms`}
+            </p>
+          )}
         </div>
       );
     }
@@ -155,10 +161,12 @@ const UptimeHistory = ({ service, children }: { service: Service; children?: Rea
         <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-          <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} domain={[80, 100]} tickFormatter={(value) => `${value}%`} />
+          <YAxis yAxisId="left" stroke="hsl(var(--primary))" fontSize={12} tickLine={false} axisLine={false} domain={[80, 100]} tickFormatter={(value) => `${value}%`} />
+          <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}ms`} />
           <Tooltip content={<CustomTooltip />} />
-          <Legend formatter={() => t('uptime_legend')} />
-          <Line type="monotone" dataKey="uptime_percentage" name={t('uptime_legend')} stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
+          <Legend />
+          <Line yAxisId="left" type="monotone" dataKey="uptime_percentage" name={t('uptime_legend')} stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
+          <Line yAxisId="right" type="monotone" dataKey="avg_response_time_ms" name={t('ping_legend')} stroke="hsl(var(--muted-foreground))" dot={false} strokeWidth={2} strokeDasharray="5 5" />
         </LineChart>
       </ResponsiveContainer>
     );
