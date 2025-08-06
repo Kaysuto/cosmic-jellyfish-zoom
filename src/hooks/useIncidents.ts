@@ -11,6 +11,7 @@ export interface Incident {
   created_at: string;
   updated_at: string;
   services: { name: string } | null;
+  profiles: { first_name: string | null, last_name: string | null, email: string | null } | null;
 }
 
 export const useIncidents = () => {
@@ -20,13 +21,13 @@ export const useIncidents = () => {
   const fetchIncidents = useCallback(async () => {
     const { data, error } = await supabase
       .from('incidents')
-      .select('*, services(name)')
+      .select('*, services(name), profiles!incidents_author_id_fkey(first_name, last_name, email)')
       .order('created_at', { ascending: false });
     
     if (error) {
       console.error('Erreur lors de la récupération des incidents:', error);
     } else {
-      setIncidents(data as Incident[] || []);
+      setIncidents(data as any[] || []);
     }
     setLoading(false);
   }, []);

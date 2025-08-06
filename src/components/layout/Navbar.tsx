@@ -1,29 +1,26 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu } from "lucide-react";
+import { Menu, LayoutDashboard, User, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { getGravatarURL } from "@/lib/gravatar";
 
 const Navbar = () => {
   const { t } = useTranslation();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { session } = useSession();
+  const { profile } = useProfile();
 
   const navItems = [
     { to: "/", label: t('home') },
     { to: "/status", label: t('status') },
   ];
-
-  const authLink = session 
-    ? { to: "/admin", label: t('admin') }
-    : { to: "/login", label: t('login') };
 
   const desktopNavLinkClasses = ({ isActive }: { isActive: boolean }) =>
     cn(
@@ -41,61 +38,85 @@ const Navbar = () => {
         : "text-gray-300 hover:bg-gray-700"
     );
 
-  const DesktopNav = () => (
-    <div className="flex items-center gap-2 bg-gray-800/50 border border-gray-700/60 rounded-full p-1 shadow-md">
-      {navItems.map((item) => (
-        <NavLink
-          key={item.to}
-          to={item.to}
-          className={desktopNavLinkClasses}
-        >
-          {item.label}
-        </NavLink>
-      ))}
-      <div className="w-px h-4 bg-gray-600" />
-      <NavLink to={authLink.to} className={desktopNavLinkClasses}>
-        {authLink.label}
-      </NavLink>
-    </div>
+  const UserMenu = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-10 rounded-full px-2">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={getGravatarURL(profile?.email)} alt={profile?.first_name || 'Avatar'} />
+            <AvatarFallback>{profile?.first_name?.charAt(0) || 'U'}</AvatarFallback>
+          </Avatar>
+          <span className="ml-2 hidden sm:block text-white">
+            Bonjour, {profile?.first_name || 'Admin'}
+          </span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">{profile?.first_name} {profile?.last_name}</p>
+            <p className="text-xs leading-none text-muted-foreground">{profile?.email}</p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span></Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/admin/profile"><User className="mr-2 h-4 w-4" /><span>Profil</span></Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/admin/settings"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 
-  const MobileNav = () => (
-    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Menu className="h-6 w-6" />
-          <span className="sr-only">Open menu</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="bg-gray-900 border-l-gray-800 w-[250px] sm:w-[300px]">
-        <div className="flex flex-col gap-4 pt-10">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={mobileNavLinkClasses}
-              onClick={() => setIsSheetOpen(false)}
-            >
-              {item.label}
-            </NavLink>
-          ))}
-          <hr className="border-gray-700" />
-          <NavLink to={authLink.to} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
-            {authLink.label}
-          </NavLink>
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
+  const AuthLinks = () => {
+    if (session && profile) {
+      return <UserMenu />;
+    }
+    return (
+      <NavLink to="/login" className={desktopNavLinkClasses}>
+        {t('login')}
+      </NavLink>
+    );
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/60 backdrop-blur-lg border-b border-white/10">
-      <nav className="container mx-auto px-4 h-16 flex items-center justify-end md:justify-center">
-        <div className="hidden md:block">
-          <DesktopNav />
+      <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="flex-1 flex justify-start">
+          {/* Potentiel logo ici */}
         </div>
-        <div className="md:hidden">
-          <MobileNav />
+        <div className="hidden md:flex flex-1 justify-center">
+          <div className="flex items-center gap-2 bg-gray-800/50 border border-gray-700/60 rounded-full p-1 shadow-md">
+            {navItems.map((item) => (
+              <NavLink key={item.to} to={item.to} className={desktopNavLinkClasses}>
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
+        </div>
+        <div className="flex-1 flex justify-end">
+          <div className="hidden md:block">
+            <AuthLinks />
+          </div>
+          <div className="md:hidden">
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-gray-900 border-l-gray-800 w-[250px] sm:w-[300px]">
+                <div className="flex flex-col gap-4 pt-10">
+                  {/* Mobile nav items */}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </nav>
     </header>
