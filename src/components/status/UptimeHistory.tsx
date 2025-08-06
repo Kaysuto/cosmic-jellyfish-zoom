@@ -8,13 +8,14 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { subDays, format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Service } from '@/hooks/useServices';
 
 type UptimeRecord = {
   date: string;
   uptime_percentage: number;
 };
 
-const UptimeHistory = ({ serviceId, children }: { serviceId: string | null; children?: ReactNode }) => {
+const UptimeHistory = ({ service, children }: { service: Service; children?: ReactNode }) => {
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [uptimeData, setUptimeData] = useState<UptimeRecord[]>([]);
@@ -24,7 +25,7 @@ const UptimeHistory = ({ serviceId, children }: { serviceId: string | null; chil
 
   useEffect(() => {
     const fetchUptimeHistory = async () => {
-      if (!serviceId) {
+      if (!service || !service.id) {
         setUptimeData([]);
         setLoading(false);
         return;
@@ -37,7 +38,7 @@ const UptimeHistory = ({ serviceId, children }: { serviceId: string | null; chil
       const { data, error } = await supabase
         .from('uptime_history')
         .select('date, uptime_percentage')
-        .eq('service_id', serviceId)
+        .eq('service_id', service.id)
         .gte('date', startDate.toISOString())
         .order('date', { ascending: true });
 
@@ -53,14 +54,14 @@ const UptimeHistory = ({ serviceId, children }: { serviceId: string | null; chil
     fetchUptimeHistory();
 
     const channel: RealtimeChannel = supabase
-      .channel(`uptime-history-${serviceId || 'all'}`)
+      .channel(`uptime-history-${service.id || 'all'}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'uptime_history',
-          filter: serviceId ? `service_id=eq.${serviceId}` : undefined,
+          filter: service.id ? `service_id=eq.${service.id}` : undefined,
         },
         () => {
           fetchUptimeHistory();
@@ -71,7 +72,7 @@ const UptimeHistory = ({ serviceId, children }: { serviceId: string | null; chil
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [serviceId, timeRange]);
+  }, [service, timeRange]);
 
   const chartData = useMemo(() => {
     return uptimeData.map(item => ({
@@ -99,6 +100,18 @@ const UptimeHistory = ({ serviceId, children }: { serviceId: string | null; chil
       return <Skeleton className="h-[300px] w-full" />;
     }
     if (chartData.length === 0) {
+      const serviceCreationDate = new Date(service.created_at);
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+      if (serviceCreationDate > oneDayAgo) {
+        return (
+          <div className="flex items-center justify-center h-[300px] text-muted-foreground text-center p-4">
+            {t('new_service_uptime_message')}
+          </div>
+        );
+      }
+      
       return (
         <div className="flex items-center justify-center h-[300px] text-muted-foreground">
           {t('no_uptime_history')}

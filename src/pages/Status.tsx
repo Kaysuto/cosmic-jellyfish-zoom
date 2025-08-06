@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 
-import { useServices } from '@/hooks/useServices';
+import { useServices, Service } from '@/hooks/useServices';
 import { useIncidents } from '@/hooks/useIncidents';
 import { useMaintenances } from '@/hooks/useMaintenances';
 
@@ -30,8 +30,12 @@ const Status = () => {
 
   useEffect(() => {
     if (services && services.length > 0) {
+      // Set initial service if not already set
       if (!selectedServiceId) {
-        setSelectedServiceId(services[0].id);
+        const initialService = services.find(s => s.url) || services[0];
+        if (initialService) {
+          setSelectedServiceId(initialService.id);
+        }
       }
 
       const mostRecentUpdate = services.reduce((latest, service) => {
@@ -40,6 +44,10 @@ const Status = () => {
       }, new Date(0));
       setLastUpdated(mostRecentUpdate);
     }
+  }, [services, selectedServiceId]);
+
+  const selectedService = useMemo(() => {
+    return services.find((s) => s.id === selectedServiceId) || null;
   }, [services, selectedServiceId]);
 
   const overallStatus = useMemo(() => {
@@ -82,22 +90,24 @@ const Status = () => {
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 flex-grow">
         <div className="flex flex-col gap-8">
           <ServicesStatus services={services} />
-          <UptimeHistory serviceId={selectedServiceId}>
-            {services.length > 0 && selectedServiceId && (
-              <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
-                <SelectTrigger className="w-full sm:w-[250px]">
-                  <SelectValue placeholder={t('select_service')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {services.map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {t(service.name.toLowerCase().replace(/ /g, '_'))}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </UptimeHistory>
+          {selectedService && (
+            <UptimeHistory service={selectedService}>
+              {services.length > 0 && (
+                <Select value={selectedServiceId ?? ''} onValueChange={setSelectedServiceId}>
+                  <SelectTrigger className="w-full sm:w-[250px]">
+                    <SelectValue placeholder={t('select_service')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {services.map((service) => (
+                      <SelectItem key={service.id} value={service.id}>
+                        {t(service.name.toLowerCase().replace(/ /g, '_'))}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </UptimeHistory>
+          )}
         </div>
         
         <IncidentHistory incidents={incidents} />
