@@ -43,9 +43,20 @@ const getInitialTrackIndex = (): number => {
   return 0;
 };
 
+// Fonction pour récupérer l'état de lecture initial depuis le sessionStorage
+const getInitialIsPlaying = (): boolean => {
+  try {
+    const savedIsPlaying = sessionStorage.getItem('audioPlayerIsPlaying');
+    return savedIsPlaying === 'true';
+  } catch (error) {
+    console.error('Erreur lors de la lecture de l\'état de lecture depuis le sessionStorage:', error);
+    return false;
+  }
+};
+
 export const useAudioStore = create<AudioState>((set) => ({
   currentTrackIndex: getInitialTrackIndex(),
-  isPlaying: false,
+  isPlaying: getInitialIsPlaying(),
   volume: getInitialVolume(),
   tracks: [],
   setCurrentTrackIndex: (index) => {
@@ -58,7 +69,14 @@ export const useAudioStore = create<AudioState>((set) => ({
     }
     set({ currentTrackIndex: index });
   },
-  setIsPlaying: (isPlaying) => set({ isPlaying: isPlaying }),
+  setIsPlaying: (isPlaying) => {
+    try {
+      sessionStorage.setItem('audioPlayerIsPlaying', isPlaying.toString());
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde de l\'état de lecture dans le sessionStorage:', error);
+    }
+    set({ isPlaying });
+  },
   setVolume: (volume) => {
     try {
       localStorage.setItem('audioPlayerVolume', volume.toString());
