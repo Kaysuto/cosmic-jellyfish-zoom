@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu, LayoutDashboard, User, Settings, LogOut, Volume2, SkipBack, Play, Pause, SkipForward } from "lucide-react";
+import { Menu, LayoutDashboard, User, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -11,10 +11,7 @@ import { useSession } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { getGravatarURL } from "@/lib/gravatar";
 import { supabase } from "@/integrations/supabase/client";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Slider } from "@/components/ui/slider";
 import CustomAudioPlayer from "@/components/CustomAudioPlayer";
-import { useAudioStore } from "@/stores/audioStore";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -22,26 +19,13 @@ const Navbar = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { session } = useSession();
   const { profile } = useProfile();
-  const { tracks, setTracks } = useAudioStore(); // Utilisation de setTracks du store
   
-  const [discordOnline, setDiscordOnline] = useState(24);
+  const [discordOnline] = useState(24);
 
   const navItems = [
     { to: "/", label: t('home') },
     { to: "/status", label: t('status') },
   ];
-
-  useEffect(() => {
-    const fetchAudioTracks = async () => {
-      const fetchedTracks = [
-        { name: 'Chill Vibes', url: 'https://storage.googleapis.com/jelly-status/musics/chill.mp3' },
-        { name: 'Lofi Beats', url: 'https://storage.googleapis.com/jelly-status/musics/lofi.mp3' },
-      ];
-      setTracks(fetchedTracks);
-    };
-
-    fetchAudioTracks();
-  }, [setTracks]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
