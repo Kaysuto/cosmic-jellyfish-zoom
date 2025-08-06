@@ -19,7 +19,7 @@ const AppWrapper = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="ui-theme">
-        <TooltipProvider>
+        <TooltipProvider delayDuration={100}>
           <Toaster />
           <Sonner />
           <BrowserRouter>
