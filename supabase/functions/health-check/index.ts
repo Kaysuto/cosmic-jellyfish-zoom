@@ -43,7 +43,7 @@ serve(async (req) => {
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
         
         const response = await fetch(service.url, { 
-          method: 'HEAD', 
+          method: 'GET', // Changed from HEAD to GET for better compatibility
           redirect: 'follow',
           signal: controller.signal 
         });
