@@ -67,7 +67,7 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
 
   return (
     <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 shadow-xl flex flex-col h-full">
-      <CardHeader>
+      <CardHeader className="flex-shrink-0">
         <CardTitle className="flex items-center gap-2 text-xl text-white">
           <AlertCircle className="h-5 w-5 text-red-400" />
           {t('incident_history')}
@@ -124,7 +124,7 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
         </ScrollArea>
       </CardContent>
       {totalPages > 1 && (
-        <CardFooter>
+        <CardFooter className="flex-shrink-0">
           <div className="flex items-center justify-center w-full gap-2 text-white">
             <Button
               variant="outline"
