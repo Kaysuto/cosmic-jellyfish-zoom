@@ -51,6 +51,8 @@ export const useAudioStore = create<AudioState>((set) => ({
   setCurrentTrackIndex: (index) => {
     try {
       sessionStorage.setItem('audioPlayerTrackIndex', index.toString());
+      // Réinitialiser le temps de lecture sauvegardé lors du changement de piste
+      sessionStorage.setItem('audioPlayerCurrentTime', '0');
     } catch (error) {
       console.error('Erreur lors de la sauvegarde de l\'index dans le sessionStorage:', error);
     }

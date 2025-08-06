@@ -27,6 +27,10 @@ const CustomAudioPlayer = () => {
     if (!audio || !currentTrack) return;
 
     const handleCanPlay = () => {
+      const savedTime = parseFloat(sessionStorage.getItem('audioPlayerCurrentTime') || '0');
+      if (audio.readyState >= 2 && savedTime > 0) {
+        audio.currentTime = savedTime;
+      }
       setIsLoading(false);
       if (isPlaying) {
         audio.play().catch(console.error);
@@ -47,10 +51,15 @@ const CustomAudioPlayer = () => {
       handleNextTrack();
     };
 
+    const handleTimeUpdate = () => {
+      sessionStorage.setItem('audioPlayerCurrentTime', audio.currentTime.toString());
+    };
+
     audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('loadstart', handleLoadStart);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('error', handleError);
+    audio.addEventListener('timeupdate', handleTimeUpdate);
 
     // Charger la nouvelle piste
     audio.src = currentTrack.url;
@@ -62,6 +71,7 @@ const CustomAudioPlayer = () => {
       audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
     };
   }, [currentTrackIndex, currentTrack]);
 
