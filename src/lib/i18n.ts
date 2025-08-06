@@ -9,6 +9,8 @@ const resources = {
       // Navigation
       "home": "Accueil",
       "status": "Statut",
+      "admin": "Admin",
+      "login": "Connexion",
       
       // Page d'accueil
       "welcome": "Statut en temps réel des services Jelly",
@@ -60,7 +62,21 @@ const resources = {
       
       // Messages d'erreur
       "page_not_found": "Oups ! Page non trouvée",
-      "return_home": "Retour à l'accueil"
+      "return_home": "Retour à l'accueil",
+
+      // Admin & Auth
+      "admin_login": "Connexion Administrateur",
+      "email_address": "Adresse e-mail",
+      "password": "Mot de passe",
+      "sign_in": "Se connecter",
+      "sign_up": "S'inscrire",
+      "already_have_account": "Vous avez déjà un compte ? Connectez-vous",
+      "dont_have_account": "Pas de compte ? Inscrivez-vous",
+      "forgot_password": "Mot de passe oublié ?",
+      "send_instructions": "Envoyer les instructions",
+      "admin_dashboard": "Tableau de bord Admin",
+      "logout": "Déconnexion",
+      "admin_dashboard_wip": "Les outils de gestion des services et des incidents seront bientôt disponibles ici."
     }
   },
   en: {
@@ -68,6 +84,8 @@ const resources = {
       // Navigation
       "home": "Home",
       "status": "Status",
+      "admin": "Admin",
+      "login": "Login",
       
       // Page d'accueil
       "welcome": "Real-time status of Jelly services",
@@ -119,7 +137,21 @@ const resources = {
       
       // Messages d'erreur
       "page_not_found": "Oops! Page not found",
-      "return_home": "Return to Home"
+      "return_home": "Return to Home",
+
+      // Admin & Auth
+      "admin_login": "Admin Login",
+      "email_address": "Email address",
+      "password": "Password",
+      "sign_in": "Sign in",
+      "sign_up": "Sign up",
+      "already_have_account": "Already have an account? Sign in",
+      "dont_have_account": "Don't have an account? Sign up",
+      "forgot_password": "Forgot your password?",
+      "send_instructions": "Send instructions",
+      "admin_dashboard": "Admin Dashboard",
+      "logout": "Logout",
+      "admin_dashboard_wip": "Management tools for services and incidents will be available here soon."
     }
   }
 };

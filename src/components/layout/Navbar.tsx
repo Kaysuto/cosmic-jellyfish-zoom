@@ -9,15 +9,21 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useSession } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const { t } = useTranslation();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const { session } = useSession();
 
   const navItems = [
     { to: "/", label: t('home') },
     { to: "/status", label: t('status') },
   ];
+
+  const authLink = session 
+    ? { to: "/admin", label: t('admin') }
+    : { to: "/login", label: t('login') };
 
   const desktopNavLinkClasses = ({ isActive }: { isActive: boolean }) =>
     cn(
@@ -46,6 +52,10 @@ const Navbar = () => {
           {item.label}
         </NavLink>
       ))}
+      <div className="w-px h-4 bg-gray-600" />
+      <NavLink to={authLink.to} className={desktopNavLinkClasses}>
+        {authLink.label}
+      </NavLink>
     </div>
   );
 
@@ -69,6 +79,10 @@ const Navbar = () => {
               {item.label}
             </NavLink>
           ))}
+          <hr className="border-gray-700" />
+          <NavLink to={authLink.to} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
+            {authLink.label}
+          </NavLink>
         </div>
       </SheetContent>
     </Sheet>
@@ -77,12 +91,9 @@ const Navbar = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/60 backdrop-blur-lg border-b border-white/10">
       <nav className="container mx-auto px-4 h-16 flex items-center justify-end md:justify-center">
-        {/* Centre : Liens de navigation (Desktop) */}
         <div className="hidden md:block">
           <DesktopNav />
         </div>
-
-        {/* Côté droit : Menu (Mobile) */}
         <div className="md:hidden">
           <MobileNav />
         </div>
