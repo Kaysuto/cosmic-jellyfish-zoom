@@ -1,7 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import CommunitySection from "@/components/CommunitySection";
 
 const MainLayout = () => {
   return (
@@ -11,7 +10,6 @@ const MainLayout = () => {
         <Outlet />
       </main>
       <footer className="w-full bg-gray-900/80">
-        <CommunitySection />
         <MadeWithDyad />
       </footer>
     </div>
