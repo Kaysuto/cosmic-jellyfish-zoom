@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
+import { useMemo } from 'react';
 
 const Profile = () => {
   const { t, i18n } = useTranslation();
@@ -25,21 +26,24 @@ const Profile = () => {
   const { session } = useSession();
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
-  const profileSchema = z.object({
+  const profileSchema = useMemo(() => z.object({
     first_name: z.string().min(1, { message: t('first_name_required') }),
     last_name: z.string().min(1, { message: t('last_name_required') }),
-  });
+  }), [t]);
+
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     values: {
+
       first_name: profile?.first_name || '',
       last_name: profile?.last_name || '',
     },
   });
 
-  const emailSchema = z.object({
+  const emailSchema = useMemo(() => z.object({
     email: z.string().email({ message: t('invalid_email') }),
-  });
+  }), [t]);
+
   const emailForm = useForm<z.infer<typeof emailSchema>>({
     resolver: zodResolver(emailSchema),
     values: {
@@ -47,7 +51,7 @@ const Profile = () => {
     },
   });
 
-  const passwordSchema = z.object({
+  const passwordSchema = useMemo(() => z.object({
     password: z.string()
       .min(6, { message: t('password_too_short') })
       .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, { message: t('password_requirements') }),
@@ -55,7 +59,8 @@ const Profile = () => {
   }).refine(data => data.password === data.confirmPassword, {
     message: t('passwords_do_not_match'),
     path: ['confirmPassword'],
-  });
+  }), [t]);
+
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
     defaultValues: { password: '', confirmPassword: '' },

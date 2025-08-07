@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -69,19 +69,19 @@ const Login = () => {
     };
   }, []);
 
-  const loginSchema = z.object({
+  const loginSchema = useMemo(() => z.object({
     email: z.string().email({ message: t('invalid_email') }),
     password: z.string().min(1, { message: t('password_required') }),
-  });
+  }), [t]);
 
-  const signupSchema = z.object({
+  const signupSchema = useMemo(() => z.object({
     email: z.string().email({ message: t('invalid_email') }),
     password: z.string()
       .min(6, { message: t('password_too_short') })
       .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, { message: t('password_requirements') }),
     first_name: z.string().min(1, { message: t('first_name_required') }),
     last_name: z.string().min(1, { message: t('last_name_required') }),
-  });
+  }), [t]);
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
