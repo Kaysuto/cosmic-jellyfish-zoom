@@ -7,6 +7,10 @@ const resources = {
   fr: {
     translation: {
       // ... (toutes les traductions existantes)
+      "analytics": "Analyses",
+      "incidents_by_status": "Incidents par statut",
+      "incident_history_last_30_days": "Historique des incidents (30 derniers jours)",
+      "no_incident_data": "Aucune donnée d'incident à afficher.",
       "note_title": "Remarque",
       "user_management_note": "Votre propre compte n'est pas affiché dans cette liste pour éviter toute auto-modification accidentelle. Pour gérer votre profil, veuillez vous rendre sur la page Profil.",
       "live_status_last_updated": "Statut en direct mis à jour",
@@ -244,6 +248,10 @@ const resources = {
   en: {
     translation: {
       // ... (toutes les traductions existantes)
+      "analytics": "Analytics",
+      "incidents_by_status": "Incidents by Status",
+      "incident_history_last_30_days": "Incident History (Last 30 Days)",
+      "no_incident_data": "No incident data to display.",
       "note_title": "Note",
       "user_management_note": "Your own account is not displayed in this list to prevent accidental self-modification. To manage your profile, please go to the Profile page.",
       "live_status_last_updated": "Live status updated",
