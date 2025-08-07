@@ -21,6 +21,8 @@ const resources = {
       "discord_title": "Rejoignez-nous sur Discord",
       "discord_online": "{{count}} en ligne",
       "incidents": "Incidents",
+      "incident_count_one": "{{count}} incident",
+      "incident_count_other": "{{count}} incidents",
       // Navigation
       "home": "Accueil",
       "status": "Statut",
@@ -263,6 +265,8 @@ const resources = {
       "discord_title": "Join us on Discord",
       "discord_online": "{{count}} online",
       "incidents": "Incidents",
+      "incident_count_one": "{{count}} incident",
+      "incident_count_other": "{{count}} incidents",
       // Navigation
       "home": "Home",
       "status": "Status",

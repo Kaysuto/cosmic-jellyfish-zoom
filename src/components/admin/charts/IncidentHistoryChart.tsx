@@ -37,11 +37,12 @@ const IncidentHistoryChart = ({ incidents }: IncidentHistoryChartProps) => {
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const count = payload[0].value;
       return (
         <div className="rounded-lg border bg-background p-2 shadow-sm">
           <p className="font-bold text-foreground">{label}</p>
           <p className="text-sm text-muted-foreground">
-            {t('incidents')}: {payload[0].value}
+            {t('incident_count', { count })}
           </p>
         </div>
       );
