@@ -69,7 +69,7 @@ const ServicesStatus = ({ services }: ServicesStatusProps) => {
                       <p>{t(statusConfig.textKey)}</p>
                     </TooltipContent>
                   </Tooltip>
-                  <span className="font-medium text-foreground">{t(service.name.toLowerCase().replace(/ /g, '_'))}</span>
+                  <span className="font-medium text-foreground">{t(service.name.toLowerCase().replace(/ /g, '_').replace(/\./g, '_'))}</span>
                 </div>
                 <div className="flex items-center gap-4 pl-6 sm:pl-0">
                   {service.status !== 'downtime' && service.status !== 'maintenance' && (

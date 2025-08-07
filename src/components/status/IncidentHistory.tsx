@@ -57,7 +57,7 @@ const IncidentItem = ({ incident }: { incident: ApiIncident }) => {
             <h4 className="font-medium text-white">{title}</h4>
             {incident.services?.name && (
               <p className="text-xs text-gray-400 mt-1">
-                {t('Service')}: {t(incident.services.name.toLowerCase().replace(/ /g, '_'))}
+                {t('Service')}: {t(incident.services.name.toLowerCase().replace(/ /g, '_').replace(/\./g, '_'))}
               </p>
             )}
           </div>

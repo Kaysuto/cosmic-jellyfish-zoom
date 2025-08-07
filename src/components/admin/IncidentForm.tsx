@@ -157,7 +157,7 @@ const IncidentForm = ({ incident, services, admins, currentUserId, onSubmit, onC
                   <SelectItem value="null">{t('no_service_affected')}</SelectItem>
                   {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
-                      {t(service.name.toLowerCase().replace(/ /g, '_'))}
+                      {t(service.name.toLowerCase().replace(/ /g, '_').replace(/\./g, '_'))}
                     </SelectItem>
                   ))}
                 </SelectContent>

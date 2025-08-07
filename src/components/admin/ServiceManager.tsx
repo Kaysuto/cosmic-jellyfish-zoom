@@ -156,7 +156,7 @@ const ServiceManager = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="font-medium">{t(service.name.toLowerCase().replace(/ /g, '_'))}</div>
+                    <div className="font-medium">{t(service.name.toLowerCase().replace(/ /g, '_').replace(/\./g, '_'))}</div>
                     <div className="text-sm text-muted-foreground">{service.description}</div>
                   </TableCell>
                   <TableCell>
@@ -198,6 +198,7 @@ const ServiceManager = () => {
       </Card>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+
         <SheetContent className="sm:max-w-lg">
           <SheetHeader>
             <SheetTitle>{selectedService ? t('edit_service') : t('create_service')}</SheetTitle>

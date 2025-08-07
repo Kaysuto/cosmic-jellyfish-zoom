@@ -193,7 +193,7 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
                 <SelectContent>
                   {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
-                      {t(service.name.toLowerCase().replace(/ /g, '_'))}
+                      {t(service.name.toLowerCase().replace(/ /g, '_').replace(/\./g, '_'))}
                     </SelectItem>
                   ))}
                 </SelectContent>
