@@ -6,7 +6,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trash2, MoreHorizontal, User, Shield, KeyRound, ShieldOff, Info } from 'lucide-react';
+import { Trash2, MoreHorizontal, User, Shield, KeyRound, ShieldOff, Info, Edit } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Profile } from '@/hooks/useProfile';
 import { useSession } from '@/contexts/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Link } from 'react-router-dom';
 
 const UserManager = () => {
   const { t, i18n } = useTranslation();
@@ -159,6 +160,12 @@ const UserManager = () => {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link to={`/admin/users/${user.id}/edit`} className="cursor-pointer">
+                              <Edit className="mr-2 h-4 w-4" />
+                              <span>{t('edit')}</span>
+                            </Link>
+                          </DropdownMenuItem>
                           <DropdownMenuSub>
                             <DropdownMenuSubTrigger><Shield className="mr-2 h-4 w-4" /><span>{t('role')}</span></DropdownMenuSubTrigger>
                             <DropdownMenuPortal>

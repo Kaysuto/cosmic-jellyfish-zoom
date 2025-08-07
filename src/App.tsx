@@ -25,6 +25,7 @@ import ServiceManager from "@/components/admin/ServiceManager";
 import IncidentManager from "@/components/admin/IncidentManager";
 import MaintenanceManager from "@/components/admin/MaintenanceManager";
 import UserManager from "@/components/admin/UserManager";
+import EditUserPage from "./pages/admin/EditUser";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +87,7 @@ const AppWrapper = () => {
                     <Route path="incidents" element={<IncidentManager />} />
                     <Route path="maintenance" element={<MaintenanceManager />} />
                     <Route path="users" element={<UserManager />} />
+                    <Route path="users/:userId/edit" element={<EditUserPage />} />
                   </Route>
                 </Route>
 
