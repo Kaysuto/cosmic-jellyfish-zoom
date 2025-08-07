@@ -26,8 +26,12 @@ const AdminMfaManager = ({ user }: AdminMfaManagerProps) => {
         body: { userId: user.id },
       });
       if (error) throw error;
-      const verifiedFactor = data.all.find((f: any) => f.status === 'verified');
-      setHasMfa(!!verifiedFactor);
+      if (data && data.factors) {
+        const verifiedFactor = data.factors.find((f: any) => f.status === 'verified');
+        setHasMfa(!!verifiedFactor);
+      } else {
+        setHasMfa(false);
+      }
     } catch (error: any) {
       showError(error.message);
     } finally {
