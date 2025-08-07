@@ -1,6 +1,3 @@
-"use client";
-
-import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -48,7 +45,7 @@ const ServiceForm = ({ service, onSubmit, onCancel, isSubmitting }: ServiceFormP
             <FormItem>
               <FormLabel>{t('title')}</FormLabel>
               <FormControl>
-                <Input {...field} autoFocus />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

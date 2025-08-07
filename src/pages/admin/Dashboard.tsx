@@ -8,13 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { differenceInHours } from 'date-fns';
 import { Activity, BarChart, ShieldCheck, Timer } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import RecentAuditLogs from '@/components/admin/RecentAuditLogs';
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { incidents, loading: incidentsLoading } = useIncidents();
   const { services, loading: servicesLoading } = useServices();
 
@@ -62,36 +58,21 @@ const AdminDashboard = () => {
       className="space-y-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.4, ease: 'easeInOut' }}
     >
-       <div className="flex items-center justify-between gap-4">
-         <div>
-           <h1 className="text-3xl font-bold">{t('admin_dashboard')}</h1>
-           <p className="text-sm text-muted-foreground">{t('admin_dashboard_subtitle') ?? 'Vue d\'ensemble et actions rapides'}</p>
-         </div>
-
-         <div className="flex items-center gap-2">
-           <Button onClick={() => navigate('/admin/services')} variant="outline">Créer / Gérer Services</Button>
-           <Button onClick={() => navigate('/admin/incidents')} variant="outline">Créer / Gérer Incidents</Button>
-           <Button onClick={() => navigate('/admin/maintenance')} variant="outline">Planifier maintenance</Button>
-           <Button onClick={() => navigate('/admin/users')} className="bg-blue-600 text-white">Créer utilisateur</Button>
-         </div>
-       </div>
-
+       <h1 className="text-3xl font-bold">{t('admin_dashboard')}</h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard title={t('total_services')} value={totalServices.toString()} icon={BarChart} />
         <StatCard title={t('operational_services')} value={`${operationalServices}`} icon={ShieldCheck} />
         <StatCard title={t('active_incidents')} value={activeIncidents.toString()} icon={Activity} />
         <StatCard title={t('avg_resolution_time')} value={avgResolutionTime()} icon={Timer} />
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
         <div className="lg:col-span-4">
           <IncidentHistoryChart incidents={incidents} />
         </div>
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3">
           <IncidentStatusChart incidents={incidents} />
-          <RecentAuditLogs />
         </div>
       </div>
     </motion.div>
