@@ -83,7 +83,6 @@ const resources = {
       "next": "Suivant",
       
       // Composants
-      "made_with_dyad": "Fait avec Dyad",
       "made_with_love": "Créé avec",
       "by_kaysuto": "par Kaysuto Kimiya",
       
@@ -333,7 +332,6 @@ const resources = {
       "next": "Next",
 
       // Components
-      "made_with_dyad": "Made with Dyad",
       "made_with_love": "Created with",
       "by_kaysuto": "by Kaysuto Kimiya",
 

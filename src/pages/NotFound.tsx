@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
-import { MadeWithDyad } from "@/components/made-with-dyad";
+import { FooterContent } from "@/components/layout/FooterContent";
 
 const NotFound = () => {
   const location = useLocation();
@@ -55,7 +55,7 @@ const NotFound = () => {
 
       {/* Pied de page */}
       <footer className="relative z-10 w-full bg-transparent">
-        <MadeWithDyad />
+        <FooterContent />
       </footer>
     </div>
   );

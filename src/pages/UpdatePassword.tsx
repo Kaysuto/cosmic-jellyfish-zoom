@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Loader2, AlertTriangle } from 'lucide-react';
-import { MadeWithDyad } from '@/components/made-with-dyad';
+import { FooterContent } from '@/components/layout/FooterContent';
 import { useSession } from '@/contexts/AuthContext';
 
 const UpdatePassword = () => {
@@ -142,7 +142,7 @@ const UpdatePassword = () => {
       </main>
 
       <footer className="relative z-10 w-full bg-transparent">
-        <MadeWithDyad />
+        <FooterContent />
       </footer>
     </div>
   );

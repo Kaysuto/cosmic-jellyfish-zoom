@@ -10,7 +10,7 @@ import {
 import FranceFlag from '@/components/icons/FranceFlag';
 import UKFlag from '@/components/icons/UKFlag';
 
-export const MadeWithDyad = () => {
+export const FooterContent = () => {
   const { t, i18n } = useTranslation();
   
   const changeLanguage = (lang: 'fr' | 'en') => {

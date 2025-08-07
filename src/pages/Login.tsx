@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { ArrowLeft, Loader2, Terminal } from 'lucide-react';
-import { MadeWithDyad } from '@/components/made-with-dyad';
+import { FooterContent } from '@/components/layout/FooterContent';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const emailRegex = new RegExp(
@@ -257,7 +257,7 @@ const Login = () => {
           </Card>
         </motion.div>
       </main>
-      <footer className="relative z-10 w-full bg-transparent"><MadeWithDyad /></footer>
+      <footer className="relative z-10 w-full bg-transparent"><FooterContent /></footer>
     </div>
   );
 };
