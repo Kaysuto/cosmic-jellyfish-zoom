@@ -162,16 +162,31 @@ const UserManager = () => {
     }
   };
 
+  // Improved create-user handling: surface detailed error, handle different invoke result shapes
   const handleCreateUser = async (values: UserFormValues) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.functions.invoke('create-user', { body: values });
-      if (error) throw error;
+      // supabase.functions.invoke may return { data, error } or throw; normalize handling
+      const res: any = await supabase.functions.invoke('create-user', { body: values });
+
+      // If the SDK returned an error object
+      if (res?.error) {
+        // res.error may be an object with message
+        const errMessage = res.error?.message ?? JSON.stringify(res.error);
+        throw new Error(errMessage);
+      }
+
+      // If the SDK returned a raw response, try to inspect .data
+      const data = res?.data ?? null;
+
       showSuccess(t('user_created_successfully', { email: values.email }));
       refreshUsers();
       setIsSheetOpen(false);
     } catch (error: any) {
-      showError(`Erreur lors de la création de l'utilisateur: ${error.message}`);
+      console.error('create-user invoke error:', error);
+      // Provide as much detail as possible to the admin via toast
+      const message = error?.message ?? (typeof error === 'string' ? error : JSON.stringify(error));
+      showError(`Erreur lors de la création de l'utilisateur: ${message}`);
     } finally {
       setIsSubmitting(false);
     }
