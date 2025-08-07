@@ -12,6 +12,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { getGravatarURL } from "@/lib/gravatar";
 import { supabase } from "@/integrations/supabase/client";
 import CustomAudioPlayer from "@/components/CustomAudioPlayer";
+import { useBodyScrollLockCompensation } from "@/hooks/useBodyScrollLockCompensation";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -23,6 +24,9 @@ const Navbar = () => {
   const [discordOnline, setDiscordOnline] = useState(0);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuTimerRef = useRef<number | null>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  
+  useBodyScrollLockCompensation(headerRef);
 
   const handleUserMenuEnter = () => {
     if (userMenuTimerRef.current) {
@@ -52,7 +56,7 @@ const Navbar = () => {
     };
 
     fetchDiscordCount();
-    const interval = setInterval(fetchDiscordCount, 60000); // Met à jour toutes les minutes
+    const interval = setInterval(fetchDiscordCount, 60000);
 
     return () => clearInterval(interval);
   }, []);
@@ -145,7 +149,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/60 backdrop-blur-lg border-b border-white/10 compensate-for-scrollbar">
+    <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 bg-gray-900/60 backdrop-blur-lg border-b border-white/10 compensate-for-scrollbar">
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <div className="flex-1 flex justify-start items-center gap-4">
           <CustomAudioPlayer />

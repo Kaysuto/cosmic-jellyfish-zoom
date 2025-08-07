@@ -118,8 +118,7 @@
     background-color: hsl(var(--muted-foreground));
   }
 
-  html[data-vaul-drawer-visible] .compensate-for-scrollbar,
-  html[data-radix-select-visible] .compensate-for-scrollbar {
+  html[data-vaul-drawer-visible] .compensate-for-scrollbar {
     padding-right: var(--removed-body-scroll-bar-size);
   }
 }

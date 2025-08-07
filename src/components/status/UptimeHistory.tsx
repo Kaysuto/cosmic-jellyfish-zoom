@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, ReactNode } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
@@ -25,7 +25,7 @@ const NextUpdateTimer = () => {
     const calculateTimeLeft = () => {
       const now = new Date();
       const nextUpdate = new Date(now);
-      nextUpdate.setUTCHours(24, 0, 0, 0); // Prochain minuit UTC
+      nextUpdate.setUTCHours(24, 0, 0, 0);
 
       const diff = nextUpdate.getTime() - now.getTime();
       const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -48,27 +48,24 @@ const NextUpdateTimer = () => {
   );
 };
 
-const UptimeHistory = ({ service, children }: { service: Service; children?: ReactNode }) => {
+interface UptimeHistoryProps {
+  services: Service[];
+  selectedServiceId: string | null;
+  onServiceChange: (serviceId: string) => void;
+}
+
+const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeHistoryProps) => {
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [uptimeData, setUptimeData] = useState<UptimeRecord[]>([]);
   const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month'>('day');
 
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
-
-  const handleSelectOpenChange = (isOpen: boolean) => {
-    if (isOpen) {
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      document.documentElement.style.setProperty('--removed-body-scroll-bar-size', `${scrollbarWidth}px`);
-      document.documentElement.setAttribute('data-radix-select-visible', 'true');
-    } else {
-      document.documentElement.removeAttribute('data-radix-select-visible');
-    }
-  };
+  const selectedService = services.find(s => s.id === selectedServiceId);
 
   useEffect(() => {
     const fetchUptimeHistory = async () => {
-      if (!service || !service.id) {
+      if (!selectedServiceId) {
         setUptimeData([]);
         setLoading(false);
         return;
@@ -81,7 +78,7 @@ const UptimeHistory = ({ service, children }: { service: Service; children?: Rea
       const { data, error } = await supabase
         .from('uptime_history')
         .select('date, uptime_percentage, avg_response_time_ms')
-        .eq('service_id', service.id)
+        .eq('service_id', selectedServiceId)
         .gte('date', startDate.toISOString())
         .order('date', { ascending: true });
 
@@ -97,25 +94,23 @@ const UptimeHistory = ({ service, children }: { service: Service; children?: Rea
     fetchUptimeHistory();
 
     const channel: RealtimeChannel = supabase
-      .channel(`uptime-history-${service.id || 'all'}`)
+      .channel(`uptime-history-${selectedServiceId || 'all'}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'uptime_history',
-          filter: service.id ? `service_id=eq.${service.id}` : undefined,
+          filter: selectedServiceId ? `service_id=eq.${selectedServiceId}` : undefined,
         },
-        () => {
-          fetchUptimeHistory();
-        }
+        () => fetchUptimeHistory()
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [service, timeRange]);
+  }, [selectedServiceId, timeRange]);
 
   const chartData = useMemo(() => {
     return uptimeData.map(item => ({
@@ -148,11 +143,11 @@ const UptimeHistory = ({ service, children }: { service: Service; children?: Rea
       return <Skeleton className="h-[300px] w-full" />;
     }
     if (chartData.length === 0) {
-      const serviceCreationDate = new Date(service.created_at);
+      const serviceCreationDate = selectedService ? new Date(selectedService.created_at) : new Date(0);
       const oneDayAgo = new Date();
       oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-      if (serviceCreationDate > oneDayAgo) {
+      if (selectedService && serviceCreationDate > oneDayAgo) {
         return (
           <div className="flex items-center justify-center h-[300px] text-muted-foreground text-center p-4">
             {t('new_service_uptime_message')}
@@ -189,22 +184,20 @@ const UptimeHistory = ({ service, children }: { service: Service; children?: Rea
         <div className="flex-grow">
             <CardTitle>{t('uptime_history')}</CardTitle>
             <NextUpdateTimer />
-            {children && (
-              <div className="mt-2">
-                <Select
-                  value={service.id ?? ''}
-                  onValueChange={(value) => {
-                    const childSelect = children as React.ReactElement<any>;
-                    if (childSelect && childSelect.props.onValueChange) {
-                      childSelect.props.onValueChange(value);
-                    }
-                  }}
-                  onOpenChange={handleSelectOpenChange}
-                >
-                  {children}
-                </Select>
-              </div>
-            )}
+            <div className="mt-2">
+              <Select value={selectedServiceId ?? ''} onValueChange={onServiceChange}>
+                <SelectTrigger className="w-full sm:w-[250px]">
+                  <SelectValue placeholder={t('select_service')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {t(service.name.toLowerCase().replace(/ /g, '_'))}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
         </div>
         <div className="flex items-center gap-1 self-start sm:self-center shrink-0">
           <Button size="sm" variant={timeRange === 'day' ? 'secondary' : 'ghost'} onClick={() => setTimeRange('day')}>{t('time_range_day')}</Button>

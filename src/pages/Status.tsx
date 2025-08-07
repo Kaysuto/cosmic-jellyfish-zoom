@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 
-import { useServices, Service } from '@/hooks/useServices';
+import { useServices } from '@/hooks/useServices';
 import { useIncidents } from '@/hooks/useIncidents';
 import { useMaintenances } from '@/hooks/useMaintenances';
 
@@ -14,9 +14,8 @@ import IncidentHistory from '@/components/status/IncidentHistory';
 import UptimeHistory from '@/components/status/UptimeHistory';
 import ScheduledMaintenances from '@/components/status/ScheduledMaintenances';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const Status = () => {
+const StatusPage = () => {
   const { t, i18n } = useTranslation();
   const { services, loading: servicesLoading } = useServices();
   const { incidents, loading: incidentsLoading } = useIncidents();
@@ -29,26 +28,23 @@ const Status = () => {
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
   useEffect(() => {
-    if (services && services.length > 0) {
-      // Set initial service if not already set
-      if (!selectedServiceId) {
-        const initialService = services.find(s => s.url) || services[0];
-        if (initialService) {
-          setSelectedServiceId(initialService.id);
-        }
+    if (services && services.length > 0 && !selectedServiceId) {
+      const initialService = services.find(s => s.url) || services[0];
+      if (initialService) {
+        setSelectedServiceId(initialService.id);
       }
+    }
+  }, [services, selectedServiceId]);
 
+  useEffect(() => {
+    if (services && services.length > 0) {
       const mostRecentUpdate = services.reduce((latest, service) => {
         const serviceDate = new Date(service.updated_at);
         return serviceDate > latest ? serviceDate : latest;
       }, new Date(0));
       setLastUpdated(mostRecentUpdate);
     }
-  }, [services, selectedServiceId]);
-
-  const selectedService = useMemo(() => {
-    return services.find((s) => s.id === selectedServiceId) || null;
-  }, [services, selectedServiceId]);
+  }, [services]);
 
   const overallStatus = useMemo(() => {
     if (services.length === 0) return 'all_systems_operational';
@@ -90,22 +86,11 @@ const Status = () => {
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 flex-grow">
         <div className="flex flex-col gap-8">
           <ServicesStatus services={services} />
-          {selectedService && (
-            <UptimeHistory service={selectedService}>
-              <Select value={selectedServiceId ?? ''} onValueChange={setSelectedServiceId}>
-                <SelectTrigger className="w-full sm:w-[250px]">
-                  <SelectValue placeholder={t('select_service')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {services.map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {t(service.name.toLowerCase().replace(/ /g, '_'))}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </UptimeHistory>
-          )}
+          <UptimeHistory 
+            services={services}
+            selectedServiceId={selectedServiceId}
+            onServiceChange={setSelectedServiceId}
+          />
         </div>
         
         <IncidentHistory incidents={incidents} />
@@ -114,4 +99,4 @@ const Status = () => {
   );
 };
 
-export default Status;
+export default StatusPage;
