@@ -14,7 +14,7 @@ import MfaManager from '@/components/admin/profile/MfaManager';
 
 const Profile = () => {
   const { t } = useTranslation();
-  const { profile, loading: profileLoading } = useProfile();
+  const { profile, loading: profileLoading, refreshProfile } = useProfile();
   const { session } = useSession();
 
   const LoadingSkeleton = () => (
@@ -44,7 +44,7 @@ const Profile = () => {
       {profileLoading || !profile ? <LoadingSkeleton /> : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-1 space-y-6">
-            <UserProfileCard profile={profile} session={session} />
+            <UserProfileCard profile={profile} session={session} onProfileUpdate={refreshProfile} />
           </div>
           <div className="lg:col-span-2 space-y-6">
             <UpdateProfileForm profile={profile} />
