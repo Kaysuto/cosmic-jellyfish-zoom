@@ -17,14 +17,30 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Admin = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, loading: profileLoading } = useProfile();
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setIsLogoutDialogOpen(true);
+  };
+
+  const confirmLogout = async () => {
     await supabase.auth.signOut();
     navigate('/');
   };
@@ -80,7 +96,7 @@ const Admin = () => {
                   <DropdownMenuItem asChild><NavLink to="/profile" className="w-full cursor-pointer"><User className="mr-2 h-4 w-4" /><span>Profil</span></NavLink></DropdownMenuItem>
                   <DropdownMenuItem asChild><NavLink to="/settings" className="w-full cursor-pointer"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></NavLink></DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer"><LogOut className="mr-2 h-4 w-4" /><span>{t('logout')}</span></DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogoutClick} className="text-destructive cursor-pointer"><LogOut className="mr-2 h-4 w-4" /><span>{t('logout')}</span></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : null}
@@ -110,6 +126,22 @@ const Admin = () => {
           </motion.div>
         </AnimatePresence>
       </main>
+      <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('confirm_logout_title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('confirm_logout_description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLogout} className="bg-destructive hover:bg-destructive/90">
+              {t('logout')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

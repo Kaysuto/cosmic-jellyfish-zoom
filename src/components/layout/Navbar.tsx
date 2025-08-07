@@ -20,6 +20,16 @@ import { getGravatarURL } from "@/lib/gravatar";
 import { supabase } from "@/integrations/supabase/client";
 import CustomAudioPlayer from "@/components/CustomAudioPlayer";
 import { useBodyScrollLockCompensation } from "@/hooks/useBodyScrollLockCompensation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -27,6 +37,7 @@ const Navbar = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { session } = useSession();
   const { profile } = useProfile();
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   
   const [discordOnline, setDiscordOnline] = useState(0);
   const headerRef = useRef<HTMLElement>(null);
@@ -58,7 +69,11 @@ const Navbar = () => {
     { to: "/status", label: t('status') },
   ];
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setIsLogoutDialogOpen(true);
+  };
+
+  const confirmLogout = async () => {
     await supabase.auth.signOut();
     navigate('/');
   };
@@ -120,7 +135,7 @@ const Navbar = () => {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive cursor-pointer">
+        <DropdownMenuItem onClick={handleLogoutClick} className="text-destructive focus:text-destructive cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>{t('logout')}</span>
         </DropdownMenuItem>
@@ -140,89 +155,107 @@ const Navbar = () => {
   };
 
   return (
-    <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 bg-background/60 backdrop-blur-lg border-b">
-      <nav className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        <div className="flex-1 flex justify-start items-center gap-4">
-          <CustomAudioPlayer />
-        </div>
-
-        <div className="hidden md:flex flex-1 justify-center">
-          <div className="flex items-center gap-2 bg-muted/50 border rounded-full p-1 shadow-md">
-            {navItems.map((item) => (
-              <NavLink key={item.to} to={item.to} className={desktopNavLinkClasses}>
-                {item.label}
-              </NavLink>
-            ))}
-            <div className="border-l h-6 mx-1"></div>
-            <AuthLinks />
+    <>
+      <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 bg-background/60 backdrop-blur-lg border-b">
+        <nav className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
+          <div className="flex-1 flex justify-start items-center gap-4">
+            <CustomAudioPlayer />
           </div>
-        </div>
 
-        <div className="flex-1 flex justify-end items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="hidden md:flex items-center gap-2 bg-muted/30 hover:bg-muted/50 rounded-full px-3 py-1.5"
-            onClick={() => window.open('https://ptb.discord.com/channels/1027968386640117770/1234313061993676860', '_blank')}
-          >
-            <div className="relative">
-              <svg className="h-4 w-4 text-foreground" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19.27 5.33C17.94 4.71 16.5 4.26 15 4a.09.09 0 0 0-.07.03c-.18.33-.39.76-.53 1.09a16.09 16.09 0 0 0-4.8 0c-.14-.34-.35-.76-.54-1.09-.01-.02-.04-.03-.07-.03-1.5.26-2.93.71-4.27 1.33-.01 0-.02.01-.03.02-2.72 4.07-3.47 8.03-3.1 11.95 0 .02.01.04.03.05 1.8 1.32 3.53 2.12 5.24 2.65.03.01.06 0 .07-.02.4-.55.76-1.13 1.07-1.74.02-.04 0-.08-.04-.09-.57-.22-1.11-.48-1.64-.78-.04-.02-.04-.08-.01-.11.11-.08.22-.17.33-.25.02-.02.05-.02.07-.01 3.44 1.57 7.15 1.57 10.55 0 .02-.01.05-.01.07.01.11.09.22.17.33.26.04.03.04.09-.01.11-.52.31-1.07.56-1.64.78-.04.01-.05.06-.04.09.32.61.68 1.19 1.07 1.74.03.01.06.02.09.01 1.72-.53 3.45-1.33 5.25-2.65.02-.01.03-.03.03-.05.44-4.53-.73-8.46-3.1-11.95-.01-.01-.02-.02-.04-.02zM8.52 14.91c-.99 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.81 2-1.8 2zm6.97 0c-.99 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.81 2-1.8 2z"/>
-              </svg>
-              <span className="absolute -top-1 -right-1 bg-green-500 rounded-full h-2 w-2"></span>
+          <div className="hidden md:flex flex-1 justify-center">
+            <div className="flex items-center gap-2 bg-muted/50 border rounded-full p-1 shadow-md">
+              {navItems.map((item) => (
+                <NavLink key={item.to} to={item.to} className={desktopNavLinkClasses}>
+                  {item.label}
+                </NavLink>
+              ))}
+              <div className="border-l h-6 mx-1"></div>
+              <AuthLinks />
             </div>
-            <span className="text-xs font-medium text-muted-foreground">{t('discord_online', { count: discordOnline })}</span>
-          </Button>
-
-          <div className="md:hidden">
-            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="bg-background border-l w-[280px]">
-                <div className="flex flex-col h-full">
-                  <div className="flex-grow space-y-2 pt-10">
-                    {navItems.map((item) => (
-                      <NavLink key={item.to} to={item.to} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
-                        {item.label}
-                      </NavLink>
-                    ))}
-                  </div>
-                  <div className="flex-shrink-0 border-t pt-4 pb-6">
-                    {session && profile ? (
-                      <div className="space-y-2">
-                        <div className="px-4">
-                          <p className="font-medium text-foreground">{profile.first_name} {profile.last_name}</p>
-                          <p className="text-sm text-muted-foreground">{profile.email}</p>
-                        </div>
-                        {profile.role === 'admin' && (
-                          <NavLink to="/admin" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><LayoutDashboard className="mr-3 h-5 w-5" />{t('admin_dashboard')}</NavLink>
-                        )}
-                        <NavLink to="/profile" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
-                        <NavLink to="/settings" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><Settings className="mr-3 h-5 w-5" />{t('settings')}</NavLink>
-                        <div className="px-4 pt-2">
-                          <Button onClick={handleLogout} variant="destructive" className="w-full justify-start">
-                            <LogOut className="mr-3 h-5 w-5" />
-                            {t('logout')}
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <NavLink to="/login" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
-                        {t('login')}
-                      </NavLink>
-                    )}
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
           </div>
-        </div>
-      </nav>
-    </header>
+
+          <div className="flex-1 flex justify-end items-center gap-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="hidden md:flex items-center gap-2 bg-muted/30 hover:bg-muted/50 rounded-full px-3 py-1.5"
+              onClick={() => window.open('https://ptb.discord.com/channels/1027968386640117770/1234313061993676860', '_blank')}
+            >
+              <div className="relative">
+                <svg className="h-4 w-4 text-foreground" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.27 5.33C17.94 4.71 16.5 4.26 15 4a.09.09 0 0 0-.07.03c-.18.33-.39.76-.53 1.09a16.09 16.09 0 0 0-4.8 0c-.14-.34-.35-.76-.54-1.09-.01-.02-.04-.03-.07-.03-1.5.26-2.93.71-4.27 1.33-.01 0-.02.01-.03.02-2.72 4.07-3.47 8.03-3.1 11.95 0 .02.01.04.03.05 1.8 1.32 3.53 2.12 5.24 2.65.03.01.06 0 .07-.02.4-.55.76-1.13 1.07-1.74.02-.04 0-.08-.04-.09-.57-.22-1.11-.48-1.64-.78-.04-.02-.04-.08-.01-.11.11-.08.22-.17.33-.25.02-.02.05-.02.07-.01 3.44 1.57 7.15 1.57 10.55 0 .02-.01.05-.01.07.01.11.09.22.17.33.26.04.03.04.09-.01.11-.52.31-1.07.56-1.64.78-.04.01-.05.06-.04.09.32.61.68 1.19 1.07 1.74.03.01.06.02.09.01 1.72-.53 3.45-1.33 5.25-2.65.02-.01.03-.03.03-.05.44-4.53-.73-8.46-3.1-11.95-.01-.01-.02-.02-.04-.02zM8.52 14.91c-.99 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.81 2-1.8 2zm6.97 0c-.99 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.81 2-1.8 2z"/>
+                </svg>
+                <span className="absolute -top-1 -right-1 bg-green-500 rounded-full h-2 w-2"></span>
+              </div>
+              <span className="text-xs font-medium text-muted-foreground">{t('discord_online', { count: discordOnline })}</span>
+            </Button>
+
+            <div className="md:hidden">
+              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="bg-background border-l w-[280px]">
+                  <div className="flex flex-col h-full">
+                    <div className="flex-grow space-y-2 pt-10">
+                      {navItems.map((item) => (
+                        <NavLink key={item.to} to={item.to} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
+                          {item.label}
+                        </NavLink>
+                      ))}
+                    </div>
+                    <div className="flex-shrink-0 border-t pt-4 pb-6">
+                      {session && profile ? (
+                        <div className="space-y-2">
+                          <div className="px-4">
+                            <p className="font-medium text-foreground">{profile.first_name} {profile.last_name}</p>
+                            <p className="text-sm text-muted-foreground">{profile.email}</p>
+                          </div>
+                          {profile.role === 'admin' && (
+                            <NavLink to="/admin" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><LayoutDashboard className="mr-3 h-5 w-5" />{t('admin_dashboard')}</NavLink>
+                          )}
+                          <NavLink to="/profile" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
+                          <NavLink to="/settings" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><Settings className="mr-3 h-5 w-5" />{t('settings')}</NavLink>
+                          <div className="px-4 pt-2">
+                            <Button onClick={handleLogoutClick} variant="destructive" className="w-full justify-start">
+                              <LogOut className="mr-3 h-5 w-5" />
+                              {t('logout')}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <NavLink to="/login" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
+                          {t('login')}
+                        </NavLink>
+                      )}
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          </div>
+        </nav>
+      </header>
+      <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('confirm_logout_title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('confirm_logout_description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLogout} className="bg-destructive hover:bg-destructive/90">
+              {t('logout')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
