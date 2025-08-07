@@ -8,7 +8,7 @@ import Index from "./pages/Index";
 import StatusPage from "./pages/Status";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
-import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/admin/Dashboard";
 import Settings from "./pages/admin/Settings";
 import Profile from "./pages/admin/Profile";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -19,6 +19,11 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useEffect } from "react";
 import { useAudioStore } from "./stores/audioStore";
 import { useTranslation } from "react-i18next";
+import AdminLayout from "@/components/admin/AdminLayout";
+import ServiceManager from "@/components/admin/ServiceManager";
+import IncidentManager from "@/components/admin/IncidentManager";
+import MaintenanceManager from "@/components/admin/MaintenanceManager";
+import UserManager from "@/components/admin/UserManager";
 
 const queryClient = new QueryClient();
 
@@ -69,12 +74,20 @@ const AppWrapper = () => {
                 <Route element={<MainLayout />}>
                   <Route path="/" element={<Index />} />
                   <Route path="/status" element={<StatusPage />} />
-                  <Route element={<ProtectedRoute />}>
-                    <Route path="/admin" element={<Admin />} />
-                    <Route path="/admin/settings" element={<Settings />} />
-                    <Route path="/admin/profile" element={<Profile />} />
+                </Route>
+                
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="services" element={<ServiceManager />} />
+                    <Route path="incidents" element={<IncidentManager />} />
+                    <Route path="maintenance" element={<MaintenanceManager />} />
+                    <Route path="users" element={<UserManager />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="profile" element={<Profile />} />
                   </Route>
                 </Route>
+
                 <Route path="/login" element={<Login />} />
                 <Route path="/update-password" element={<UpdatePassword />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

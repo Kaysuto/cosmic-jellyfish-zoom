@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { differenceInHours } from 'date-fns';
 import { Activity, BarChart, ShieldCheck, Timer } from 'lucide-react';
 
-const AnalyticsPage = () => {
+const AdminDashboard = () => {
   const { t } = useTranslation();
   const { incidents, loading: incidentsLoading } = useIncidents();
   const { services, loading: servicesLoading } = useServices();
@@ -54,6 +54,7 @@ const AnalyticsPage = () => {
 
   return (
     <div className="space-y-6">
+       <h1 className="text-3xl font-bold">{t('admin_dashboard')}</h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard title={t('total_services')} value={totalServices.toString()} icon={BarChart} />
         <StatCard title={t('operational_services')} value={`${operationalServices}`} icon={ShieldCheck} />
@@ -72,4 +73,4 @@ const AnalyticsPage = () => {
   );
 };
 
-export default AnalyticsPage;
+export default AdminDashboard;
