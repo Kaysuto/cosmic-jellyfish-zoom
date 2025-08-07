@@ -262,7 +262,7 @@ const resources = {
       "spotify_title": "Ambiant Music",
       "discord_title": "Join us on Discord",
       "discord_online": "{{count}} online",
-      "incidents": "{{count}} issue{{count:plural,one:issue,other:issues}}",
+      "incidents": "{{count}} issue{{count:plural,one:,s}}",
       // Navigation
       "home": "Home",
       "status": "Status",
