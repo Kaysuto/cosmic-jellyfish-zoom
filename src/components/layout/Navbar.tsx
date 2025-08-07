@@ -5,7 +5,14 @@ import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown } from "luci
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
@@ -71,9 +78,9 @@ const Navbar = () => {
     );
 
   const UserMenu = () => (
-    <HoverCard openDelay={100} closeDelay={100}>
-      <HoverCardTrigger asChild>
-        <button className={cn(desktopNavLinkClasses({ isActive: false }), "flex items-center gap-2")}>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className={cn(desktopNavLinkClasses({ isActive: false }), "flex items-center gap-2 group")}>
           <Avatar className="h-6 w-6">
             <AvatarImage src={profile?.avatar_url || getGravatarURL(profile?.email)} alt={profile?.first_name || 'Avatar'} />
             <AvatarFallback>{profile?.first_name?.charAt(0) || 'U'}</AvatarFallback>
@@ -81,36 +88,42 @@ const Navbar = () => {
           <span className="text-foreground hidden sm:inline">
             Bonjour, {profile?.first_name || 'Admin'}
           </span>
-          <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:inline transition-transform duration-200" />
+          <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:inline transition-transform duration-200 group-data-[state=open]:rotate-180" />
         </button>
-      </HoverCardTrigger>
-      <HoverCardContent 
-        className="w-56 p-2 rounded-xl shadow-2xl border bg-card z-50"
-        align="end"
-      >
-        <div className="font-normal px-2 py-1.5">
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end">
+        <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none text-foreground">{profile?.first_name} {profile?.last_name}</p>
+            <p className="text-sm font-medium leading-none">{profile?.first_name} {profile?.last_name}</p>
             <p className="text-xs leading-none text-muted-foreground">{profile?.email}</p>
           </div>
-        </div>
-        <div className="my-2 h-px bg-border" />
-        <Link to="/admin" className="flex items-center w-full text-left p-2 rounded-md text-sm text-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer">
-          <LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span>
-        </Link>
-        <Link to="/admin/profile" className="flex items-center w-full text-left p-2 rounded-md text-sm text-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer">
-          <User className="mr-2 h-4 w-4" /><span>Profil</span>
-        </Link>
-        <Link to="/admin/settings" className="flex items-center w-full text-left p-2 rounded-md text-sm text-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer">
-          <Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span>
-        </Link>
-        <div className="my-2 h-px bg-border" />
-        <button onClick={handleLogout} className="flex items-center w-full text-left p-2 rounded-md text-sm text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer">
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/admin" className="cursor-pointer">
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            <span>{t('admin_dashboard')}</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/admin/profile" className="cursor-pointer">
+            <User className="mr-2 h-4 w-4" />
+            <span>Profil</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/admin/settings" className="cursor-pointer">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>{t('settings')}</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>{t('logout')}</span>
-        </button>
-      </HoverCardContent>
-    </HoverCard>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 
   const AuthLinks = () => {
