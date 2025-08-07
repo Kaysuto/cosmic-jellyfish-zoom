@@ -22,6 +22,10 @@ const resources = {
       "discord_online": "{{count}} en ligne",
       "incident_count_fr_one": "Incident : {{count}}",
       "incident_count_fr_other": "Incidents : {{count}}",
+      "search_user_placeholder": "Rechercher par nom ou e-mail...",
+      "filter_by_role": "Filtrer par rôle",
+      "all_roles": "Tous les rôles",
+      "cannot_edit_self_tooltip": "Vous ne pouvez pas modifier votre propre compte depuis cette liste. Allez sur la page Profil.",
       // Navigation
       "home": "Accueil",
       "status": "Statut",
@@ -271,6 +275,10 @@ const resources = {
       "discord_online": "{{count}} online",
       "incident_count_en_one": "Issue: {{count}}",
       "incident_count_en_other": "Issues: {{count}}",
+      "search_user_placeholder": "Search by name or email...",
+      "filter_by_role": "Filter by role",
+      "all_roles": "All roles",
+      "cannot_edit_self_tooltip": "You cannot edit your own account from this list. Go to the Profile page.",
       // Navigation
       "home": "Home",
       "status": "Status",
@@ -512,6 +520,7 @@ i18n
     fallbackLng: 'fr',
     interpolation: {
       escapeValue: false,
+    
     },
     detection: {
       order: ['localStorage', 'navigator'],

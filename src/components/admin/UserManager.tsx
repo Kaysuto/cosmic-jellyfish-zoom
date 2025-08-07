@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useUsers } from '@/hooks/useUsers';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +6,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trash2, MoreHorizontal, User, Shield, KeyRound, ShieldOff, Info, Edit } from 'lucide-react';
+import { Trash2, MoreHorizontal, User, Shield, KeyRound, ShieldOff, Info, Edit, ArrowUpDown, Search } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
@@ -17,8 +17,10 @@ import { getGravatarURL } from '@/lib/gravatar';
 import { Badge } from '@/components/ui/badge';
 import { Profile } from '@/hooks/useProfile';
 import { useSession } from '@/contexts/AuthContext';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Link } from 'react-router-dom';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const UserManager = () => {
   const { t, i18n } = useTranslation();
@@ -30,6 +32,11 @@ const UserManager = () => {
   const [userToEditMfa, setUserToEditMfa] = useState<Profile | null>(null);
   const [mfaUserIds, setMfaUserIds] = useState<string[]>([]);
   const [loadingMfa, setLoadingMfa] = useState(true);
+
+  const [filterRole, setFilterRole] = useState<'all' | 'admin' | 'user'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'updated_at' | 'email' | 'first_name'>('updated_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
@@ -50,6 +57,41 @@ const UserManager = () => {
   useEffect(() => {
     fetchMfaStatus();
   }, [fetchMfaStatus]);
+
+  const filteredAndSortedUsers = useMemo(() => {
+    return users
+      .filter(user => {
+        if (filterRole !== 'all' && user.role !== filterRole) {
+          return false;
+        }
+        if (searchTerm) {
+          const term = searchTerm.toLowerCase();
+          const fullName = `${user.first_name || ''} ${user.last_name || ''}`.toLowerCase();
+          const email = user.email?.toLowerCase() || '';
+          if (!fullName.includes(term) && !email.includes(term)) {
+            return false;
+          }
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        const aValue = (sortBy === 'first_name' ? `${a.first_name} ${a.last_name}` : a[sortBy]) || '';
+        const bValue = (sortBy === 'first_name' ? `${b.first_name} ${b.last_name}` : b[sortBy]) || '';
+        
+        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+  }, [users, filterRole, searchTerm, sortBy, sortOrder]);
+
+  const handleSort = (column: 'updated_at' | 'email' | 'first_name') => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('desc');
+    }
+  };
 
   const confirmDelete = (user: Profile) => {
     setUserToDelete(user);
@@ -116,18 +158,49 @@ const UserManager = () => {
           <CardTitle>{t('manage_users')}</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+            <div className="relative w-full sm:w-auto sm:flex-grow max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={t('search_user_placeholder')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Select value={filterRole} onValueChange={(value) => setFilterRole(value as any)}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder={t('filter_by_role')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('all_roles')}</SelectItem>
+                  <SelectItem value="admin">{t('admin_role')}</SelectItem>
+                  <SelectItem value="user">{t('user_role')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Utilisateur</TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort('first_name')}>
+                    Utilisateur <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
                 <TableHead>{t('role')}</TableHead>
                 <TableHead>MFA</TableHead>
-                <TableHead>{t('last_update')}</TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort('updated_at')}>
+                    {t('last_update')} <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
                 <TableHead className="text-right">{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => {
+              {filteredAndSortedUsers.map((user) => {
                 const hasMfa = mfaUserIds.includes(user.id);
                 const isCurrentUser = user.id === session?.user?.id;
                 return (
@@ -149,32 +222,47 @@ const UserManager = () => {
                     </TableCell>
                     <TableCell>{format(new Date(user.updated_at), 'PP', { locale: currentLocale })}</TableCell>
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" disabled={isCurrentUser}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link to={`/admin/users/${user.id}/edit`} className="cursor-pointer">
-                              <Edit className="mr-2 h-4 w-4" />
-                              <span>{t('edit')}</span>
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuSub>
-                            <DropdownMenuSubTrigger><Shield className="mr-2 h-4 w-4" /><span>{t('role')}</span></DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                              <DropdownMenuSubContent>
-                                <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'admin')}><Shield className="mr-2 h-4 w-4" />{t('admin_role')}</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'user')}><User className="mr-2 h-4 w-4" />{t('user_role')}</DropdownMenuItem>
-                              </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                          </DropdownMenuSub>
-                          <DropdownMenuItem onClick={() => confirmDisableMfa(user)} disabled={!hasMfa}>
-                            <ShieldOff className="mr-2 h-4 w-4" />
-                            <span>{t('disable_mfa')}</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => confirmDelete(user)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /><span>{t('delete')}</span></DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {isCurrentUser ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span tabIndex={0}>
+                              <Button variant="ghost" size="icon" disabled>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t('cannot_edit_self_tooltip')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link to={`/admin/users/${user.id}/edit`} className="cursor-pointer">
+                                <Edit className="mr-2 h-4 w-4" />
+                                <span>{t('edit')}</span>
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSub>
+                              <DropdownMenuSubTrigger><Shield className="mr-2 h-4 w-4" /><span>{t('role')}</span></DropdownMenuSubTrigger>
+                              <DropdownMenuPortal>
+                                <DropdownMenuSubContent>
+                                  <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'admin')}><Shield className="mr-2 h-4 w-4" />{t('admin_role')}</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'user')}><User className="mr-2 h-4 w-4" />{t('user_role')}</DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                              </DropdownMenuPortal>
+                            </DropdownMenuSub>
+                            <DropdownMenuItem onClick={() => confirmDisableMfa(user)} disabled={!hasMfa}>
+                              <ShieldOff className="mr-2 h-4 w-4" />
+                              <span>{t('disable_mfa')}</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => confirmDelete(user)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /><span>{t('delete')}</span></DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </TableCell>
                   </TableRow>
                 );
