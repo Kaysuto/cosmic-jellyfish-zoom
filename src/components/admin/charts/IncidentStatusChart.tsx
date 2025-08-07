@@ -25,8 +25,9 @@ const IncidentStatusChart = ({ incidents }: IncidentStatusChartProps) => {
       return acc;
     }, {} as Record<string, number>);
 
-    return Object.entries(statusCounts).map(([name, value]) => ({
-      name: t(name),
+    return Object.entries(statusCounts).map(([key, value]) => ({
+      key,
+      name: t(key),
       value,
     }));
   }, [incidents, t]);
@@ -71,7 +72,7 @@ const IncidentStatusChart = ({ incidents }: IncidentStatusChartProps) => {
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               >
                 {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[entry.name.toLowerCase() as keyof typeof COLORS] || '#8884d8'} />
+                  <Cell key={`cell-${index}`} fill={COLORS[entry.key as keyof typeof COLORS] || '#8884d8'} />
                 ))}
               </Pie>
               <Tooltip
