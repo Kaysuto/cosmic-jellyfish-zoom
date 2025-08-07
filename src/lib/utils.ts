@@ -14,8 +14,7 @@ const tldPattern = ALLOWED_TLDS.join('|');
 
 // Expression régulière stricte pour la validation des e-mails, limitée aux TLDs spécifiés.
 // Le 'i' à la fin rend la validation insensible à la casse (ex: .COM est accepté).
-// Le `+?` est une correction pour rendre le quantificateur non-gourmand et éviter les faux négatifs.
 export const strictEmailRegex = new RegExp(
-  `^(([^<>()[\]\\\\.,;:\\s@"]+(\\.[^<>()[\]\\\\.,;:\\s@"]+)*)|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+?(${tldPattern})))$`,
+  `^(([^<>()[\]\\\\.,;:\\s@"]+(\\.[^<>()[\]\\\\.,;:\\s@"]+)*)|(".+"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+(${tldPattern})))$`,
   'i'
 );
