@@ -73,11 +73,11 @@ const AppWrapper = () => {
                 <Route element={<MainLayout />}>
                   <Route path="/" element={<Index />} />
                   <Route path="/status" element={<StatusPage />} />
-                </Route>
-                
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/settings" element={<Settings />} />
+                  
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/settings" element={<Settings />} />
+                  </Route>
                 </Route>
 
                 <Route element={<AdminRoute />}>
