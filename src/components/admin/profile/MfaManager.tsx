@@ -10,7 +10,6 @@ import { ShieldCheck } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Factor } from '@supabase/supabase-js';
-import { auditLog } from '@/utils/audit';
 
 const MfaManager = () => {
   const { t } = useTranslation();
@@ -94,7 +93,6 @@ const MfaManager = () => {
         showSuccess(t('mfa_enabled_successfully'));
         setIsMfaDialogVisible(false);
         setVerificationCode('');
-        await auditLog('mfa_enabled', {});
         fetchMfaStatus();
       }
       setIsVerifying(false);
@@ -108,7 +106,6 @@ const MfaManager = () => {
       showError(error.message);
     } else {
       showSuccess(t('mfa_disabled_successfully'));
-      await auditLog('mfa_disabled', {});
       fetchMfaStatus();
     }
     setIsUnenrollDialogVisible(false);
