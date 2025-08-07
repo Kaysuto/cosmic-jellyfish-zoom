@@ -35,6 +35,20 @@ const IncidentHistoryChart = ({ incidents }: IncidentHistoryChartProps) => {
     });
   }, [incidents, currentLocale, today]);
 
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="rounded-lg border bg-background p-2 shadow-sm">
+          <p className="font-bold text-foreground">{label}</p>
+          <p className="text-sm text-muted-foreground">
+            {t('incidents')}: {payload[0].value}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -52,11 +66,7 @@ const IncidentHistoryChart = ({ incidents }: IncidentHistoryChartProps) => {
               <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
               <Tooltip
                 cursor={{ fill: 'hsl(var(--muted))' }}
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--background))',
-                  borderColor: 'hsl(var(--border))',
-                  color: 'hsl(var(--foreground))',
-                }}
+                content={<CustomTooltip />}
               />
               <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
             </BarChart>

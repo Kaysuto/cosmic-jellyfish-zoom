@@ -16,6 +16,24 @@ const COLORS = {
   resolved: '#22c55e',     // green-500
 };
 
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg border bg-background p-2 shadow-sm">
+        <div className="flex flex-col">
+          <span className="text-[0.70rem] uppercase text-muted-foreground">
+            {payload[0].name}
+          </span>
+          <span className="font-bold text-foreground">
+            {payload[0].value}
+          </span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 const IncidentStatusChart = ({ incidents }: IncidentStatusChartProps) => {
   const { t } = useTranslation();
 
@@ -77,12 +95,7 @@ const IncidentStatusChart = ({ incidents }: IncidentStatusChartProps) => {
               </Pie>
               <Tooltip
                 cursor={{ fill: 'hsl(var(--muted))' }}
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--background))',
-                  borderColor: 'hsl(var(--border))',
-                  color: 'hsl(var(--foreground))',
-                  borderRadius: 'var(--radius)',
-                }}
+                content={<CustomTooltip />}
               />
             </PieChart>
           </ResponsiveContainer>
