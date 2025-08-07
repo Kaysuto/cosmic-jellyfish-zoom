@@ -254,7 +254,6 @@ const CustomAudioPlayer = () => {
                 aria-label="Volume slider"
               />
             </div>
-            <div className="text-[10px] text-muted-foreground text-center">Molette: ±5 — Shift + molette: ±1</div>
           </div>
         </HoverCardContent>
       </HoverCard>
