@@ -74,7 +74,7 @@ const Login = () => {
   }, []);
 
   const loginSchema = useMemo(() => z.object({
-    email: z.string().email({ message: t('invalid_email') }),
+    email: z.string().regex(emailRegex, { message: t('invalid_email') }),
     password: z.string().min(1, { message: t('password_required') }),
   }), [i18n.language]);
 
@@ -88,7 +88,7 @@ const Login = () => {
   }), [i18n.language]);
   
   const forgotPasswordSchema = useMemo(() => z.object({
-    email: z.string().email({ message: t('invalid_email') }),
+    email: z.string().regex(emailRegex, { message: t('invalid_email') }),
   }), [i18n.language]);
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
