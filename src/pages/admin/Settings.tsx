@@ -26,7 +26,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { auditLog } from '@/utils/audit';
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
@@ -77,8 +76,6 @@ const Settings = () => {
       console.log('Registration setting updated successfully.');
       showSuccess(t(checked ? 'registrations_enabled' : 'registrations_disabled'));
       refreshSettings();
-      // Audit log
-      await auditLog('setting_changed', { key: 'allow_registrations', value: checked.toString() });
     }
   };
 
@@ -106,8 +103,6 @@ const Settings = () => {
       console.log('General settings updated successfully.');
       showSuccess(t('settings_updated_successfully'));
       refreshSettings();
-      // Audit log
-      await auditLog('app_settings_updated', { settings: settingsToUpdate });
     }
     setIsConfirmOpen(false);
     setPendingSettings(null);

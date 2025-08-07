@@ -20,7 +20,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { auditLog } from '@/utils/audit';
 
 const IncidentManager = () => {
   const { t, i18n } = useTranslation();
@@ -84,8 +83,9 @@ const IncidentManager = () => {
         console.error(error);
       } else {
         showSuccess(t('incident_saved_successfully'));
-        // Audit log for update
-        await auditLog('incident_updated', { incident_id: selectedIncident.id, changes: incidentData });
+        if (session?.user.id) {
+          await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'incident_updated', details: { incident_id: selectedIncident.id, title: values.title } });
+        }
         refreshIncidents();
       }
     } else {
@@ -95,8 +95,9 @@ const IncidentManager = () => {
         console.error(error);
       } else {
         showSuccess(t('incident_saved_successfully'));
-        // Audit log for creation
-        await auditLog('incident_created', { incident_id: data?.id ?? null, title: values.title });
+        if (data && session?.user.id) {
+          await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'incident_created', details: { incident_id: data.id, title: values.title } });
+        }
         refreshIncidents();
       }
     }
@@ -122,8 +123,9 @@ const IncidentManager = () => {
       console.error(error);
     } else {
       showSuccess(t('incident_deleted_successfully'));
-      // Audit log for deletion
-      await auditLog('incident_deleted', { incident_id: incidentToDelete, title: incidentTitle });
+      if (session?.user.id) {
+        await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'incident_deleted', details: { incident_id: incidentToDelete, title: incidentTitle } });
+      }
       refreshIncidents();
     }
     

@@ -8,7 +8,6 @@ import { motion } from 'framer-motion';
 
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { auditLog } from '@/utils/audit';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,12 +69,6 @@ const UpdatePassword = () => {
       showError(error.message);
     } else {
       showSuccess(t('password_updated_successfully'));
-      // Log audit event for password update
-      try {
-        await auditLog('password_updated', { method: 'self_reset' });
-      } catch (e) {
-        console.error('auditLog error:', e);
-      }
       navigate('/login');
     }
     setIsLoading(false);
