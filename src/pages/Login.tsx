@@ -115,18 +115,21 @@ const Login = () => {
 
   useEffect(() => {
     if (session) {
+      console.log('Session detected, navigating to /admin');
       navigate('/admin');
     }
   }, [session, navigate]);
 
   const onLoginSubmit = async (values: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
+    console.log('Attempting login for:', values.email);
     const { data, error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
     });
 
     if (error) {
+      console.error('Login error:', error.message);
       if (error.message === 'Invalid login credentials') {
         showError(t('invalid_login_credentials'));
       } else if (error.message === 'Email not confirmed') {
@@ -134,9 +137,15 @@ const Login = () => {
         showError(t('email_not_confirmed'));
       } else {
         showError(t('unexpected_login_error'));
-        console.error("Login error:", error.message);
       }
+      // Log failed login attempt
+      await supabase.from('audit_logs').insert({
+        user_id: data?.user?.id || null, // user_id might be null if login failed before user object is created
+        action: 'user_login_failed',
+        details: { email: values.email, error: error.message }
+      });
     } else if (data.user) {
+      console.log('Login successful for:', data.user.email);
       showSuccess(t('login_successful'));
       // Log the successful login event
       await supabase.from('audit_logs').insert({
@@ -151,23 +160,37 @@ const Login = () => {
 
   const onSignupSubmit = async (values: z.infer<typeof signupSchema>) => {
     setIsLoading(true);
+    console.log('Attempting signup for:', values.email);
     const { error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: { data: { first_name: values.first_name, last_name: values.last_name } },
     });
-    if (error) showError(error.message);
-    else showSuccess(t('account_created_check_email'));
+    if (error) {
+      console.error('Signup error:', error.message);
+      showError(error.message);
+    }
+    else {
+      console.log('Signup successful, check email for:', values.email);
+      showSuccess(t('account_created_check_email'));
+    }
     setIsLoading(false);
   };
 
   const onForgotPasswordSubmit = async (values: z.infer<typeof forgotPasswordSchema>) => {
     setIsLoading(true);
+    console.log('Attempting password reset for:', values.email);
     const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
       redirectTo: `${window.location.origin}/update-password`,
     });
-    if (error) showError(error.message);
-    else showSuccess(t('password_reset_email_sent'));
+    if (error) {
+      console.error('Forgot password error:', error.message);
+      showError(error.message);
+    }
+    else {
+      console.log('Password reset email sent to:', values.email);
+      showSuccess(t('password_reset_email_sent'));
+    }
     setIsLoading(false);
   };
 

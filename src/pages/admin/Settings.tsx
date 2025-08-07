@@ -61,6 +61,7 @@ const Settings = () => {
   }, [settingsLoading, getSetting, form]);
 
   const handleRegistrationToggle = async (checked: boolean) => {
+    console.log('Toggling registrations to:', checked);
     const originalState = allowRegistrations;
     setAllowRegistrations(checked);
     const { error } = await supabase
@@ -68,21 +69,25 @@ const Settings = () => {
       .upsert({ key: 'allow_registrations', value: checked.toString() }, { onConflict: 'key' });
 
     if (error) {
+      console.error('Error updating registration setting:', error);
       showError(t('error_updating_setting'));
       setAllowRegistrations(originalState);
     } else {
+      console.log('Registration setting updated successfully.');
       showSuccess(t(checked ? 'registrations_enabled' : 'registrations_disabled'));
       refreshSettings();
     }
   };
 
   const handleGeneralSettingsSubmit = (values: z.infer<typeof generalSettingsSchema>) => {
+    console.log('Attempting to submit general settings:', values);
     setPendingSettings(values);
     setIsConfirmOpen(true);
   };
 
   const handleConfirmSave = async () => {
     if (!pendingSettings) return;
+    console.log('Confirming save for general settings:', pendingSettings);
 
     const settingsToUpdate = [
       { key: 'site_title', value: pendingSettings.site_title },
@@ -92,8 +97,10 @@ const Settings = () => {
     const { error } = await supabase.from('app_settings').upsert(settingsToUpdate, { onConflict: 'key' });
 
     if (error) {
+      console.error('Error updating general settings:', error);
       showError(t('error_updating_setting'));
     } else {
+      console.log('General settings updated successfully.');
       showSuccess(t('settings_updated_successfully'));
       refreshSettings();
     }

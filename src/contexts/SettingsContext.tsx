@@ -26,11 +26,13 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchSettings = useCallback(async () => {
+    console.log('Fetching app settings...');
     const { data, error } = await supabase.from('app_settings').select('*');
     if (error) {
       console.error('Error fetching app settings:', error);
       setSettings([]);
     } else {
+      console.log('App settings fetched:', data);
       setSettings(data || []);
     }
     setLoading(false);
@@ -47,7 +49,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
           schema: 'public',
           table: 'app_settings',
         },
-        () => {
+        (payload) => {
+          console.log('Realtime update for app_settings received:', payload);
           fetchSettings();
         }
       )
