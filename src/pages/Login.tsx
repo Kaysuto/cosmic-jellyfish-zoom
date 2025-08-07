@@ -71,7 +71,7 @@ const Login = () => {
 
   const loginSchema = z.object({
     email: z.string().email({ message: t('invalid_email') }),
-    password: z.string().min(1, { message: "Le mot de passe est requis." }),
+    password: z.string().min(1, { message: t('password_required') }),
   });
 
   const signupSchema = z.object({
