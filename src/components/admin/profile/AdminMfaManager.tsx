@@ -6,8 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ShieldCheck, ShieldOff } from 'lucide-react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Profile } from '@/hooks/useProfile';
+import { auditLog } from '@/utils/audit';
 
 interface AdminMfaManagerProps {
   user: Profile;
@@ -26,12 +27,10 @@ const AdminMfaManager = ({ user }: AdminMfaManagerProps) => {
         body: { userId: user.id },
       });
       if (error) throw error;
-      if (data && data.factors) {
-        const verifiedFactor = data.factors.find((f: any) => f.status === 'verified');
-        setHasMfa(!!verifiedFactor);
-      } else {
-        setHasMfa(false);
-      }
+      const payload = data ?? {};
+      const factors = payload?.factors ?? payload ?? [];
+      const verified = factors.find((f: any) => f.status === 'verified');
+      setHasMfa(!!verified);
     } catch (error: any) {
       showError(error.message);
     } finally {
@@ -48,6 +47,7 @@ const AdminMfaManager = ({ user }: AdminMfaManagerProps) => {
       const { error } = await supabase.functions.invoke('admin-unenroll-mfa', { body: { userId: user.id } });
       if (error) throw error;
       showSuccess(t('mfa_disabled_for_user', { email: user.email }));
+      await auditLog('mfa_disabled_by_admin', { targetUserId: user.id });
       fetchMfaStatus();
     } catch (error: any) {
       showError(`${t('error_disabling_mfa')}: ${error.message}`);
@@ -81,7 +81,7 @@ const AdminMfaManager = ({ user }: AdminMfaManagerProps) => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('confirm_disable_mfa_title')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('confirm_disable_mfa_desc', { email: user.email })}</AlertDialogDescription>
+            <p className="text-sm text-muted-foreground">{t('confirm_disable_mfa_desc', { email: user.email })}</p>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
