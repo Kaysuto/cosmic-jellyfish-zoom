@@ -7,6 +7,7 @@ const resources = {
   fr: {
     translation: {
       // ... (toutes les traductions existantes)
+      "user_created_successfully": "Utilisateur {{email}} créé avec succès. Il peut maintenant se connecter.",
       "general_settings": "Paramètres généraux",
       "general_settings_desc": "Gérez les paramètres globaux du site, comme le titre et la langue par défaut.",
       "default_language": "Langue par défaut",
@@ -289,6 +290,7 @@ const resources = {
   en: {
     translation: {
       // ... (toutes les traductions existantes)
+      "user_created_successfully": "User {{email}} created successfully. They can now log in.",
       "general_settings": "General Settings",
       "general_settings_desc": "Manage global site settings, such as the title and default language.",
       "default_language": "Default Language",

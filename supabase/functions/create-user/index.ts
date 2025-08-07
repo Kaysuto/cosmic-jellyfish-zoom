@@ -25,11 +25,11 @@ serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // 1. Créer l'utilisateur dans Supabase Auth
+    // 1. Créer l'utilisateur dans Supabase Auth avec confirmation automatique
     const { data: { user }, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: false, // L'utilisateur est confirmé automatiquement
+      email_confirm: true, // Confirme l'utilisateur automatiquement
       user_metadata: {
         first_name,
         last_name,
@@ -38,7 +38,7 @@ serve(async (req: Request) => {
 
     if (authError) {
       console.error('Error during user creation in Auth:', authError.message);
-      throw authError;
+      throw new Error(`Auth error: ${authError.message}`);
     }
     if (!user) {
       console.error('User object was null after creation attempt.');
@@ -54,10 +54,9 @@ serve(async (req: Request) => {
 
     if (profileError) {
       console.error('Error updating profile role:', profileError.message);
-      // Si la mise à jour du profil échoue, nous devrions idéalement supprimer l'utilisateur créé
-      // pour éviter un état incohérent.
+      // Si la mise à jour du profil échoue, nous supprimons l'utilisateur créé pour éviter un état incohérent.
       await supabaseAdmin.auth.admin.deleteUser(user.id);
-      throw profileError;
+      throw new Error(`Profile update error: ${profileError.message}`);
     }
 
     return new Response(JSON.stringify({ message: `User ${email} created successfully.` }), {
