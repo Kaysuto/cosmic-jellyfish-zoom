@@ -217,7 +217,26 @@ const resources = {
       "access_your_dashboard": "Accédez à votre tableau de bord",
       "create_a_new_account": "Créez un nouveau compte",
       "loading_session": "Chargement de la session...",
-      "email_link_expired": "Le lien de réinitialisation du mot de passe est invalide ou a expiré."
+      "email_link_expired": "Le lien de réinitialisation du mot de passe est invalide ou a expiré.",
+      "mfa_title": "Authentification à deux facteurs (MFA)",
+      "mfa_description": "Renforcez la sécurité de votre compte en activant l'authentification à deux facteurs.",
+      "enable_mfa": "Activer l'MFA",
+      "disable_mfa": "Désactiver l'MFA",
+      "mfa_enabled": "Activé",
+      "mfa_disabled": "Désactivé",
+      "error_fetching_mfa_status": "Erreur lors de la récupération du statut MFA.",
+      "mfa_enabled_successfully": "L'authentification à deux facteurs a été activée avec succès.",
+      "mfa_disabled_successfully": "L'authentification à deux facteurs a été désactivée.",
+      "scan_qr_code": "Scannez ce QR code avec votre application d'authentification.",
+      "or_use_secret": "Ou entrez manuellement cette clé secrète :",
+      "verification_code_placeholder": "Code de vérification à 6 chiffres",
+      "verify_and_enable": "Vérifier et Activer",
+      "verifying": "Vérification...",
+      "confirm_disable_mfa_title": "Désactiver l'MFA ?",
+      "confirm_disable_mfa_own_account": "Êtes-vous sûr de vouloir désactiver l'authentification à deux facteurs pour votre compte ?",
+      "confirm_disable_mfa_desc": "Êtes-vous sûr de vouloir désactiver l'MFA pour l'utilisateur {{email}} ? Il perdra cette couche de sécurité supplémentaire.",
+      "mfa_disabled_for_user": "L'MFA a été désactivé pour l'utilisateur {{email}}.",
+      "error_disabling_mfa": "Erreur lors de la désactivation de l'MFA."
     }
   },
   en: {
@@ -433,7 +452,26 @@ const resources = {
       "access_your_dashboard": "Access your dashboard",
       "create_a_new_account": "Create a new account",
       "loading_session": "Loading session...",
-      "email_link_expired": "The password reset link is invalid or has expired."
+      "email_link_expired": "The password reset link is invalid or has expired.",
+      "mfa_title": "Two-Factor Authentication (MFA)",
+      "mfa_description": "Strengthen your account security by enabling Two-Factor Authentication.",
+      "enable_mfa": "Enable MFA",
+      "disable_mfa": "Disable MFA",
+      "mfa_enabled": "Enabled",
+      "mfa_disabled": "Disabled",
+      "error_fetching_mfa_status": "Error fetching MFA status.",
+      "mfa_enabled_successfully": "Two-Factor Authentication has been enabled successfully.",
+      "mfa_disabled_successfully": "Two-Factor Authentication has been disabled.",
+      "scan_qr_code": "Scan this QR code with your authenticator app.",
+      "or_use_secret": "Or manually enter this secret key:",
+      "verification_code_placeholder": "6-digit verification code",
+      "verify_and_enable": "Verify and Enable",
+      "verifying": "Verifying...",
+      "confirm_disable_mfa_title": "Disable MFA?",
+      "confirm_disable_mfa_own_account": "Are you sure you want to disable Two-Factor Authentication for your account?",
+      "confirm_disable_mfa_desc": "Are you sure you want to disable MFA for user {{email}}? They will lose this extra security layer.",
+      "mfa_disabled_for_user": "MFA has been disabled for user {{email}}.",
+      "error_disabling_mfa": "Error disabling MFA."
     }
   }
 };
