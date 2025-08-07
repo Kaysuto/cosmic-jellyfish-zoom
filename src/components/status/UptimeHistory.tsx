@@ -133,7 +133,7 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
             </p>
           )}
           {pingPayload && pingPayload.value !== null && (
-            <p style={{ color: pingPayload.color }}>
+            <p>
               {`${t('ping_legend')}: ${pingPayload.value}ms`}
             </p>
           )}
@@ -169,7 +169,7 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
             <Legend />
             {chartData.length > 0 && (
               <>
-                <Bar yAxisId="right" dataKey="avg_response_time_ms" name={t('ping_legend')} fill="hsla(var(--muted-foreground), 0.3)" barSize={20} />
+                <Bar yAxisId="right" dataKey="avg_response_time_ms" fill="hsla(var(--muted-foreground), 0.3)" barSize={20} />
                 <Line yAxisId="left" type="monotone" dataKey="uptime_percentage" name={t('uptime_legend')} stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
               </>
             )}
