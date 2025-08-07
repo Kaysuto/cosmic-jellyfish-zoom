@@ -77,8 +77,8 @@ const Admin = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild><NavLink to="/admin/profile" className="w-full cursor-pointer"><User className="mr-2 h-4 w-4" /><span>Profil</span></NavLink></DropdownMenuItem>
-                  <DropdownMenuItem asChild><NavLink to="/admin/settings" className="w-full cursor-pointer"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></NavLink></DropdownMenuItem>
+                  <DropdownMenuItem asChild><NavLink to="/profile" className="w-full cursor-pointer"><User className="mr-2 h-4 w-4" /><span>Profil</span></NavLink></DropdownMenuItem>
+                  <DropdownMenuItem asChild><NavLink to="/settings" className="w-full cursor-pointer"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></NavLink></DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer"><LogOut className="mr-2 h-4 w-4" /><span>{t('logout')}</span></DropdownMenuItem>
                 </DropdownMenuContent>

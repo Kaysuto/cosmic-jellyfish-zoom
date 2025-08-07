@@ -9,13 +9,14 @@ import StatusPage from "./pages/Status";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
-import Settings from "./pages/admin/Settings";
-import Profile from "./pages/admin/Profile";
+import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
 import UpdatePassword from "./pages/UpdatePassword";
 import { ThemeProvider } from "@/components/theme-provider";
 import MainLayout from "@/components/layout/MainLayout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import AdminRoute from "@/components/auth/AdminRoute";
 import { useEffect } from "react";
 import { useAudioStore } from "./stores/audioStore";
 import { useTranslation } from "react-i18next";
@@ -40,14 +41,11 @@ const AppWrapper = () => {
         const tracks = await response.json();
         setTracks(tracks);
 
-        // Vérifier si un index est déjà dans la session
         const savedIndex = sessionStorage.getItem('audioPlayerTrackIndex');
         if (savedIndex === null) {
-          // Si non, choisir une nouvelle piste aléatoire
           const randomTrackIndex = Math.floor(Math.random() * tracks.length);
           setCurrentTrackIndex(randomTrackIndex);
         } else {
-          // Si oui, s'assurer qu'il est valide et le définir (déjà fait dans le store initial)
           const parsedIndex = parseInt(savedIndex, 10);
           if (isNaN(parsedIndex) || parsedIndex >= tracks.length) {
             const randomTrackIndex = Math.floor(Math.random() * tracks.length);
@@ -77,20 +75,22 @@ const AppWrapper = () => {
                 </Route>
                 
                 <Route element={<ProtectedRoute />}>
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/settings" element={<Settings />} />
+                </Route>
+
+                <Route element={<AdminRoute />}>
                   <Route path="/admin" element={<Admin />}>
                     <Route index element={<AdminDashboard />} />
                     <Route path="services" element={<ServiceManager />} />
                     <Route path="incidents" element={<IncidentManager />} />
                     <Route path="maintenance" element={<MaintenanceManager />} />
                     <Route path="users" element={<UserManager />} />
-                    <Route path="settings" element={<Settings />} />
-                    <Route path="profile" element={<Profile />} />
                   </Route>
                 </Route>
 
                 <Route path="/login" element={<Login />} />
                 <Route path="/update-password" element={<UpdatePassword />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

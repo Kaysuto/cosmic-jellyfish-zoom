@@ -8,9 +8,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useProfile } from '@/hooks/useProfile';
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
+  const { profile } = useProfile();
   const [allowRegistrations, setAllowRegistrations] = useState(true);
   const [loadingSettings, setLoadingSettings] = useState(true);
 
@@ -76,32 +78,34 @@ const Settings = () => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            {t('registration_settings')}
-          </CardTitle>
-          <CardDescription>{t('allow_new_registrations_desc')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loadingSettings ? (
-            <div className="flex items-center space-x-2">
-              <Skeleton className="h-6 w-10 rounded-full" />
-              <Skeleton className="h-5 w-48" />
-            </div>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="allow-registrations"
-                checked={allowRegistrations}
-                onCheckedChange={handleRegistrationToggle}
-              />
-              <Label htmlFor="allow-registrations">{t('allow_new_registrations')}</Label>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {profile?.role === 'admin' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              {t('registration_settings')}
+            </CardTitle>
+            <CardDescription>{t('allow_new_registrations_desc')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loadingSettings ? (
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-6 w-10 rounded-full" />
+                <Skeleton className="h-5 w-48" />
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="allow-registrations"
+                  checked={allowRegistrations}
+                  onCheckedChange={handleRegistrationToggle}
+                />
+                <Label htmlFor="allow-registrations">{t('allow_new_registrations')}</Label>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
