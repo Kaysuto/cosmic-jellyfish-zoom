@@ -26,6 +26,7 @@ import IncidentManager from "@/components/admin/IncidentManager";
 import MaintenanceManager from "@/components/admin/MaintenanceManager";
 import UserManager from "@/components/admin/UserManager";
 import EditUserPage from "./pages/admin/EditUser";
+import { useAppSettings } from "./hooks/useAppSettings";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,16 @@ const AppWrapper = () => {
   useLanguageDetection();
   const { setTracks, setCurrentTrackIndex } = useAudioStore();
   const { i18n } = useTranslation();
+  const { getSetting, loading: settingsLoading, settings } = useAppSettings();
+
+  useEffect(() => {
+    if (!settingsLoading) {
+      const siteTitle = getSetting('site_title');
+      if (siteTitle) {
+        document.title = siteTitle;
+      }
+    }
+  }, [settingsLoading, getSetting, settings]);
 
   useEffect(() => {
     const fetchTracks = async () => {
