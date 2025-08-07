@@ -158,7 +158,7 @@ const Login = () => {
     switch (view) {
       case 'signup':
         return (
-          <>
+          <div key="signup">
             <Form {...signupForm}>
               <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -171,11 +171,11 @@ const Login = () => {
               </form>
             </Form>
             <div className="text-center text-sm text-gray-400 mt-4">{t('already_have_account')}{' '}<Button variant="link" className="p-0 h-auto text-blue-400" onClick={() => setView('signin')}>{t('sign_in')}</Button></div>
-          </>
+          </div>
         );
       case 'forgot_password':
         return (
-          <>
+          <div key="forgot_password">
             <Form {...forgotPasswordForm}>
               <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPasswordSubmit)} className="space-y-4">
                 <FormField control={forgotPasswordForm.control} name="email" render={({ field }) => (<FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" placeholder={t('email_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -183,12 +183,12 @@ const Login = () => {
               </form>
             </Form>
             <div className="text-center text-sm text-gray-400 mt-4"><Button variant="link" className="p-0 h-auto text-blue-400" onClick={() => setView('signin')}>{t('back_to_login')}</Button></div>
-          </>
+          </div>
         );
       case 'signin':
       default:
         return (
-          <>
+          <div key="signin">
             <Form {...loginForm}>
               <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                 <FormField control={loginForm.control} name="email" render={({ field }) => (<FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" placeholder={t('email_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -208,7 +208,7 @@ const Login = () => {
                 )}
             </div>
             {!allowRegistrations && <Alert className="mt-6 bg-blue-900/30 border-blue-500/30 text-blue-300"><Terminal className="h-4 w-4" /><AlertTitle>Information</AlertTitle><AlertDescription>{t('registrations_are_closed')}</AlertDescription></Alert>}
-          </>
+          </div>
         );
     }
   };
