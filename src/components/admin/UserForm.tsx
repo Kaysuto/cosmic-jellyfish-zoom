@@ -49,7 +49,7 @@ const UserForm = ({ onSubmit, onCancel, isSubmitting }: UserFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t('first_name')}</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
+                <FormControl><Input {...field} autoFocus /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -85,6 +85,9 @@ const UserForm = ({ onSubmit, onCancel, isSubmitting }: UserFormProps) => {
               <FormLabel>{t('password')}</FormLabel>
               <FormControl><Input type="password" {...field} /></FormControl>
               <FormMessage />
+              <p className="text-xs text-muted-foreground mt-2">
+                Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule et un chiffre.
+              </p>
             </FormItem>
           )}
         />
