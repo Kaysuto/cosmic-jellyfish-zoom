@@ -1,21 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '@/integrations/supabase/client';
-import { RealtimeChannel } from '@supabase/supabase-js';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { subDays, format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Service } from '@/hooks/useServices';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-type UptimeRecord = {
-  date: string;
-  uptime_percentage: number;
-  avg_response_time_ms: number | null;
-};
+import { useUptimeHistory } from '@/hooks/useUptimeHistory';
 
 const NextUpdateTimer = () => {
   const { t } = useTranslation();
@@ -56,61 +49,11 @@ interface UptimeHistoryProps {
 
 const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeHistoryProps) => {
   const { t, i18n } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [uptimeData, setUptimeData] = useState<UptimeRecord[]>([]);
   const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month'>('day');
+  const { uptimeData, loading } = useUptimeHistory(selectedServiceId, timeRange);
 
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
   const selectedService = services.find(s => s.id === selectedServiceId);
-
-  useEffect(() => {
-    const fetchUptimeHistory = async () => {
-      if (!selectedServiceId) {
-        setUptimeData([]);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      const daysToFetch = timeRange === 'month' ? 90 : timeRange === 'week' ? 30 : 7;
-      const startDate = subDays(new Date(), daysToFetch);
-
-      const { data, error } = await supabase
-        .from('uptime_history')
-        .select('date, uptime_percentage, avg_response_time_ms')
-        .eq('service_id', selectedServiceId)
-        .gte('date', startDate.toISOString())
-        .order('date', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching uptime history:', error);
-        setUptimeData([]);
-      } else {
-        setUptimeData(data as UptimeRecord[]);
-      }
-      setLoading(false);
-    };
-
-    fetchUptimeHistory();
-
-    const channel: RealtimeChannel = supabase
-      .channel(`uptime-history-${selectedServiceId || 'all'}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'uptime_history',
-          filter: selectedServiceId ? `service_id=eq.${selectedServiceId}` : undefined,
-        },
-        () => fetchUptimeHistory()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [selectedServiceId, timeRange]);
 
   const chartData = useMemo(() => {
     return uptimeData.map(item => ({
@@ -166,11 +109,10 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
             <YAxis yAxisId="left" stroke="hsl(var(--primary))" fontSize={12} tickLine={false} axisLine={false} domain={[80, 100]} tickFormatter={(value) => `${value}%`} />
             <YAxis yAxisId="right" orientation="right" hide={true} />
             <Tooltip content={<CustomTooltip />} />
-            <Legend />
             {chartData.length > 0 && (
               <>
                 <Bar yAxisId="right" dataKey="avg_response_time_ms" fill="hsla(var(--muted-foreground), 0.3)" barSize={20} />
-                <Line yAxisId="left" type="monotone" dataKey="uptime_percentage" name={t('uptime_legend')} stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
+                <Line yAxisId="left" type="monotone" dataKey="uptime_percentage" stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
               </>
             )}
           </ComposedChart>
