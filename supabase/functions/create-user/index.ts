@@ -1,63 +1,74 @@
 /// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
 // @ts-nocheck
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
-serve(async (req: Request) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { email, password, first_name, last_name, role } = await req.json()
-    if (!email || !password || !first_name || !last_name || !role) {
-      throw new Error("All fields are required: email, password, first_name, last_name, role");
+    const body = await req.json().catch(() => ({}));
+    const { email, password, first_name, last_name, role } = body || {};
+
+    // Basic validation
+    if (!email || !password || !first_name || !last_name) {
+      return new Response(JSON.stringify({ error: 'Missing required fields: email, password, first_name, last_name' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    const supabaseAdmin: SupabaseClient = createClient(
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    );
 
-    // Créer l'utilisateur dans Supabase Auth, en passant toutes les informations nécessaires dans les métadonnées
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    // Create the user via admin API. We add user metadata so DB trigger can create profile with role / names.
+    const createPayload: any = {
       email,
       password,
-      email_confirm: true, // Confirme l'utilisateur automatiquement
       user_metadata: {
         first_name,
         last_name,
-        role, // Passer le rôle ici
-      }
-    })
+      },
+      // raw_user_meta_data is sometimes used by triggers — include role there to be safe
+      raw_user_meta_data: {
+        role: role || 'user',
+        first_name,
+        last_name,
+      },
+      // Optionally confirm email automatically if desired (commented out by default)
+      // email_confirm: true,
+    };
 
-    if (authError) {
-      console.error('Error during user creation in Auth:', authError.message);
-      throw authError;
+    const { data, error } = await supabaseAdmin.auth.admin.createUser(createPayload);
+
+    if (error) {
+      console.error('create-user error:', error);
+      return new Response(JSON.stringify({ error: error.message || 'Failed to create user' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
-    if (!user) {
-      console.error('User object was null after creation attempt.');
-      throw new Error("User creation failed in Auth.");
-    }
 
-    // Le déclencheur de base de données 'handle_new_user' créera maintenant le profil.
-    // Il n'est plus nécessaire d'insérer dans la table 'profiles' depuis cette fonction.
-
-    return new Response(JSON.stringify({ message: `User ${email} created successfully.` }), {
+    // Return created user id (the profiles trigger will handle profile creation)
+    return new Response(JSON.stringify({ message: 'User created', user: { id: data?.user?.id ?? null, email: data?.user?.email ?? null } }), {
+      status: 201,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    })
-  } catch (error: any) {
-    console.error('Caught error in create-user function:', error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    });
+  } catch (error) {
+    console.error('create-user unexpected error:', error);
+    return new Response(JSON.stringify({ error: error?.message ?? String(error) }), {
+      status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    })
+    });
   }
-})
+});
