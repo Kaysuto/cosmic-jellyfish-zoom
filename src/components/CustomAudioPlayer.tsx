@@ -19,6 +19,8 @@ const CustomAudioPlayer = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const volumeButtonRef = useRef<HTMLButtonElement | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showVolumeIndicator, setShowVolumeIndicator] = useState(false);
+  const volumeIndicatorTimeout = useRef<number | null>(null);
 
   const currentTrack = tracks && tracks.length > 0 ? tracks[currentTrackIndex] : null;
 
@@ -106,17 +108,45 @@ const CustomAudioPlayer = () => {
     setCurrentTrackIndex(prevIndex);
   };
 
+  const showTransientVolume = () => {
+    setShowVolumeIndicator(true);
+    if (volumeIndicatorTimeout.current) {
+      window.clearTimeout(volumeIndicatorTimeout.current);
+    }
+    // Hide after 1200ms
+    volumeIndicatorTimeout.current = window.setTimeout(() => {
+      setShowVolumeIndicator(false);
+      volumeIndicatorTimeout.current = null;
+    }, 1200);
+  };
+
   // Handle mouse wheel over the volume button to change volume
   const handleVolumeWheel = (e: React.WheelEvent) => {
-    // Only when pointer is over the volume control
+    // Prevent page scroll when adjusting volume via wheel on the control
     e.preventDefault();
     e.stopPropagation();
 
-    // deltaY < 0 -> wheel up (increase), deltaY > 0 -> wheel down (decrease)
-    const step = 5;
+    // If Shift is pressed -> fine control
+    const fine = e.shiftKey;
+    const step = fine ? 1 : 5;
     const delta = e.deltaY;
     const newVolume = delta < 0 ? Math.min(100, volume + step) : Math.max(0, volume - step);
     setVolume(newVolume);
+    showTransientVolume();
+  };
+
+  // Handle mouse wheel when hovering the slider area
+  const handleSliderWheel = (e: React.WheelEvent) => {
+    // Prevent page scroll when adjusting volume via wheel on slider
+    e.preventDefault();
+    e.stopPropagation();
+
+    const fine = e.shiftKey;
+    const step = fine ? 1 : 5;
+    const delta = e.deltaY;
+    const newVolume = delta < 0 ? Math.min(100, volume + step) : Math.max(0, volume - step);
+    setVolume(newVolume);
+    showTransientVolume();
   };
 
   if (!currentTrack) {
@@ -136,7 +166,6 @@ const CustomAudioPlayer = () => {
   const TrackName = () => {
     if (isLoading) {
       return <>Chargement...</>;
-
     }
     if (isTruncated) {
       return (
@@ -198,24 +227,34 @@ const CustomAudioPlayer = () => {
           <button 
             ref={volumeButtonRef}
             onWheel={handleVolumeWheel}
-            className="p-1 text-gray-400 hover:text-white disabled:opacity-50 transition-colors" 
+            className="p-1 text-gray-400 hover:text-white disabled:opacity-50 transition-colors relative" 
             disabled={!tracks || tracks.length === 0}
-            aria-label="Volume (utilisez la molette pour régler)"
-            title="Utilisez la molette pour régler le volume"
+            aria-label="Volume (utilisez la molette pour régler, maintenez Shift pour affiner)"
+            title="Utilisez la molette pour régler le volume (Shift = fin)"
           >
             <Volume2 className="h-3 w-3" />
+            {showVolumeIndicator && (
+              <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded-md pointer-events-none">
+                {volume}%
+              </span>
+            )}
           </button>
         </HoverCardTrigger>
-        <HoverCardContent className="w-40 bg-gray-800 border-gray-700">
+        <HoverCardContent className="w-44 bg-gray-800 border-gray-700">
           <div className="space-y-2">
             <div className="text-xs text-gray-400 text-center">Volume: {volume}%</div>
-            <Slider
-              value={[volume]}
-              max={100}
-              step={1}
-              onValueChange={handleVolumeChange}
-              className="cursor-pointer"
-            />
+            {/* Wrap the Slider so we can catch onWheel on the slider area */}
+            <div onWheel={handleSliderWheel} className="px-3 py-1">
+              <Slider
+                value={[volume]}
+                max={100}
+                step={1}
+                onValueChange={handleVolumeChange}
+                className="cursor-pointer"
+                aria-label="Volume slider"
+              />
+            </div>
+            <div className="text-[10px] text-muted-foreground text-center">Molette: ±5 — Shift + molette: ±1</div>
           </div>
         </HoverCardContent>
       </HoverCard>
