@@ -7,6 +7,7 @@ const resources = {
   fr: {
     translation: {
       // ... (toutes les traductions existantes)
+      "hello_user": "Bonjour, {{name}}",
       "analytics": "Analyses",
       "incidents_by_status": "Incidents par statut",
       "incident_history_last_30_days": "Historique des incidents (30 derniers jours)",
@@ -267,6 +268,7 @@ const resources = {
   en: {
     translation: {
       // ... (toutes les traductions existantes)
+      "hello_user": "Hello, {{name}}",
       "analytics": "Analytics",
       "incidents_by_status": "Issues by Status",
       "incident_history_last_30_days": "Issue History (Last 30 Days)",

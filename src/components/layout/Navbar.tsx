@@ -101,7 +101,7 @@ const Navbar = () => {
             <AvatarFallback>{profile?.first_name?.charAt(0) || 'U'}</AvatarFallback>
           </Avatar>
           <span className="text-foreground hidden sm:inline">
-            Bonjour, {profile?.first_name || 'Admin'}
+            {t('hello_user', { name: profile?.first_name || 'Admin' })}
           </span>
           <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:inline transition-transform duration-200 group-data-[state=open]:rotate-180" />
         </button>

@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -140,7 +140,7 @@ const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardP
                       className="p-2 text-white hover:text-red-400 disabled:opacity-50"
                       title="Supprimer l'avatar"
                     >
-                      <Trash2 className="h-5 w-5" />
+                      {isDeleting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 className="h-5 w-5" />}
                     </button>
                   )}
                 </div>
