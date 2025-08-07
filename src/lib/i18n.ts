@@ -20,7 +20,7 @@ const resources = {
       "spotify_title": "Musique d'ambiance",
       "discord_title": "Rejoignez-nous sur Discord",
       "discord_online": "{{count}} en ligne",
-      "incidents": "Incidents",
+      "incidents": "{{count}} incident{{count:plural,one:,s}}",
       // Navigation
       "home": "Accueil",
       "status": "Statut",
@@ -262,7 +262,7 @@ const resources = {
       "spotify_title": "Ambiant Music",
       "discord_title": "Join us on Discord",
       "discord_online": "{{count}} online",
-      "incidents": "Incidents",
+      "incidents": "{{count}} issue{{count:plural,one:,s}}",
       // Navigation
       "home": "Home",
       "status": "Status",
