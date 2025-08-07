@@ -206,7 +206,7 @@ const UserManager = () => {
               <TableRow>
                 <TableHead>
                   <Button variant="ghost" onClick={() => handleSort('first_name')}>
-                    Utilisateur <ArrowUpDown className="ml-2 h-4 w-4" />
+                    {t('user_header')} <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>

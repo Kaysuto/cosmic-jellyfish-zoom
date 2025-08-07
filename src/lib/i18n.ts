@@ -26,6 +26,7 @@ const resources = {
       "filter_by_role": "Filtrer par rôle",
       "all_roles": "Tous les rôles",
       "cannot_edit_self_tooltip": "Vous ne pouvez pas modifier votre propre compte depuis cette liste. Allez sur la page Profil.",
+      "user_header": "Utilisateur",
       // Navigation
       "home": "Accueil",
       "status": "Statut",
@@ -279,6 +280,7 @@ const resources = {
       "filter_by_role": "Filter by role",
       "all_roles": "All roles",
       "cannot_edit_self_tooltip": "You cannot edit your own account from this list. Go to the Profile page.",
+      "user_header": "User",
       // Navigation
       "home": "Home",
       "status": "Status",
