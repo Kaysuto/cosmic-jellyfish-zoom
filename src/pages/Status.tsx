@@ -57,15 +57,13 @@ const StatusPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Skeleton className="h-24 w-full mb-8" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-8">
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-96 w-full" />
-          </div>
-          <Skeleton className="h-full w-full min-h-[400px]" />
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        <Skeleton className="h-24 w-full" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-96 w-full" />
         </div>
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
@@ -75,25 +73,23 @@ const StatusPage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 py-8 flex-grow flex flex-col"
+      className="container mx-auto px-4 py-8"
     >
-      <OverallStatus status={overallStatus} lastUpdatedText={lastUpdated ? `${t('live_status_last_updated')} ${formatDistanceToNow(lastUpdated, { addSuffix: true, locale: currentLocale })}` : ''} />
-      
-      <div className="mt-8">
+      <div className="space-y-8">
+        <OverallStatus status={overallStatus} lastUpdatedText={lastUpdated ? `${t('live_status_last_updated')} ${formatDistanceToNow(lastUpdated, { addSuffix: true, locale: currentLocale })}` : ''} />
+        
         <ScheduledMaintenances maintenances={maintenances} />
-      </div>
 
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 flex-grow">
-        <div className="flex flex-col gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <ServicesStatus services={services} />
-          <UptimeHistory 
-            services={services}
-            selectedServiceId={selectedServiceId}
-            onServiceChange={setSelectedServiceId}
-          />
+          <IncidentHistory incidents={incidents} />
         </div>
         
-        <IncidentHistory incidents={incidents} />
+        <UptimeHistory 
+          services={services}
+          selectedServiceId={selectedServiceId}
+          onServiceChange={setSelectedServiceId}
+        />
       </div>
     </motion.div>
   );
