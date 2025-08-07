@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { subDays, format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -121,15 +121,20 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const uptimePayload = payload.find((p: any) => p.dataKey === 'uptime_percentage');
+      const pingPayload = payload.find((p: any) => p.dataKey === 'avg_response_time_ms');
+
       return (
         <div className="bg-background p-2 border rounded shadow-lg text-sm">
           <p className="font-bold">{label}</p>
-          <p style={{ color: payload[0].color }}>
-            {`${t('uptime_legend')}: ${payload[0].value.toFixed(2)}%`}
-          </p>
-          {payload[1] && payload[1].value !== null && (
-            <p style={{ color: payload[1].color }}>
-              {`${t('ping_legend')}: ${payload[1].value}ms`}
+          {uptimePayload && (
+            <p style={{ color: uptimePayload.color }}>
+              {`${t('uptime_legend')}: ${uptimePayload.value.toFixed(2)}%`}
+            </p>
+          )}
+          {pingPayload && pingPayload.value !== null && (
+            <p style={{ color: pingPayload.color }}>
+              {`${t('ping_legend')}: ${pingPayload.value}ms`}
             </p>
           )}
         </div>
@@ -155,20 +160,20 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
     return (
       <div className="relative h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+          <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
             <YAxis yAxisId="left" stroke="hsl(var(--primary))" fontSize={12} tickLine={false} axisLine={false} domain={[80, 100]} tickFormatter={(value) => `${value}%`} />
-            <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} domain={[0, 1000]} tickFormatter={(value) => `${value}ms`} allowDataOverflow />
+            <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} domain={[0, 'dataMax + 200']} tickFormatter={(value) => `${value}ms`} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
             {chartData.length > 0 && (
               <>
+                <Bar yAxisId="right" dataKey="avg_response_time_ms" name={t('ping_legend')} fill="hsla(var(--muted-foreground), 0.3)" barSize={20} />
                 <Line yAxisId="left" type="monotone" dataKey="uptime_percentage" name={t('uptime_legend')} stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
-                <Line yAxisId="right" type="monotone" dataKey="avg_response_time_ms" name={t('ping_legend')} stroke="hsl(var(--muted-foreground))" dot={false} strokeWidth={2} strokeDasharray="5 5" />
               </>
             )}
-          </LineChart>
+          </ComposedChart>
         </ResponsiveContainer>
         {chartData.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-center p-4 bg-background/50 rounded-md">
