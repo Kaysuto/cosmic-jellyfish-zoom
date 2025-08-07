@@ -265,8 +265,8 @@ const resources = {
       "discord_title": "Join us on Discord",
       "discord_online": "{{count}} online",
       "incidents": "Incidents",
-      "issue_count_one": "{{count}} issue",
-      "issue_count_other": "{{count}} issues",
+      "incident_count_one": "{{count}} incident",
+      "incident_count_other": "{{count}} incidents",
       // Navigation
       "home": "Home",
       "status": "Status",
