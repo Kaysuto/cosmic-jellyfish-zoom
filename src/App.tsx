@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import Settings from "./pages/admin/Settings";
 import Profile from "./pages/admin/Profile";
+import UpdatePassword from "./pages/UpdatePassword";
 import { ThemeProvider } from "@/components/theme-provider";
 import MainLayout from "@/components/layout/MainLayout";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -75,6 +76,7 @@ const AppWrapper = () => {
                   </Route>
                 </Route>
                 <Route path="/login" element={<Login />} />
+                <Route path="/update-password" element={<UpdatePassword />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -206,7 +206,17 @@ const resources = {
       "error_updating_setting": "Erreur lors de la mise à jour du paramètre.",
       "registrations_enabled": "Les inscriptions sont maintenant activées.",
       "registrations_disabled": "Les inscriptions sont maintenant désactivées.",
-      "registrations_are_closed": "Les inscriptions sont actuellement fermées. Veuillez contacter un administrateur."
+      "registrations_are_closed": "Les inscriptions sont actuellement fermées. Veuillez contacter un administrateur.",
+      "login_successful": "Connexion réussie !",
+      "account_created_check_email": "Compte créé ! Veuillez vérifier vos e-mails pour confirmer votre inscription.",
+      "password_reset_email_sent": "Un e-mail de réinitialisation de mot de passe a été envoyé.",
+      "reset_password_title": "Réinitialiser le mot de passe",
+      "reset_password_desc": "Entrez votre e-mail pour recevoir un lien de réinitialisation.",
+      "send_recovery_link": "Envoyer le lien de récupération",
+      "back_to_login": "Retour à la connexion",
+      "access_your_dashboard": "Accédez à votre tableau de bord",
+      "create_a_new_account": "Créez un nouveau compte",
+      "loading_session": "Chargement de la session..."
     }
   },
   en: {
@@ -411,7 +421,17 @@ const resources = {
       "error_updating_setting": "Error updating setting.",
       "registrations_enabled": "Registrations are now enabled.",
       "registrations_disabled": "Registrations are now disabled.",
-      "registrations_are_closed": "Registrations are currently closed. Please contact an administrator."
+      "registrations_are_closed": "Registrations are currently closed. Please contact an administrator.",
+      "login_successful": "Login successful!",
+      "account_created_check_email": "Account created! Please check your email to confirm your registration.",
+      "password_reset_email_sent": "A password reset email has been sent.",
+      "reset_password_title": "Reset Password",
+      "reset_password_desc": "Enter your email to receive a reset link.",
+      "send_recovery_link": "Send Recovery Link",
+      "back_to_login": "Back to login",
+      "access_your_dashboard": "Access your dashboard",
+      "create_a_new_account": "Create a new account",
+      "loading_session": "Loading session..."
     }
   }
 };
