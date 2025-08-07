@@ -19,7 +19,6 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AdminRoute from "@/components/auth/AdminRoute";
 import { useEffect } from "react";
 import { useAudioStore } from "./stores/audioStore";
-import { useTranslation } from "react-i18next";
 import Admin from "./pages/Admin";
 import ServiceManager from "@/components/admin/ServiceManager";
 import IncidentManager from "@/components/admin/IncidentManager";
@@ -31,21 +30,19 @@ import { SettingsProvider, useSettings } from "./contexts/SettingsContext";
 
 const queryClient = new QueryClient();
 
-const DynamicTitle = () => {
-  const { getSetting, loading } = useSettings();
+const AppStateInitializer = ({ children }: { children: React.ReactNode }) => {
+  const { getSetting, loading: settingsLoading } = useSettings();
+  const { setTracks, setCurrentTrackIndex } = useAudioStore();
+
+  const defaultLanguage = getSetting('default_language', 'fr') as 'fr' | 'en';
+  useLanguageDetection(defaultLanguage);
+
   useEffect(() => {
-    if (!loading) {
+    if (!settingsLoading) {
       const siteTitle = getSetting('site_title', 'Statut des Services Jelly');
       document.title = siteTitle;
     }
-  }, [loading, getSetting]);
-  return null;
-};
-
-// Composant wrapper pour la détection de langue
-const AppWrapper = () => {
-  useLanguageDetection();
-  const { setTracks, setCurrentTrackIndex } = useAudioStore();
+  }, [settingsLoading, getSetting]);
 
   useEffect(() => {
     const fetchTracks = async () => {
@@ -72,14 +69,17 @@ const AppWrapper = () => {
 
     fetchTracks();
   }, [setTracks, setCurrentTrackIndex]);
-  
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark" storageKey="ui-theme">
-        <TooltipProvider delayDuration={100}>
-          <SettingsProvider>
-            <AuthProvider>
-              <DynamicTitle />
+
+  return <>{children}</>;
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider defaultTheme="dark" storageKey="ui-theme">
+      <TooltipProvider delayDuration={100}>
+        <SettingsProvider>
+          <AuthProvider>
+            <AppStateInitializer>
               <Toaster />
               <Sonner />
               <BrowserRouter>
@@ -87,12 +87,8 @@ const AppWrapper = () => {
                   <Route element={<MainLayout />}>
                     <Route path="/" element={<Index />} />
                     <Route path="/status" element={<StatusPage />} />
-                    
-                    <Route element={<ProtectedRoute />}>
-                      <Route path="/profile" element={<Profile />} />
-                    </Route>
+                    <Route element={<ProtectedRoute />}><Route path="/profile" element={<Profile />} /></Route>
                   </Route>
-
                   <Route element={<AdminRoute />}>
                     <Route path="/admin" element={<Admin />}>
                       <Route index element={<AdminDashboard />} />
@@ -105,22 +101,17 @@ const AppWrapper = () => {
                       <Route path="logs" element={<LogsPage />} />
                     </Route>
                   </Route>
-
                   <Route path="/login" element={<Login />} />
                   <Route path="/update-password" element={<UpdatePassword />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
-            </AuthProvider>
-          </SettingsProvider>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
-};
-
-const App = () => (
-  <AppWrapper />
+            </AppStateInitializer>
+          </AuthProvider>
+        </SettingsProvider>
+      </TooltipProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
 );
 
 export default App;

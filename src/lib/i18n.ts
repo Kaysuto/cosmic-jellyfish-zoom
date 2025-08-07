@@ -7,6 +7,13 @@ const resources = {
   fr: {
     translation: {
       // ... (toutes les traductions existantes)
+      "general_settings": "Paramètres généraux",
+      "general_settings_desc": "Gérez les paramètres globaux du site, comme le titre et la langue par défaut.",
+      "default_language": "Langue par défaut",
+      "default_language_desc": "La langue affichée pour les nouveaux visiteurs ou ceux non connectés.",
+      "confirm_global_changes_title": "Confirmer les changements globaux ?",
+      "confirm_global_changes_desc": "Ces modifications affecteront l'ensemble du site pour tous les visiteurs. Êtes-vous sûr de vouloir continuer ?",
+      "settings_updated_successfully": "Paramètres mis à jour avec succès.",
       "hello_user": "Bonjour, {{name}}",
       "analytics": "Analyses",
       "incidents_by_status": "Incidents par statut",
@@ -282,6 +289,13 @@ const resources = {
   en: {
     translation: {
       // ... (toutes les traductions existantes)
+      "general_settings": "General Settings",
+      "general_settings_desc": "Manage global site settings, such as the title and default language.",
+      "default_language": "Default Language",
+      "default_language_desc": "The language displayed for new or non-logged-in visitors.",
+      "confirm_global_changes_title": "Confirm Global Changes?",
+      "confirm_global_changes_desc": "These changes will affect the entire site for all visitors. Are you sure you want to continue?",
+      "settings_updated_successfully": "Settings updated successfully.",
       "hello_user": "Hello, {{name}}",
       "analytics": "Analytics",
       "incidents_by_status": "Issues by Status",
