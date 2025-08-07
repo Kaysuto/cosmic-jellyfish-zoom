@@ -28,12 +28,16 @@ const UpdatePassword = () => {
     const hash = window.location.hash.substring(1);
     if (hash) {
       const params = new URLSearchParams(hash);
+      const errorCode = params.get('error_code');
       const errorDescription = params.get('error_description');
-      if (errorDescription) {
+
+      if (errorCode === 'otp_expired') {
+        setPageError(t('email_link_expired'));
+      } else if (errorDescription) {
         setPageError(errorDescription.replace(/\+/g, ' '));
       }
     }
-  }, []);
+  }, [t]);
 
   const isReady = !sessionLoading && session && !pageError;
 

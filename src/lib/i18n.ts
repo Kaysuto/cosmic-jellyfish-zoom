@@ -216,7 +216,8 @@ const resources = {
       "back_to_login": "Retour à la connexion",
       "access_your_dashboard": "Accédez à votre tableau de bord",
       "create_a_new_account": "Créez un nouveau compte",
-      "loading_session": "Chargement de la session..."
+      "loading_session": "Chargement de la session...",
+      "email_link_expired": "Le lien de réinitialisation du mot de passe est invalide ou a expiré."
     }
   },
   en: {
@@ -431,7 +432,8 @@ const resources = {
       "back_to_login": "Back to login",
       "access_your_dashboard": "Access your dashboard",
       "create_a_new_account": "Create a new account",
-      "loading_session": "Loading session..."
+      "loading_session": "Loading session...",
+      "email_link_expired": "The password reset link is invalid or has expired."
     }
   }
 };
