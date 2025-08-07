@@ -120,8 +120,13 @@ const Login = () => {
       email: values.email,
       password: values.password,
     });
-    if (error) showError(error.message);
-    else {
+    if (error) {
+      if (error.message === 'Invalid login credentials') {
+        showError(t('invalid_login_credentials'));
+      } else {
+        showError(error.message);
+      }
+    } else {
       showSuccess(t('login_successful'));
       navigate('/admin');
     }

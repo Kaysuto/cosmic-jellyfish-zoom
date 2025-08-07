@@ -92,7 +92,7 @@ const resources = {
       "return_home": "Retour à l'accueil",
 
       // Admin & Auth
-      "admin_login": "Connexion Administrateur",
+      "admin_login": "Connexion",
       "email_address": "Adresse e-mail",
       "password": "Mot de passe",
       "password_required": "Le mot de passe est requis.",
@@ -246,7 +246,8 @@ const resources = {
       "confirm_disable_mfa_own_account": "Êtes-vous sûr de vouloir désactiver l'authentification à deux facteurs pour votre compte ?",
       "confirm_disable_mfa_desc": "Êtes-vous sûr de vouloir désactiver l'MFA pour l'utilisateur {{email}} ? Il perdra cette couche de sécurité supplémentaire.",
       "mfa_disabled_for_user": "L'MFA a été désactivé pour l'utilisateur {{email}}.",
-      "error_disabling_mfa": "Erreur lors de la désactivation de l'MFA."
+      "error_disabling_mfa": "Erreur lors de la désactivation de l'MFA.",
+      "invalid_login_credentials": "Identifiants de connexion invalides."
     }
   },
   en: {
@@ -337,7 +338,7 @@ const resources = {
       "return_home": "Return Home",
 
       // Admin & Auth
-      "admin_login": "Admin Login",
+      "admin_login": "Login",
       "email_address": "Email address",
       "password": "Password",
       "password_required": "Password is required.",
@@ -491,7 +492,8 @@ const resources = {
       "confirm_disable_mfa_own_account": "Are you sure you want to disable Two-Factor Authentication for your account?",
       "confirm_disable_mfa_desc": "Are you sure you want to disable MFA for user {{email}}? They will lose this extra security layer.",
       "mfa_disabled_for_user": "MFA has been disabled for user {{email}}.",
-      "error_disabling_mfa": "Error disabling MFA."
+      "error_disabling_mfa": "Error disabling MFA.",
+      "invalid_login_credentials": "Invalid login credentials."
     }
   }
 };
