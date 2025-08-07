@@ -6,7 +6,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trash2, MoreHorizontal, User, Shield, KeyRound, ShieldOff, Info, Edit, ArrowUpDown, Search } from 'lucide-react';
+import { Trash2, MoreHorizontal, User, Shield, KeyRound, ShieldOff, Info, Edit, ArrowUpDown, Search, PlusCircle } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
@@ -22,6 +22,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion } from 'framer-motion';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import UserForm, { UserFormValues } from './UserForm';
 
 type SortByType = 'updated_at' | 'email' | 'first_name' | 'role' | 'mfa';
 
@@ -35,6 +37,8 @@ const UserManager = () => {
   const [userToEditMfa, setUserToEditMfa] = useState<Profile | null>(null);
   const [mfaUserIds, setMfaUserIds] = useState<string[]>([]);
   const [loadingMfa, setLoadingMfa] = useState(true);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [filterRole, setFilterRole] = useState<'all' | 'admin' | 'user'>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -158,6 +162,21 @@ const UserManager = () => {
     }
   };
 
+  const handleCreateUser = async (values: UserFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.functions.invoke('create-user', { body: values });
+      if (error) throw error;
+      showSuccess(`Utilisateur ${values.email} créé. Un e-mail de confirmation a été envoyé.`);
+      refreshUsers();
+      setIsSheetOpen(false);
+    } catch (error: any) {
+      showError(`Erreur lors de la création de l'utilisateur: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (loading || loadingMfa) {
     return (
       <Card>
@@ -174,8 +193,12 @@ const UserManager = () => {
       transition={{ duration: 0.4, ease: 'easeInOut' }}
     >
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t('manage_users')}</CardTitle>
+          <Button onClick={() => setIsSheetOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Créer un utilisateur
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
@@ -299,6 +322,22 @@ const UserManager = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent className="sm:max-w-lg">
+          <SheetHeader>
+            <SheetTitle>Créer un nouvel utilisateur</SheetTitle>
+            <SheetDescription>
+              Remplissez les informations ci-dessous. Un e-mail de confirmation sera envoyé à l'utilisateur.
+            </SheetDescription>
+          </SheetHeader>
+          <UserForm
+            onSubmit={handleCreateUser}
+            onCancel={() => setIsSheetOpen(false)}
+            isSubmitting={isSubmitting}
+          />
+        </SheetContent>
+      </Sheet>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
