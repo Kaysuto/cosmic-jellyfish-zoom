@@ -76,7 +76,9 @@ const Login = () => {
 
   const signupSchema = z.object({
     email: z.string().email({ message: t('invalid_email') }),
-    password: z.string().min(6, { message: t('password_too_short') }),
+    password: z.string()
+      .min(6, { message: t('password_too_short') })
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, { message: t('password_requirements') }),
     first_name: z.string().min(1, { message: t('first_name_required') }),
     last_name: z.string().min(1, { message: t('last_name_required') }),
   });

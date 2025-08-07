@@ -48,7 +48,9 @@ const Profile = () => {
   });
 
   const passwordSchema = z.object({
-    password: z.string().min(6, { message: t('password_too_short') }),
+    password: z.string()
+      .min(6, { message: t('password_too_short') })
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, { message: t('password_requirements') }),
     confirmPassword: z.string(),
   }).refine(data => data.password === data.confirmPassword, {
     message: t('passwords_do_not_match'),
