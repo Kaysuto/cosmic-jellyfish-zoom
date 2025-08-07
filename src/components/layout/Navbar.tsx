@@ -85,7 +85,7 @@ const Navbar = () => {
         </button>
       </HoverCardTrigger>
       <HoverCardContent 
-        className="w-56 p-2 rounded-xl shadow-2xl border backdrop-blur-lg bg-card/80 z-50"
+        className="w-56 p-2 rounded-xl shadow-2xl border bg-card z-50"
         align="end"
       >
         <div className="font-normal px-2 py-1.5">
