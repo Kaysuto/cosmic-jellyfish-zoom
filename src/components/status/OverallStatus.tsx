@@ -34,13 +34,13 @@ const OverallStatus = ({ status, lastUpdatedText }: OverallStatusProps) => {
   const Icon = config.icon;
 
   return (
-    <div className={cn("p-6 rounded-lg text-center", config.bgColor)}>
+    <div className={cn("p-4 rounded-lg text-center", config.bgColor)}>
       <div className="flex items-center justify-center">
-        <Icon className={cn("h-10 w-10 mr-4 shrink-0", config.color)} />
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t(config.textKey)}</h1>
+        <Icon className={cn("h-8 w-8 mr-3 shrink-0", config.color)} />
+        <h1 className="text-xl md:text-2xl font-bold text-foreground">{t(config.textKey)}</h1>
       
       </div>
-      <p className="text-xs text-muted-foreground mt-4">{lastUpdatedText}</p>
+      <p className="text-xs text-muted-foreground mt-2">{lastUpdatedText}</p>
     </div>
   );
 };
