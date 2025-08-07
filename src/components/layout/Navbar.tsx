@@ -5,7 +5,7 @@ import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown } from "luci
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
@@ -22,24 +22,9 @@ const Navbar = () => {
   const { profile } = useProfile();
   
   const [discordOnline, setDiscordOnline] = useState(0);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const userMenuTimerRef = useRef<number | null>(null);
   const headerRef = useRef<HTMLElement>(null);
   
   useBodyScrollLockCompensation(headerRef);
-
-  const handleUserMenuEnter = () => {
-    if (userMenuTimerRef.current) {
-      clearTimeout(userMenuTimerRef.current);
-    }
-    setIsUserMenuOpen(true);
-  };
-
-  const handleUserMenuLeave = () => {
-    userMenuTimerRef.current = window.setTimeout(() => {
-      setIsUserMenuOpen(false);
-    }, 200);
-  };
 
   useEffect(() => {
     const fetchDiscordCount = async () => {
@@ -88,13 +73,9 @@ const Navbar = () => {
     );
 
   const UserMenu = () => (
-    <DropdownMenu open={isUserMenuOpen} onOpenChange={setIsUserMenuOpen}>
-      <DropdownMenuTrigger asChild>
-        <button
-          onMouseEnter={handleUserMenuEnter}
-          onMouseLeave={handleUserMenuLeave}
-          className={cn(desktopNavLinkClasses({ isActive: false }), "flex items-center gap-2")}
-        >
+    <HoverCard openDelay={100} closeDelay={100}>
+      <HoverCardTrigger asChild>
+        <button className={cn(desktopNavLinkClasses({ isActive: false }), "flex items-center gap-2")}>
           <Avatar className="h-6 w-6">
             <AvatarImage src={profile?.avatar_url || getGravatarURL(profile?.email)} alt={profile?.first_name || 'Avatar'} />
             <AvatarFallback>{profile?.first_name?.charAt(0) || 'U'}</AvatarFallback>
@@ -102,39 +83,36 @@ const Navbar = () => {
           <span className="text-white hidden sm:inline">
             Bonjour, {profile?.first_name || 'Admin'}
           </span>
-          <ChevronDown className={`h-4 w-4 text-gray-400 hidden sm:inline transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown className="h-4 w-4 text-gray-400 hidden sm:inline transition-transform duration-200" />
         </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        onMouseEnter={handleUserMenuEnter}
-        onMouseLeave={handleUserMenuLeave}
-        className="w-56 bg-gray-900/80 backdrop-blur-lg border border-gray-700/60 text-gray-300 rounded-xl shadow-2xl p-2 data-[state=open]:animate-slide-down-and-fade data-[state=closed]:animate-slide-up-and-fade"
+      </HoverCardTrigger>
+      <HoverCardContent 
+        className="w-56 bg-gray-900/80 backdrop-blur-lg border border-gray-700/60 text-gray-300 rounded-xl shadow-2xl p-2"
         align="end"
-        forceMount
       >
-        <DropdownMenuLabel className="font-normal px-2 py-1.5">
+        <div className="font-normal px-2 py-1.5">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none text-white">{profile?.first_name} {profile?.last_name}</p>
             <p className="text-xs leading-none text-gray-400">{profile?.email}</p>
           </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator className="my-2 bg-gray-700/50" />
-        <DropdownMenuItem asChild className="rounded-md focus:bg-gray-700/50 focus:text-white cursor-pointer">
-          <Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span></Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild className="rounded-md focus:bg-gray-700/50 focus:text-white cursor-pointer">
-          <Link to="/admin/profile"><User className="mr-2 h-4 w-4" /><span>Profil</span></Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild className="rounded-md focus:bg-gray-700/50 focus:text-white cursor-pointer">
-          <Link to="/admin/settings"><Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span></Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator className="my-2 bg-gray-700/50" />
-        <DropdownMenuItem onClick={handleLogout} className="rounded-md text-red-400 focus:text-red-400 focus:bg-red-500/10 cursor-pointer">
+        </div>
+        <div className="my-2 h-px bg-gray-700/50" />
+        <Link to="/admin" className="flex items-center w-full text-left p-2 rounded-md text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white cursor-pointer">
+          <LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span>
+        </Link>
+        <Link to="/admin/profile" className="flex items-center w-full text-left p-2 rounded-md text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white cursor-pointer">
+          <User className="mr-2 h-4 w-4" /><span>Profil</span>
+        </Link>
+        <Link to="/admin/settings" className="flex items-center w-full text-left p-2 rounded-md text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white cursor-pointer">
+          <Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span>
+        </Link>
+        <div className="my-2 h-px bg-gray-700/50" />
+        <button onClick={handleLogout} className="flex items-center w-full text-left p-2 rounded-md text-sm text-red-400 hover:bg-red-500/10 hover:text-red-400 cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>{t('logout')}</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </button>
+      </HoverCardContent>
+    </HoverCard>
   );
 
   const AuthLinks = () => {
@@ -149,7 +127,7 @@ const Navbar = () => {
   };
 
   return (
-    <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 bg-gray-900/60 backdrop-blur-lg border-b border-white/10 compensate-for-scrollbar">
+    <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 bg-gray-900/60 backdrop-blur-lg border-b border-white/10">
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <div className="flex-1 flex justify-start items-center gap-4">
           <CustomAudioPlayer />
