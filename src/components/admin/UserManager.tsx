@@ -1,331 +1,357 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useUsers } from '@/hooks/useUsers';
-import { supabase } from '@/integrations/supabase/client';
-import { useTranslation } from 'react-i18next';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Trash2, MoreHorizontal, User, Shield, KeyRound, ShieldOff, Info, Edit, ArrowUpDown, Search, PlusCircle } from 'lucide-react';
-import { showSuccess, showError } from '@/utils/toast';
-import { format } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getGravatarURL } from '@/lib/gravatar';
-import { Badge } from '@/components/ui/badge';
-import { Profile } from '@/hooks/useProfile';
-import { useSession } from '@/contexts/AuthContext';
-import { Link } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { motion } from 'framer-motion';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import UserForm, { UserFormValues } from './UserForm';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useUsers } from "@/hooks/useUsers";
+import { supabase } from "@/integrations/supabase/client";
+import { auditLog } from "@/utils/audit";
+import UserForm, { UserFormValues } from "./UserForm";
+import { Profile } from "@/hooks/useProfile";
+import { useSession } from "@/contexts/AuthContext";
+import { format } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
 
-type SortByType = 'updated_at' | 'email' | 'first_name' | 'role' | 'mfa';
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { showSuccess, showError } from "@/utils/toast";
+import { AvatarFallback as AF } from "@/components/ui/avatar";
+import { PlusCircle, MoreHorizontal, Edit, Trash2, Shield, ShieldOff, ArrowUpDown, Search } from "lucide-react";
+import { getGravatarURL } from "@/lib/gravatar";
+import { motion } from "framer-motion";
 
-const UserManager = () => {
+type SortByType = "updated_at" | "email" | "first_name" | "role" | "mfa";
+
+const UserManager: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const { session } = useSession();
   const { users, loading, refreshUsers } = useUsers();
+  const { session } = useSession();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<Profile | null>(null);
   const [isMfaDialogOpen, setIsMfaDialogOpen] = useState(false);
   const [userToEditMfa, setUserToEditMfa] = useState<Profile | null>(null);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterRole, setFilterRole] = useState<"all" | "admin" | "user">("all");
+  const [sortBy, setSortBy] = useState<SortByType>("updated_at");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
   const [mfaUserIds, setMfaUserIds] = useState<string[]>([]);
   const [loadingMfa, setLoadingMfa] = useState(true);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [filterRole, setFilterRole] = useState<'all' | 'admin' | 'user'>('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<SortByType>('updated_at');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-
-  const currentLocale = i18n.language === 'fr' ? fr : enUS;
+  const currentLocale = i18n.language === "fr" ? fr : enUS;
 
   const fetchMfaStatus = useCallback(async () => {
     setLoadingMfa(true);
     try {
-      const { data, error } = await supabase.functions.invoke('get-mfa-factors');
-      if (error) throw error;
-      setMfaUserIds(data.userIds || []);
-    } catch (error: any) {
-      console.error('Error fetching MFA status:', error);
-      showError(t('error_fetching_mfa_status'));
+      const res: any = await supabase.functions.invoke("get-mfa-factors");
+      // res may be { data } or raw; normalize
+      const payload = res?.data ?? res;
+      if (payload?.userIds) {
+        setMfaUserIds(payload.userIds);
+      } else if (payload?.userIds === undefined && payload?.userIds !== null) {
+        // nothing
+        setMfaUserIds([]);
+      } else if (Array.isArray(payload)) {
+        setMfaUserIds(payload);
+      } else {
+        setMfaUserIds(payload?.userIds ?? []);
+      }
+    } catch (err) {
+      console.error("Error fetching MFA status:", err);
+      setMfaUserIds([]);
     } finally {
       setLoadingMfa(false);
     }
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     fetchMfaStatus();
   }, [fetchMfaStatus]);
 
-  const filteredAndSortedUsers = useMemo(() => {
-    return users
-      .filter(user => {
-        if (filterRole !== 'all' && user.role !== filterRole) {
-          return false;
-        }
-        if (searchTerm) {
-          const term = searchTerm.toLowerCase();
-          const fullName = `${user.first_name || ''} ${user.last_name || ''}`.toLowerCase();
-          const email = user.email?.toLowerCase() || '';
-          if (!fullName.includes(term) && !email.includes(term)) {
-            return false;
-          }
-        }
-        return true;
-      })
-      .sort((a, b) => {
-        let aValue: string | boolean, bValue: string | boolean;
+  const filteredSorted = useMemo(() => {
+    const list = users.filter((u) => {
+      if (filterRole !== "all" && u.role !== filterRole) return false;
+      if (!searchTerm) return true;
+      const term = searchTerm.toLowerCase();
+      const name = `${u.first_name ?? ""} ${u.last_name ?? ""}`.toLowerCase();
+      const email = (u.email ?? "").toLowerCase();
+      return name.includes(term) || email.includes(term);
+    });
 
-        switch (sortBy) {
-          case 'mfa':
-            aValue = mfaUserIds.includes(a.id);
-            bValue = mfaUserIds.includes(b.id);
-            break;
-          case 'first_name':
-            aValue = `${a.first_name || ''} ${a.last_name || ''}`;
-            bValue = `${b.first_name || ''} ${b.last_name || ''}`;
-            break;
-          default:
-            aValue = a[sortBy] || '';
-            bValue = b[sortBy] || '';
-        }
-        
-        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
-        return 0;
-      });
+    const sorted = [...list].sort((a, b) => {
+      let aVal: any = "";
+      let bVal: any = "";
+
+      if (sortBy === "mfa") {
+        aVal = mfaUserIds.includes(a.id) ? 1 : 0;
+        bVal = mfaUserIds.includes(b.id) ? 1 : 0;
+      } else if (sortBy === "first_name") {
+        aVal = `${a.first_name ?? ""} ${a.last_name ?? ""}`.toLowerCase();
+        bVal = `${b.first_name ?? ""} ${b.last_name ?? ""}`.toLowerCase();
+      } else {
+        aVal = (a as any)[sortBy] ?? "";
+        bVal = (b as any)[sortBy] ?? "";
+      }
+
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
   }, [users, filterRole, searchTerm, sortBy, sortOrder, mfaUserIds]);
 
   const handleSort = (column: SortByType) => {
     if (sortBy === column) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder((s) => (s === "asc" ? "desc" : "asc"));
     } else {
       setSortBy(column);
-      setSortOrder('desc');
+      setSortOrder("desc");
     }
   };
 
-  const confirmDelete = (user: Profile) => {
-    setUserToDelete(user);
+  // Create user via Edge Function
+  const handleCreateUser = async (values: UserFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const res: any = await supabase.functions.invoke("create-user", { body: values });
+      const payload = res?.data ?? res;
+      if (res?.error) throw res.error;
+      if (payload?.error) throw new Error(payload.error?.message ?? payload.error);
+
+      showSuccess(t("user_created_successfully", { email: values.email }));
+      await auditLog("user_created", { email: values.email, createdBy: session?.user?.id ?? null });
+      refreshUsers();
+      setIsSheetOpen(false);
+    } catch (err: any) {
+      console.error("create-user error:", err);
+      const message = err?.message ?? String(err);
+      showError(`${t("error_creating_user") ?? "Error creating user"}: ${message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Delete user via edge function (admin)
+  const confirmDelete = (u: Profile) => {
+    setUserToDelete(u);
     setIsDeleteDialogOpen(true);
   };
 
   const handleDelete = async () => {
     if (!userToDelete) return;
     try {
-      const { error } = await supabase.functions.invoke('delete-user', { body: { userId: userToDelete.id } });
-      if (error) throw error;
-      showSuccess(t('user_deleted_successfully'));
+      const res: any = await supabase.functions.invoke("delete-user", { body: { userId: userToDelete.id } });
+      const payload = res?.data ?? res;
+      if (res?.error) throw res.error;
+      if (payload?.error) throw new Error(payload.error?.message ?? payload.error);
+
+      showSuccess(t("user_deleted_successfully"));
+      await auditLog("user_deleted", { userId: userToDelete.id, email: userToDelete.email });
       refreshUsers();
-    } catch (error: any) {
-      showError(`${t('error_deleting_user')}: ${error.message}`);
+    } catch (err: any) {
+      console.error("delete-user error:", err);
+      showError(`${t("error_deleting_user") ?? "Error deleting user"}: ${err?.message ?? String(err)}`);
     } finally {
       setIsDeleteDialogOpen(false);
       setUserToDelete(null);
     }
   };
 
-  const handleRoleChange = async (userId: string, newRole: 'admin' | 'user') => {
-    const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId);
-    if (error) showError(t('error_updating_role'));
-    else {
-      showSuccess(t('role_updated_successfully'));
+  const handleRoleChange = async (userId: string, newRole: "admin" | "user") => {
+    try {
+      const { error } = await supabase.from("profiles").update({ role: newRole }).eq("id", userId);
+      if (error) throw error;
+      showSuccess(t("role_updated_successfully"));
+      await auditLog("role_updated", { targetUserId: userId, newRole });
       refreshUsers();
+    } catch (err: any) {
+      console.error("role update error:", err);
+      showError(`${t("error_updating_role") ?? "Error updating role"}: ${err?.message ?? String(err)}`);
     }
   };
 
-  const confirmDisableMfa = (user: Profile) => {
-    setUserToEditMfa(user);
+  const confirmDisableMfa = (u: Profile) => {
+    setUserToEditMfa(u);
     setIsMfaDialogOpen(true);
   };
 
   const handleDisableMfa = async () => {
     if (!userToEditMfa) return;
     try {
-      const { error } = await supabase.functions.invoke('admin-unenroll-mfa', { body: { userId: userToEditMfa.id } });
-      if (error) throw error;
-      showSuccess(t('mfa_disabled_for_user', { email: userToEditMfa.email }));
+      const res: any = await supabase.functions.invoke("admin-unenroll-mfa", { body: { userId: userToEditMfa.id } });
+      const payload = res?.data ?? res;
+      if (res?.error) throw res.error;
+      if (payload?.error) throw new Error(payload.error?.message ?? payload.error);
+
+      showSuccess(t("mfa_disabled_for_user", { email: userToEditMfa.email }));
+      await auditLog("mfa_disabled_by_admin", { targetUserId: userToEditMfa.id });
       fetchMfaStatus();
-    } catch (error: any) {
-      showError(`${t('error_disabling_mfa')}: ${error.message}`);
+    } catch (err: any) {
+      console.error("admin-unenroll-mfa error:", err);
+      showError(`${t("error_disabling_mfa") ?? "Error disabling MFA"}: ${err?.message ?? String(err)}`);
     } finally {
       setIsMfaDialogOpen(false);
       setUserToEditMfa(null);
     }
   };
 
-  // Improved create-user handling: surface detailed error, handle different invoke result shapes
-  const handleCreateUser = async (values: UserFormValues) => {
-    setIsSubmitting(true);
-    try {
-      // supabase.functions.invoke may return { data, error } or throw; normalize handling
-      const res: any = await supabase.functions.invoke('create-user', { body: values });
-
-      // If the SDK returned an error object
-      if (res?.error) {
-        // res.error may be an object with message
-        const errMessage = res.error?.message ?? JSON.stringify(res.error);
-        throw new Error(errMessage);
-      }
-
-      // If the SDK returned a raw response, try to inspect .data
-      const data = res?.data ?? null;
-
-      showSuccess(t('user_created_successfully', { email: values.email }));
-      refreshUsers();
-      setIsSheetOpen(false);
-    } catch (error: any) {
-      console.error('create-user invoke error:', error);
-      // Provide as much detail as possible to the admin via toast
-      const message = error?.message ?? (typeof error === 'string' ? error : JSON.stringify(error));
-      showError(`Erreur lors de la création de l'utilisateur: ${message}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   if (loading || loadingMfa) {
     return (
       <Card>
-        <CardHeader><Skeleton className="h-8 w-48" /></CardHeader>
-        <CardContent><Skeleton className="h-96 w-full" /></CardContent>
+        <CardHeader>
+          <CardTitle>{t("manage_users")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-64 w-full mt-4" />
+        </CardContent>
       </Card>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4, ease: 'easeInOut' }}
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>{t('manage_users')}</CardTitle>
-          <Button onClick={() => setIsSheetOpen(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Créer un utilisateur
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
-            <div className="relative w-full sm:w-auto sm:flex-grow max-w-sm">
+        <CardHeader className="flex items-center justify-between gap-4">
+          <CardTitle>{t("manage_users")}</CardTitle>
+          <div className="flex items-center gap-2">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t('search_user_placeholder')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+              <Input className="pl-10" placeholder={t("search_user_placeholder")} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Select value={filterRole} onValueChange={(value) => setFilterRole(value as any)}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder={t('filter_by_role')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('all_roles')}</SelectItem>
-                  <SelectItem value="admin">{t('admin_role')}</SelectItem>
-                  <SelectItem value="user">{t('user_role')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={filterRole} onValueChange={(v) => setFilterRole(v as any)}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder={t("filter_by_role")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("all_roles")}</SelectItem>
+                <SelectItem value="admin">{t("admin_role")}</SelectItem>
+                <SelectItem value="user">{t("user_role")}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={() => setIsSheetOpen(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t("create_user") ?? "Create user"}
+            </Button>
           </div>
+        </CardHeader>
+
+        <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <Button variant="ghost" onClick={() => handleSort('first_name')}>
-                    {t('user_header')} <ArrowUpDown className="ml-2 h-4 w-4" />
+                  <Button variant="ghost" onClick={() => handleSort("first_name")}>
+                    {t("user_header")} <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
+                <TableHead>{t("role")}</TableHead>
                 <TableHead>
-                  <Button variant="ghost" onClick={() => handleSort('role')}>
-                    {t('role')} <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead>
-                  <Button variant="ghost" onClick={() => handleSort('mfa')}>
+                  <Button variant="ghost" onClick={() => handleSort("mfa")}>
                     MFA <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
-                <TableHead>
-                  <Button variant="ghost" onClick={() => handleSort('updated_at')}>
-                    {t('last_update')} <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead className="text-right">{t('actions')}</TableHead>
+                <TableHead>{t("last_update")}</TableHead>
+                <TableHead className="text-right">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
-              {filteredAndSortedUsers.map((user) => {
-                const hasMfa = mfaUserIds.includes(user.id);
-                const isCurrentUser = user.id === session?.user?.id;
+              {filteredSorted.map((u) => {
+                const hasMfa = mfaUserIds.includes(u.id);
+                const isCurrent = u.id === session?.user?.id;
                 return (
-                  <TableRow key={user.id} className={isCurrentUser ? 'bg-muted/50' : ''}>
+                  <TableRow key={u.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9"><AvatarImage src={user.avatar_url || getGravatarURL(user.email)} /><AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback></Avatar>
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={u.avatar_url || getGravatarURL(u.email)} />
+                          <AvatarFallback>{(u.first_name || u.email || "U")[0].toUpperCase()}</AvatarFallback>
+                        </Avatar>
                         <div>
-                          <div className="font-medium">{user.first_name} {user.last_name}</div>
-                          <div className="text-sm text-muted-foreground">{user.email}</div>
+                          <div className="font-medium">{u.first_name} {u.last_name}</div>
+                          <div className="text-sm text-muted-foreground">{u.email}</div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell><Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role === 'admin' ? t('admin_role') : t('user_role')}</Badge></TableCell>
+
                     <TableCell>
-                      <Badge variant={hasMfa ? 'default' : 'outline'} className={hasMfa ? 'bg-green-500/20 text-green-500 border-green-500/30' : ''}>
-                        {hasMfa ? t('mfa_enabled') : t('mfa_disabled')}
+                      <Badge variant={u.role === "admin" ? "default" : "secondary"}>
+                        {u.role === "admin" ? t("admin_role") : t("user_role")}
                       </Badge>
                     </TableCell>
-                    <TableCell>{format(new Date(user.updated_at), 'PP', { locale: currentLocale })}</TableCell>
+
+                    <TableCell>
+                      <Badge variant={hasMfa ? "default" : "outline"} className={hasMfa ? "bg-green-500/20 text-green-500" : ""}>
+                        {hasMfa ? t("mfa_enabled") : t("mfa_disabled")}
+                      </Badge>
+                    </TableCell>
+
+                    <TableCell>{format(new Date(u.updated_at), "PP", { locale: currentLocale })}</TableCell>
+
                     <TableCell className="text-right">
-                      {isCurrentUser ? (
+                      {isCurrent ? (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span tabIndex={0}>
+                            <span>
                               <Button variant="ghost" size="icon" disabled>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </span>
                           </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{t('cannot_edit_self_tooltip')}</p>
-                          </TooltipContent>
+                          <TooltipContent><div>{t("cannot_edit_self_tooltip")}</div></TooltipContent>
                         </Tooltip>
                       ) : (
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link to={`/admin/users/${user.id}/edit`} className="cursor-pointer">
-                                <Edit className="mr-2 h-4 w-4" />
-                                <span>{t('edit')}</span>
-                              </Link>
+                              <a href={`/admin/users/${u.id}/edit`} className="cursor-pointer">
+                                <Edit className="mr-2 h-4 w-4" /> {t("edit")}
+                              </a>
                             </DropdownMenuItem>
+
                             <DropdownMenuSub>
-                              <DropdownMenuSubTrigger><Shield className="mr-2 h-4 w-4" /><span>{t('role')}</span></DropdownMenuSubTrigger>
+                              <DropdownMenuSubTrigger><Shield className="mr-2 h-4 w-4" /> {t("role")}</DropdownMenuSubTrigger>
                               <DropdownMenuPortal>
                                 <DropdownMenuSubContent>
-                                  <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'admin')}><Shield className="mr-2 h-4 w-4" />{t('admin_role')}</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'user')}><User className="mr-2 h-4 w-4" />{t('user_role')}</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleRoleChange(u.id, "admin")}>{t("admin_role")}</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleRoleChange(u.id, "user")}>{t("user_role")}</DropdownMenuItem>
                                 </DropdownMenuSubContent>
                               </DropdownMenuPortal>
                             </DropdownMenuSub>
-                            <DropdownMenuItem onClick={() => confirmDisableMfa(user)} disabled={!hasMfa}>
-                              <ShieldOff className="mr-2 h-4 w-4" />
-                              <span>{t('disable_mfa')}</span>
-                            </DropdownMenuItem>
+
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => confirmDelete(user)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /><span>{t('delete')}</span></DropdownMenuItem>
+
+                            <DropdownMenuItem onClick={() => confirmDisableMfa(u)} disabled={!hasMfa}>
+                              <ShieldOff className="mr-2 h-4 w-4" /> {t("disable_mfa")}
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuItem onClick={() => confirmDelete(u)} className="text-destructive">
+                              <Trash2 className="mr-2 h-4 w-4" /> {t("delete")}
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       )}
@@ -341,30 +367,35 @@ const UserManager = () => {
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent className="sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle>Créer un nouvel utilisateur</SheetTitle>
-            <SheetDescription>
-              Remplissez les informations ci-dessous. Un e-mail de confirmation sera envoyé à l'utilisateur.
-            </SheetDescription>
+            <SheetTitle>{t("create_user")}</SheetTitle>
+            <SheetDescription>{t("create_user_desc") ?? "Create a new user"}</SheetDescription>
           </SheetHeader>
-          <UserForm
-            onSubmit={handleCreateUser}
-            onCancel={() => setIsSheetOpen(false)}
-            isSubmitting={isSubmitting}
-          />
+
+          <UserForm onSubmit={handleCreateUser} onCancel={() => setIsSheetOpen(false)} isSubmitting={isSubmitting} />
         </SheetContent>
       </Sheet>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>{t('confirm_delete_title')}</AlertDialogTitle><AlertDialogDescription>{t('confirm_delete_user', { email: userToDelete?.email })}</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel onClick={() => setUserToDelete(null)}>{t('cancel')}</AlertDialogCancel><AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">{t('delete')}</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("confirm_delete_title")}</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setUserToDelete(null)}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">{t("delete")}</AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <AlertDialog open={isMfaDialogOpen} onOpenChange={setIsMfaDialogOpen}>
         <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>{t('confirm_disable_mfa_title')}</AlertDialogTitle><AlertDialogDescription>{t('confirm_disable_mfa_desc', { email: userToEditMfa?.email })}</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel onClick={() => setUserToEditMfa(null)}>{t('cancel')}</AlertDialogCancel><AlertDialogAction onClick={handleDisableMfa} className={buttonVariants({ variant: "destructive" })}>{t('disable_mfa')}</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("confirm_disable_mfa_title")}</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setUserToEditMfa(null)}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDisableMfa} className="bg-destructive hover:bg-destructive/90">{t("disable_mfa")}</AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </motion.div>

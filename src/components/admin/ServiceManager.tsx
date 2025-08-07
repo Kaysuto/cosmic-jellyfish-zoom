@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useSession } from '@/contexts/AuthContext';
+import { auditLog } from '@/utils/audit';
 
 const ServiceManager = () => {
   const { t } = useTranslation();
@@ -71,9 +72,8 @@ const ServiceManager = () => {
         showError(t('error_saving_service'));
       } else {
         showSuccess(t('service_saved_successfully'));
-        if (session?.user.id) {
-          await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'service_updated', details: { service_id: selectedService.id, name: values.name } });
-        }
+        // Audit log for update
+        await auditLog('service_updated', { service_id: selectedService.id, changes: serviceData });
         refreshServices();
       }
     } else {
@@ -82,9 +82,8 @@ const ServiceManager = () => {
         showError(t('error_saving_service'));
       } else {
         showSuccess(t('service_saved_successfully'));
-        if (data && session?.user.id) {
-          await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'service_created', details: { service_id: data.id, name: values.name } });
-        }
+        // Audit log for creation
+        await auditLog('service_created', { service_id: data?.id ?? null, name: values.name });
         refreshServices();
       }
     }
@@ -109,9 +108,8 @@ const ServiceManager = () => {
       showError(t('error_deleting_service'));
     } else {
       showSuccess(t('service_deleted_successfully'));
-      if (session?.user.id) {
-        await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'service_deleted', details: { service_id: serviceToDelete, name: serviceName } });
-      }
+      // Audit log for deletion
+      await auditLog('service_deleted', { service_id: serviceToDelete, name: serviceName });
       refreshServices();
     }
     
