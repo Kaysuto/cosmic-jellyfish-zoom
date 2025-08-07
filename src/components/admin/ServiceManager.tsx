@@ -7,7 +7,7 @@ import ServiceForm, { ServiceFormValues } from "./ServiceForm";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Table, TableBody, TableRow, TableHead, TableCell, TableHeader } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import {
   AlertDialog,
@@ -45,7 +45,7 @@ const ServiceManager: React.FC = () => {
     operational: { text: t("operational"), className: "bg-green-500/20 text-green-500 border-green-500/30" },
     degraded: { text: t("degraded"), className: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30" },
     downtime: { text: t("downtime"), className: "bg-red-500/20 text-red-500 border-red-500/30" },
-    maintenance: { text: t("maintenance") || "En maintenance", className: "bg-gray-500/20 text-gray-500 border-gray-500/30" },
+    maintenance: { text: t("maintenance"), className: "bg-gray-500/20 text-gray-500 border-gray-500/30" },
   };
 
   const openCreateForm = () => {
@@ -134,7 +134,7 @@ const ServiceManager: React.FC = () => {
       refreshServices();
     } catch (err: any) {
       console.error("Service reorder error:", err);
-      showError("Erreur lors de la réorganisation.");
+      showError(t("error_reordering_services") || "Erreur lors de la réorganisation.");
     }
   };
 
@@ -167,10 +167,10 @@ const ServiceManager: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Ordre</TableHead>
+                <TableHead>{t("order_column")}</TableHead>
                 <TableHead>{t("service")}</TableHead>
                 <TableHead>{t("status")}</TableHead>
-                <TableHead>URL</TableHead>
+                <TableHead>{t("url_column")}</TableHead>
                 <TableHead className="text-right">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
@@ -206,7 +206,7 @@ const ServiceManager: React.FC = () => {
                     </Badge>
                   </TableCell>
 
-                  <TableCell>{service.url ? <span className="text-xs text-green-600">✓ Surveillé</span> : <span className="text-xs text-gray-500">Non surveillé</span>}</TableCell>
+                  <TableCell>{service.url ? <span className="text-xs text-green-600">{t("monitored")}</span> : <span className="text-xs text-gray-500">{t("not_monitored")}</span>}</TableCell>
 
                   <TableCell className="text-right">
                     <DropdownMenu>
