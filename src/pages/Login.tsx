@@ -140,7 +140,7 @@ const Login = () => {
       }
       // Log failed login attempt
       await supabase.from('audit_logs').insert({
-        user_id: data?.user?.id || null, // user_id might be null if login failed before user object is created
+        user_id: data?.user?.id || null,
         action: 'user_login_failed',
         details: { email: values.email, error: error.message }
       });
@@ -251,7 +251,7 @@ const Login = () => {
                     </div>
                 )}
             </div>
-            {!allowRegistrations && <Alert className="mt-6 bg-blue-900/30 border-blue-500/30 text-blue-300"><Terminal className="h-4 w-4" /><AlertTitle>Information</AlertTitle><AlertDescription>{t('registrations_are_closed')}</AlertDescription></Alert>}
+            {!allowRegistrations && <Alert className="mt-6 bg-blue-900/30 border-blue-500/30 text-blue-300"><Terminal className="h-4 w-4" /><AlertTitle>{t('information')}</AlertTitle><AlertDescription>{t('registrations_are_closed')}</AlertDescription></Alert>}
           </div>
         );
     }
