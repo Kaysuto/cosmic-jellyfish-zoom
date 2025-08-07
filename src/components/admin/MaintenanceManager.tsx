@@ -129,7 +129,7 @@ const MaintenanceManager = () => {
               {maintenances.map((maintenance) => (
                 <TableRow key={maintenance.id}>
                   <TableCell className="font-medium">{maintenance.title}</TableCell>
-                  <TableCell>{maintenance.services ? t(maintenance.services.name.toLowerCase().replace(/ /g, '_').replace(/\./g, '_')) : t('all_services')}</TableCell>
+                  <TableCell>{maintenance.services ? t(maintenance.services.name.toLowerCase().replace(/ /g, '_')) : t('all_services')}</TableCell>
                   <TableCell>{format(new Date(maintenance.start_time), 'PPpp', { locale: currentLocale })}</TableCell>
                   <TableCell>{format(new Date(maintenance.end_time), 'PPpp', { locale: currentLocale })}</TableCell>
                   <TableCell className="text-right">

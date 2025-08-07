@@ -89,7 +89,7 @@ const MaintenanceForm = ({ maintenance, services, onSubmit, onCancel, isSubmitti
                   <SelectItem value="null">{t('all_services')}</SelectItem>
                   {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
-                      {t(service.name.toLowerCase().replace(/ /g, '_').replace(/\./g, '_'))}
+                      {t(service.name.toLowerCase().replace(/ /g, '_'))}
                     </SelectItem>
                   ))}
                 </SelectContent>
