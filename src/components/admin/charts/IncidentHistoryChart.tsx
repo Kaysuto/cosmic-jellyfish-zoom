@@ -41,7 +41,10 @@ const IncidentHistoryChart = ({ incidents }: IncidentHistoryChartProps) => {
         <div className="rounded-lg border bg-background p-2 shadow-sm">
           <p className="font-bold text-foreground">{label}</p>
           <p className="text-sm text-muted-foreground">
-            {t('incidents')}: {payload[0].value}
+            {i18n.language === 'fr' 
+              ? t('incident_count_fr', { count: payload[0].value })
+              : t('incident_count_en', { count: payload[0].value })
+            }
           </p>
         </div>
       );
