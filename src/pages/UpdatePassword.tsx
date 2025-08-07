@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { MadeWithDyad } from '@/components/made-with-dyad';
 import { useSession } from '@/contexts/AuthContext';
 
@@ -22,8 +22,20 @@ const UpdatePassword = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const { session, loading: sessionLoading } = useSession();
+  const [pageError, setPageError] = useState<string | null>(null);
 
-  const isReady = !sessionLoading && session;
+  useEffect(() => {
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+      const params = new URLSearchParams(hash);
+      const errorDescription = params.get('error_description');
+      if (errorDescription) {
+        setPageError(errorDescription.replace(/\+/g, ' '));
+      }
+    }
+  }, []);
+
+  const isReady = !sessionLoading && session && !pageError;
 
   const passwordSchema = useMemo(() => z.object({
     password: z.string()
@@ -58,6 +70,43 @@ const UpdatePassword = () => {
     setIsLoading(false);
   };
 
+  const renderCardContent = () => {
+    if (pageError) {
+      return (
+        <div className="text-center space-y-4">
+          <AlertTriangle className="mx-auto h-10 w-10 text-destructive" />
+          <p className="text-destructive-foreground">{pageError}</p>
+          <Button asChild className="w-full">
+            <Link to="/login">{t('back_to_login')}</Link>
+          </Button>
+        </div>
+      );
+    }
+
+    if (isReady) {
+      return (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField control={form.control} name="password" render={({ field }) => (
+              <FormItem><FormLabel>{t('new_password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="confirmPassword" render={({ field }) => (
+              <FormItem><FormLabel>{t('confirm_new_password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('update_password')}</Button>
+          </form>
+        </Form>
+      );
+    }
+
+    return (
+      <div className="flex flex-col items-center justify-center h-48 text-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400 mb-4" />
+        <p className="text-gray-400">{t('loading_session')}</p>
+      </div>
+    );
+  };
+
   return (
     <div className="relative min-h-screen flex flex-col bg-gray-900 text-white">
       <div className="absolute inset-0 z-0">
@@ -82,24 +131,7 @@ const UpdatePassword = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isReady ? (
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField control={form.control} name="password" render={({ field }) => (
-                      <FormItem><FormLabel>{t('new_password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="confirmPassword" render={({ field }) => (
-                      <FormItem><FormLabel>{t('confirm_new_password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('update_password')}</Button>
-                  </form>
-                </Form>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-48 text-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-gray-400 mb-4" />
-                  <p className="text-gray-400">{t('loading_session')}</p>
-                </div>
-              )}
+              {renderCardContent()}
             </CardContent>
           </Card>
         </motion.div>
