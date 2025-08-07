@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { User } from 'lucide-react';
 import { Profile } from '@/hooks/useProfile';
 import { useMemo, useEffect } from 'react';
+import { auditLog } from '@/utils/audit';
 
 interface UpdateProfileFormProps {
   profile: Profile;
@@ -35,8 +36,12 @@ const UpdateProfileForm = ({ profile }: UpdateProfileFormProps) => {
 
   const onSubmit = async (values: z.infer<typeof profileSchema>) => {
     const { error } = await supabase.from('profiles').update(values).eq('id', profile.id);
-    if (error) showError(t('error_updating_profile'));
-    else showSuccess(t('profile_updated_successfully'));
+    if (error) {
+      showError(t('error_updating_profile'));
+    } else {
+      showSuccess(t('profile_updated_successfully'));
+      await auditLog('profile_updated', { profileId: profile.id, changes: values });
+    }
   };
 
   return (
