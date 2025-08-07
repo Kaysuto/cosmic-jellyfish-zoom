@@ -19,8 +19,6 @@ const CustomAudioPlayer = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const volumeButtonRef = useRef<HTMLButtonElement | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showVolumeIndicator, setShowVolumeIndicator] = useState(false);
-  const volumeIndicatorTimeout = useRef<number | null>(null);
 
   const currentTrack = tracks && tracks.length > 0 ? tracks[currentTrackIndex] : null;
 
@@ -108,18 +106,6 @@ const CustomAudioPlayer = () => {
     setCurrentTrackIndex(prevIndex);
   };
 
-  const showTransientVolume = () => {
-    setShowVolumeIndicator(true);
-    if (volumeIndicatorTimeout.current) {
-      window.clearTimeout(volumeIndicatorTimeout.current);
-    }
-    // Hide after 1200ms
-    volumeIndicatorTimeout.current = window.setTimeout(() => {
-      setShowVolumeIndicator(false);
-      volumeIndicatorTimeout.current = null;
-    }, 1200);
-  };
-
   // Handle mouse wheel over the volume button to change volume
   const handleVolumeWheel = (e: React.WheelEvent) => {
     // Prevent page scroll when adjusting volume via wheel on the control
@@ -132,7 +118,6 @@ const CustomAudioPlayer = () => {
     const delta = e.deltaY;
     const newVolume = delta < 0 ? Math.min(100, volume + step) : Math.max(0, volume - step);
     setVolume(newVolume);
-    showTransientVolume();
   };
 
   // Handle mouse wheel when hovering the slider area
@@ -146,7 +131,6 @@ const CustomAudioPlayer = () => {
     const delta = e.deltaY;
     const newVolume = delta < 0 ? Math.min(100, volume + step) : Math.max(0, volume - step);
     setVolume(newVolume);
-    showTransientVolume();
   };
 
   if (!currentTrack) {
@@ -233,11 +217,6 @@ const CustomAudioPlayer = () => {
             title="Utilisez la molette pour régler le volume (Shift = fin)"
           >
             <Volume2 className="h-3 w-3" />
-            {showVolumeIndicator && (
-              <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded-md pointer-events-none">
-                {volume}%
-              </span>
-            )}
           </button>
         </HoverCardTrigger>
         <HoverCardContent className="w-44 bg-gray-800 border-gray-700">
