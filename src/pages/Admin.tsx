@@ -7,6 +7,7 @@ import ServiceManager from '@/components/admin/ServiceManager';
 import IncidentManager from '@/components/admin/IncidentManager';
 import MaintenanceManager from '@/components/admin/MaintenanceManager';
 import UserManager from '@/components/admin/UserManager';
+import AnalyticsPage from './admin/Analytics';
 import { Settings, LogOut } from 'lucide-react';
 
 const Admin = () => {
@@ -36,14 +37,18 @@ const Admin = () => {
         </div>
       </div>
       
-      <Tabs defaultValue="services" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="analytics" className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="analytics">{t('analytics')}</TabsTrigger>
           <TabsTrigger value="services">{t('manage_services')}</TabsTrigger>
           <TabsTrigger value="incidents">{t('manage_incidents')}</TabsTrigger>
           <TabsTrigger value="maintenance">{t('manage_maintenance')}</TabsTrigger>
           <TabsTrigger value="users">{t('manage_users')}</TabsTrigger>
         </TabsList>
         
+        <TabsContent value="analytics" className="mt-4">
+          <AnalyticsPage />
+        </TabsContent>
         <TabsContent value="services" className="mt-4">
           <ServiceManager />
         </TabsContent>
