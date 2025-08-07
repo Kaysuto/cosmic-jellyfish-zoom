@@ -9,7 +9,7 @@ import StatusPage from "./pages/Status";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
-import Settings from "./pages/Settings";
+import Settings from "./pages/admin/Settings";
 import Profile from "./pages/Profile";
 import UpdatePassword from "./pages/UpdatePassword";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -87,7 +87,6 @@ const AppWrapper = () => {
                   
                   <Route element={<ProtectedRoute />}>
                     <Route path="/profile" element={<Profile />} />
-                    <Route path="/settings" element={<Settings />} />
                   </Route>
                 </Route>
 
@@ -99,6 +98,7 @@ const AppWrapper = () => {
                     <Route path="maintenance" element={<MaintenanceManager />} />
                     <Route path="users" element={<UserManager />} />
                     <Route path="users/:userId/edit" element={<EditUserPage />} />
+                    <Route path="settings" element={<Settings />} />
                   </Route>
                 </Route>
 

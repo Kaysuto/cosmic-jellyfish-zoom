@@ -128,12 +128,14 @@ const Navbar = () => {
             <span>Profil</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/settings" className="cursor-pointer">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>{t('settings')}</span>
-          </Link>
-        </DropdownMenuItem>
+        {profile?.role === 'admin' && (
+          <DropdownMenuItem asChild>
+            <Link to="/admin/settings" className="cursor-pointer">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>{t('settings')}</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogoutClick} className="text-destructive focus:text-destructive cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
@@ -215,10 +217,12 @@ const Navbar = () => {
                             <p className="text-sm text-muted-foreground">{profile.email}</p>
                           </div>
                           {profile.role === 'admin' && (
-                            <NavLink to="/admin" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><LayoutDashboard className="mr-3 h-5 w-5" />{t('admin_dashboard')}</NavLink>
+                            <>
+                              <NavLink to="/admin" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><LayoutDashboard className="mr-3 h-5 w-5" />{t('admin_dashboard')}</NavLink>
+                              <NavLink to="/admin/settings" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><Settings className="mr-3 h-5 w-5" />{t('settings')}</NavLink>
+                            </>
                           )}
                           <NavLink to="/profile" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
-                          <NavLink to="/settings" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><Settings className="mr-3 h-5 w-5" />{t('settings')}</NavLink>
                           <div className="px-4 pt-2">
                             <Button onClick={handleLogoutClick} variant="destructive" className="w-full justify-start">
                               <LogOut className="mr-3 h-5 w-5" />
