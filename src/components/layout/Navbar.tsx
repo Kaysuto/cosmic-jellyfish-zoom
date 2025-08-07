@@ -59,17 +59,15 @@ const Navbar = () => {
   const desktopNavLinkClasses = ({ isActive }: { isActive: boolean }) =>
     cn(
       "px-4 py-1.5 text-sm font-medium transition-all duration-200 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-      isActive
-        ? "bg-gray-700/50 text-white shadow-inner"
-        : "text-gray-400 hover:bg-gray-800/50 hover:text-white"
+      "text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white",
+      isActive && "bg-gray-200/80 dark:bg-gray-700/50 text-gray-900 dark:text-white shadow-inner"
     );
 
   const mobileNavLinkClasses = ({ isActive }: { isActive: boolean }) =>
     cn(
       "flex items-center w-full text-left px-4 py-3 text-lg font-medium transition-colors duration-200 rounded-md",
-      isActive
-        ? "bg-blue-600 text-white"
-        : "text-gray-300 hover:bg-gray-700"
+      "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
+      isActive && "bg-blue-600 text-white"
     );
 
   const UserMenu = () => (
@@ -80,34 +78,34 @@ const Navbar = () => {
             <AvatarImage src={profile?.avatar_url || getGravatarURL(profile?.email)} alt={profile?.first_name || 'Avatar'} />
             <AvatarFallback>{profile?.first_name?.charAt(0) || 'U'}</AvatarFallback>
           </Avatar>
-          <span className="text-white hidden sm:inline">
+          <span className="text-foreground hidden sm:inline">
             Bonjour, {profile?.first_name || 'Admin'}
           </span>
-          <ChevronDown className="h-4 w-4 text-gray-400 hidden sm:inline transition-transform duration-200" />
+          <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:inline transition-transform duration-200" />
         </button>
       </HoverCardTrigger>
       <HoverCardContent 
-        className="w-56 bg-gray-900/80 backdrop-blur-lg border border-gray-700/60 text-gray-300 rounded-xl shadow-2xl p-2"
+        className="w-56 p-2 rounded-xl shadow-2xl border backdrop-blur-lg bg-card/80"
         align="end"
       >
         <div className="font-normal px-2 py-1.5">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none text-white">{profile?.first_name} {profile?.last_name}</p>
-            <p className="text-xs leading-none text-gray-400">{profile?.email}</p>
+            <p className="text-sm font-medium leading-none text-foreground">{profile?.first_name} {profile?.last_name}</p>
+            <p className="text-xs leading-none text-muted-foreground">{profile?.email}</p>
           </div>
         </div>
-        <div className="my-2 h-px bg-gray-700/50" />
-        <Link to="/admin" className="flex items-center w-full text-left p-2 rounded-md text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white cursor-pointer">
+        <div className="my-2 h-px bg-border" />
+        <Link to="/admin" className="flex items-center w-full text-left p-2 rounded-md text-sm text-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer">
           <LayoutDashboard className="mr-2 h-4 w-4" /><span>{t('admin_dashboard')}</span>
         </Link>
-        <Link to="/admin/profile" className="flex items-center w-full text-left p-2 rounded-md text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white cursor-pointer">
+        <Link to="/admin/profile" className="flex items-center w-full text-left p-2 rounded-md text-sm text-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer">
           <User className="mr-2 h-4 w-4" /><span>Profil</span>
         </Link>
-        <Link to="/admin/settings" className="flex items-center w-full text-left p-2 rounded-md text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white cursor-pointer">
+        <Link to="/admin/settings" className="flex items-center w-full text-left p-2 rounded-md text-sm text-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer">
           <Settings className="mr-2 h-4 w-4" /><span>{t('settings')}</span>
         </Link>
-        <div className="my-2 h-px bg-gray-700/50" />
-        <button onClick={handleLogout} className="flex items-center w-full text-left p-2 rounded-md text-sm text-red-400 hover:bg-red-500/10 hover:text-red-400 cursor-pointer">
+        <div className="my-2 h-px bg-border" />
+        <button onClick={handleLogout} className="flex items-center w-full text-left p-2 rounded-md text-sm text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           <span>{t('logout')}</span>
         </button>
@@ -127,20 +125,20 @@ const Navbar = () => {
   };
 
   return (
-    <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 bg-gray-900/60 backdrop-blur-lg border-b border-white/10">
+    <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 bg-background/60 backdrop-blur-lg border-b">
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <div className="flex-1 flex justify-start items-center gap-4">
           <CustomAudioPlayer />
         </div>
 
         <div className="hidden md:flex flex-1 justify-center">
-          <div className="flex items-center gap-2 bg-gray-800/50 border border-gray-700/60 rounded-full p-1 shadow-md">
+          <div className="flex items-center gap-2 bg-muted/50 border rounded-full p-1 shadow-md">
             {navItems.map((item) => (
               <NavLink key={item.to} to={item.to} className={desktopNavLinkClasses}>
                 {item.label}
               </NavLink>
             ))}
-            <div className="border-l border-gray-700 h-6 mx-1"></div>
+            <div className="border-l h-6 mx-1"></div>
             <AuthLinks />
           </div>
         </div>
@@ -149,16 +147,16 @@ const Navbar = () => {
           <Button 
             variant="outline" 
             size="sm" 
-            className="hidden md:flex items-center gap-2 bg-gray-800/30 border-gray-700/60 hover:bg-gray-700/50 rounded-full px-3 py-1.5"
+            className="hidden md:flex items-center gap-2 bg-muted/30 hover:bg-muted/50 rounded-full px-3 py-1.5"
             onClick={() => window.open('https://ptb.discord.com/channels/1027968386640117770/1234313061993676860', '_blank')}
           >
             <div className="relative">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+              <svg className="h-4 w-4 text-foreground" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19.27 5.33C17.94 4.71 16.5 4.26 15 4a.09.09 0 0 0-.07.03c-.18.33-.39.76-.53 1.09a16.09 16.09 0 0 0-4.8 0c-.14-.34-.35-.76-.54-1.09-.01-.02-.04-.03-.07-.03-1.5.26-2.93.71-4.27 1.33-.01 0-.02.01-.03.02-2.72 4.07-3.47 8.03-3.1 11.95 0 .02.01.04.03.05 1.8 1.32 3.53 2.12 5.24 2.65.03.01.06 0 .07-.02.4-.55.76-1.13 1.07-1.74.02-.04 0-.08-.04-.09-.57-.22-1.11-.48-1.64-.78-.04-.02-.04-.08-.01-.11.11-.08.22-.17.33-.25.02-.02.05-.02.07-.01 3.44 1.57 7.15 1.57 10.55 0 .02-.01.05-.01.07.01.11.09.22.17.33.26.04.03.04.09-.01.11-.52.31-1.07.56-1.64.78-.04.01-.05.06-.04.09.32.61.68 1.19 1.07 1.74.03.01.06.02.09.01 1.72-.53 3.45-1.33 5.25-2.65.02-.01.03-.03.03-.05.44-4.53-.73-8.46-3.1-11.95-.01-.01-.02-.02-.04-.02zM8.52 14.91c-.99 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.81 2-1.8 2zm6.97 0c-.99 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.81 2-1.8 2z"/>
               </svg>
               <span className="absolute -top-1 -right-1 bg-green-500 rounded-full h-2 w-2"></span>
             </div>
-            <span className="text-xs font-medium">{t('discord_online', { count: discordOnline })}</span>
+            <span className="text-xs font-medium text-muted-foreground">{t('discord_online', { count: discordOnline })}</span>
           </Button>
 
           <div className="md:hidden">
@@ -169,7 +167,7 @@ const Navbar = () => {
                   <span className="sr-only">Open menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-gray-900 border-l-gray-800 w-[280px]">
+              <SheetContent side="right" className="bg-background border-l w-[280px]">
                 <div className="flex flex-col h-full">
                   <div className="flex-grow space-y-2 pt-10">
                     {navItems.map((item) => (
@@ -178,12 +176,12 @@ const Navbar = () => {
                       </NavLink>
                     ))}
                   </div>
-                  <div className="flex-shrink-0 border-t border-gray-700 pt-4 pb-6">
+                  <div className="flex-shrink-0 border-t pt-4 pb-6">
                     {session && profile ? (
                       <div className="space-y-2">
                         <div className="px-4">
-                          <p className="font-medium text-white">{profile.first_name} {profile.last_name}</p>
-                          <p className="text-sm text-gray-400">{profile.email}</p>
+                          <p className="font-medium text-foreground">{profile.first_name} {profile.last_name}</p>
+                          <p className="text-sm text-muted-foreground">{profile.email}</p>
                         </div>
                         <NavLink to="/admin" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><LayoutDashboard className="mr-3 h-5 w-5" />{t('admin_dashboard')}</NavLink>
                         <NavLink to="/admin/profile" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
