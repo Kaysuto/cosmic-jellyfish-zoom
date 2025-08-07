@@ -22,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { auditLog } from '@/utils/audit';
 
 interface UserProfileCardProps {
   profile: Profile;
@@ -76,6 +77,8 @@ const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardP
       showError(dbError.message);
     } else {
       showSuccess('Avatar mis à jour avec succès !');
+      // Audit log
+      await auditLog('avatar_updated', { profileId: profile.id, avatar_url: publicUrl });
       onProfileUpdate();
     }
     setIsUploading(false);
@@ -101,6 +104,8 @@ const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardP
       if (dbError) throw dbError;
 
       showSuccess("Avatar supprimé avec succès.");
+      // Audit log
+      await auditLog('avatar_deleted', { profileId: profile.id });
       onProfileUpdate();
     } catch (error: any) {
       showError(`Erreur lors de la suppression de l'avatar: ${error.message}`);
@@ -169,7 +174,7 @@ const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardP
               {profile.role === 'admin' ? t('admin_role') : t('user_role')}
             </Badge>
           </div>
-          {isOwnProfile && session?.user?.created_at && (
+          {session?.user?.created_at && (
             <div>
               <h3 className="text-xs font-semibold text-muted-foreground mb-1">{t('member_since')}</h3>
               <div className="flex items-center gap-2 text-sm text-foreground">
