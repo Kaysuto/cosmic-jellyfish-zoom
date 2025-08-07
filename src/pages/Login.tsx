@@ -25,6 +25,7 @@ const emailRegex = new RegExp(
 const Login = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+
   const { session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [view, setView] = useState<'signin' | 'signup' | 'forgot_password'>('signin');
@@ -120,7 +121,7 @@ const Login = () => {
 
   const onLoginSubmit = async (values: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
     });
@@ -135,8 +136,14 @@ const Login = () => {
         showError(t('unexpected_login_error'));
         console.error("Login error:", error.message);
       }
-    } else {
+    } else if (data.user) {
       showSuccess(t('login_successful'));
+      // Log the successful login event
+      await supabase.from('audit_logs').insert({
+        user_id: data.user.id,
+        action: 'user_login_success',
+        details: { email: data.user.email }
+      });
       navigate('/admin');
     }
     setIsLoading(false);

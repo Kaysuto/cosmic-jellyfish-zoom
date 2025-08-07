@@ -26,6 +26,7 @@ import IncidentManager from "@/components/admin/IncidentManager";
 import MaintenanceManager from "@/components/admin/MaintenanceManager";
 import UserManager from "@/components/admin/UserManager";
 import EditUserPage from "./pages/admin/EditUser";
+import LogsPage from "./pages/admin/Logs";
 import { useAppSettings } from "./hooks/useAppSettings";
 
 const queryClient = new QueryClient();
@@ -99,6 +100,7 @@ const AppWrapper = () => {
                     <Route path="users" element={<UserManager />} />
                     <Route path="users/:userId/edit" element={<EditUserPage />} />
                     <Route path="settings" element={<Settings />} />
+                    <Route path="logs" element={<LogsPage />} />
                   </Route>
                 </Route>
 
