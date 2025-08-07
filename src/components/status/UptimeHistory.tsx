@@ -164,7 +164,7 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
             <YAxis yAxisId="left" stroke="hsl(var(--primary))" fontSize={12} tickLine={false} axisLine={false} domain={[80, 100]} tickFormatter={(value) => `${value}%`} />
-            <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} domain={[0, 'dataMax + 200']} tickFormatter={(value) => `${value}ms`} />
+            <YAxis yAxisId="right" orientation="right" hide={true} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
             {chartData.length > 0 && (
