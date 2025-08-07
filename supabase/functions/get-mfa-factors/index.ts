@@ -20,13 +20,8 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Cette requête privilégiée sur une table interne est sécurisée
-    // car elle est exécutée dans une fonction Edge avec la clé de service.
-    const { data, error } = await supabaseAdmin
-      .from('factors')
-      .select('user_id')
-      .eq('status', 'verified')
-      .in('factor_type', ['totp'])
+    // Appel de la fonction RPC sécurisée au lieu d'une requête directe
+    const { data, error } = await supabaseAdmin.rpc('get_all_mfa_user_ids')
 
     if (error) throw error
 

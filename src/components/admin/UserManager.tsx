@@ -22,6 +22,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
+type SortByType = 'updated_at' | 'email' | 'first_name' | 'role' | 'mfa';
+
 const UserManager = () => {
   const { t, i18n } = useTranslation();
   const { session } = useSession();
@@ -35,7 +37,7 @@ const UserManager = () => {
 
   const [filterRole, setFilterRole] = useState<'all' | 'admin' | 'user'>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'updated_at' | 'email' | 'first_name'>('updated_at');
+  const [sortBy, setSortBy] = useState<SortByType>('updated_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
@@ -75,16 +77,29 @@ const UserManager = () => {
         return true;
       })
       .sort((a, b) => {
-        const aValue = (sortBy === 'first_name' ? `${a.first_name} ${a.last_name}` : a[sortBy]) || '';
-        const bValue = (sortBy === 'first_name' ? `${b.first_name} ${b.last_name}` : b[sortBy]) || '';
+        let aValue: string | boolean, bValue: string | boolean;
+
+        switch (sortBy) {
+          case 'mfa':
+            aValue = mfaUserIds.includes(a.id);
+            bValue = mfaUserIds.includes(b.id);
+            break;
+          case 'first_name':
+            aValue = `${a.first_name || ''} ${a.last_name || ''}`;
+            bValue = `${b.first_name || ''} ${b.last_name || ''}`;
+            break;
+          default:
+            aValue = a[sortBy] || '';
+            bValue = b[sortBy] || '';
+        }
         
         if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
         if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
         return 0;
       });
-  }, [users, filterRole, searchTerm, sortBy, sortOrder]);
+  }, [users, filterRole, searchTerm, sortBy, sortOrder, mfaUserIds]);
 
-  const handleSort = (column: 'updated_at' | 'email' | 'first_name') => {
+  const handleSort = (column: SortByType) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -189,8 +204,16 @@ const UserManager = () => {
                     Utilisateur <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
-                <TableHead>{t('role')}</TableHead>
-                <TableHead>MFA</TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort('role')}>
+                    {t('role')} <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort('mfa')}>
+                    MFA <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
                 <TableHead>
                   <Button variant="ghost" onClick={() => handleSort('updated_at')}>
                     {t('last_update')} <ArrowUpDown className="ml-2 h-4 w-4" />
