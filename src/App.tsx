@@ -71,10 +71,10 @@ const AppWrapper = () => {
                   <Route element={<ProtectedRoute />}>
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/admin/settings" element={<Settings />} />
-                    <Route path="/admin/profile" element={<Profile key={i18n.language} />} />
+                    <Route path="/admin/profile" element={<Profile />} />
                   </Route>
                 </Route>
-                <Route path="/login" element={<Login key={i18n.language} />} />
+                <Route path="/login" element={<Login />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

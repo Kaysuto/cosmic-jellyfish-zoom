@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 
 const Profile = () => {
   const { t, i18n } = useTranslation();
@@ -29,12 +29,11 @@ const Profile = () => {
   const profileSchema = useMemo(() => z.object({
     first_name: z.string().min(1, { message: t('first_name_required') }),
     last_name: z.string().min(1, { message: t('last_name_required') }),
-  }), [i18n.language]);
+  }), [t]);
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     values: {
-
       first_name: profile?.first_name || '',
       last_name: profile?.last_name || '',
     },
@@ -42,7 +41,7 @@ const Profile = () => {
 
   const emailSchema = useMemo(() => z.object({
     email: z.string().email({ message: t('invalid_email') }),
-  }), [i18n.language]);
+  }), [t]);
 
   const emailForm = useForm<z.infer<typeof emailSchema>>({
     resolver: zodResolver(emailSchema),
@@ -59,12 +58,30 @@ const Profile = () => {
   }).refine(data => data.password === data.confirmPassword, {
     message: t('passwords_do_not_match'),
     path: ['confirmPassword'],
-  }), [i18n.language]);
+  }), [t]);
 
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
     defaultValues: { password: '', confirmPassword: '' },
   });
+
+  useEffect(() => {
+    if (Object.keys(profileForm.formState.errors).length > 0) {
+      profileForm.trigger();
+    }
+  }, [i18n.language, profileForm]);
+
+  useEffect(() => {
+    if (Object.keys(emailForm.formState.errors).length > 0) {
+      emailForm.trigger();
+    }
+  }, [i18n.language, emailForm]);
+
+  useEffect(() => {
+    if (Object.keys(passwordForm.formState.errors).length > 0) {
+      passwordForm.trigger();
+    }
+  }, [i18n.language, passwordForm]);
 
   const onProfileSubmit = async (values: z.infer<typeof profileSchema>) => {
     if (!profile) return;

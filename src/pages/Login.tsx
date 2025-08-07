@@ -72,7 +72,7 @@ const Login = () => {
   const loginSchema = useMemo(() => z.object({
     email: z.string().email({ message: t('invalid_email') }),
     password: z.string().min(1, { message: t('password_required') }),
-  }), [i18n.language]);
+  }), [t]);
 
   const signupSchema = useMemo(() => z.object({
     email: z.string().email({ message: t('invalid_email') }),
@@ -81,7 +81,7 @@ const Login = () => {
       .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, { message: t('password_requirements') }),
     first_name: z.string().min(1, { message: t('first_name_required') }),
     last_name: z.string().min(1, { message: t('last_name_required') }),
-  }), [i18n.language]);
+  }), [t]);
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -92,6 +92,18 @@ const Login = () => {
     resolver: zodResolver(signupSchema),
     defaultValues: { email: '', password: '', first_name: '', last_name: '' },
   });
+
+  useEffect(() => {
+    if (Object.keys(loginForm.formState.errors).length > 0) {
+      loginForm.trigger();
+    }
+  }, [i18n.language, loginForm]);
+
+  useEffect(() => {
+    if (Object.keys(signupForm.formState.errors).length > 0) {
+      signupForm.trigger();
+    }
+  }, [i18n.language, signupForm]);
 
   useEffect(() => {
     if (session) {
