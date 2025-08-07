@@ -17,6 +17,7 @@ const CustomAudioPlayer = () => {
   } = useAudioStore();
   
   const audioRef = useRef<HTMLAudioElement>(null);
+  const volumeButtonRef = useRef<HTMLButtonElement | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const currentTrack = tracks && tracks.length > 0 ? tracks[currentTrackIndex] : null;
@@ -105,6 +106,19 @@ const CustomAudioPlayer = () => {
     setCurrentTrackIndex(prevIndex);
   };
 
+  // Handle mouse wheel over the volume button to change volume
+  const handleVolumeWheel = (e: React.WheelEvent) => {
+    // Only when pointer is over the volume control
+    e.preventDefault();
+    e.stopPropagation();
+
+    // deltaY < 0 -> wheel up (increase), deltaY > 0 -> wheel down (decrease)
+    const step = 5;
+    const delta = e.deltaY;
+    const newVolume = delta < 0 ? Math.min(100, volume + step) : Math.max(0, volume - step);
+    setVolume(newVolume);
+  };
+
   if (!currentTrack) {
     return (
       <div className="flex items-center gap-3 bg-gray-800/30 rounded-full px-3 py-1.5 border border-gray-700/60 text-gray-500">
@@ -182,8 +196,12 @@ const CustomAudioPlayer = () => {
       <HoverCard openDelay={100} closeDelay={100}>
         <HoverCardTrigger asChild>
           <button 
+            ref={volumeButtonRef}
+            onWheel={handleVolumeWheel}
             className="p-1 text-gray-400 hover:text-white disabled:opacity-50 transition-colors" 
             disabled={!tracks || tracks.length === 0}
+            aria-label="Volume (utilisez la molette pour régler)"
+            title="Utilisez la molette pour régler le volume"
           >
             <Volume2 className="h-3 w-3" />
           </button>
