@@ -59,14 +59,28 @@ const Profile = () => {
   }, [fetchMfaStatus]);
 
   const handleEnableMfa = async () => {
-    const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
-    if (error) {
+    try {
+      // Nettoyer les anciennes tentatives non vérifiées
+      const { data: factorsData, error: listError } = await supabase.auth.mfa.listFactors();
+      if (listError) throw listError;
+
+      const unverifiedFactor = factorsData.all.find(f => f.status === 'unverified');
+      if (unverifiedFactor) {
+        await supabase.auth.mfa.unenroll({ factorId: unverifiedFactor.id });
+      }
+
+      // Démarrer un nouvel enrôlement
+      const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
+      if (error) throw error;
+      
+      setQrCode(data.totp.qr_code);
+      setMfaSecret(data.totp.secret);
+      setIsMfaDialogVisible(true);
+      // Rafraîchir la liste des facteurs pour obtenir le nouvel ID non vérifié
+      await fetchMfaStatus();
+    } catch (error: any) {
       showError(error.message);
-      return;
     }
-    setQrCode(data.totp.qr_code);
-    setMfaSecret(data.totp.secret);
-    setIsMfaDialogVisible(true);
   };
 
   const handleVerifyMfa = async () => {
@@ -74,7 +88,11 @@ const Profile = () => {
       setIsVerifying(true);
       setEnrollError(null);
       const unverifiedFactor = mfaFactors.find(f => f.status === 'unverified');
-      if (!unverifiedFactor) return;
+      if (!unverifiedFactor) {
+        setEnrollError("Aucun facteur à vérifier. Veuillez réessayer.");
+        setIsVerifying(false);
+        return;
+      }
 
       const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: unverifiedFactor.id });
       if (challengeError) {
