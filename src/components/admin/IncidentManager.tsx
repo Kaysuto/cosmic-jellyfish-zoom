@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 const IncidentManager = () => {
   const { t, i18n } = useTranslation();
@@ -138,7 +139,11 @@ const IncidentManager = () => {
   }
 
   return (
-    <>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, ease: 'easeInOut' }}
+    >
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t('manage_incidents')}</CardTitle>
@@ -240,7 +245,7 @@ const IncidentManager = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </motion.div>
   );
 };
 

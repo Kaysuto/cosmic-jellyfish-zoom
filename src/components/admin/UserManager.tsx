@@ -21,6 +21,7 @@ import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { motion } from 'framer-motion';
 
 type SortByType = 'updated_at' | 'email' | 'first_name' | 'role' | 'mfa';
 
@@ -167,7 +168,11 @@ const UserManager = () => {
   }
 
   return (
-    <>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, ease: 'easeInOut' }}
+    >
       <Card>
         <CardHeader>
           <CardTitle>{t('manage_users')}</CardTitle>
@@ -308,7 +313,7 @@ const UserManager = () => {
           <AlertDialogFooter><AlertDialogCancel onClick={() => setUserToEditMfa(null)}>{t('cancel')}</AlertDialogCancel><AlertDialogAction onClick={handleDisableMfa} className={buttonVariants({ variant: "destructive" })}>{t('disable_mfa')}</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </motion.div>
   );
 };
 
