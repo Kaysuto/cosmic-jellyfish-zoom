@@ -58,7 +58,7 @@ const Navbar = () => {
 
   const desktopNavLinkClasses = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "px-4 py-1.5 text-sm font-medium transition-all duration-200 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+      "px-4 py-1.5 text-sm font-medium transition-all duration-200 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
       isActive
         ? "bg-gray-700/50 text-white shadow-inner"
         : "text-gray-400 hover:bg-gray-800/50 hover:text-white"
@@ -87,7 +87,7 @@ const Navbar = () => {
         </button>
       </HoverCardTrigger>
       <HoverCardContent 
-        className="w-56 bg-gray-900/80 backdrop-blur-lg border border-gray-700/60 text-gray-300 rounded-xl shadow-2xl p-2"
+        className="w-56 bg-gray-900/70 backdrop-blur-md border border-gray-700/60 text-gray-300 rounded-xl shadow-2xl p-2"
         align="end"
       >
         <div className="font-normal px-2 py-1.5">
