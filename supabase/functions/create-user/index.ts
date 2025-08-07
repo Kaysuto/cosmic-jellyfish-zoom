@@ -45,18 +45,22 @@ serve(async (req: Request) => {
       throw new Error("User creation failed in Auth.");
     }
 
-    // 2. Le trigger `handle_new_user` a déjà créé un profil.
-    //    Nous mettons à jour le rôle de ce profil.
+    // 2. Insérer le profil directement dans public.profiles
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .update({ role })
-      .eq('id', user.id);
+      .insert({
+        id: user.id,
+        email: user.email,
+        first_name,
+        last_name,
+        role
+      });
 
     if (profileError) {
-      console.error('Error updating profile role:', profileError.message);
-      // Si la mise à jour du profil échoue, nous supprimons l'utilisateur créé pour éviter un état incohérent.
+      console.error('Error inserting profile:', profileError.message);
+      // Si l'insertion du profil échoue, supprimer l'utilisateur créé pour éviter un état incohérent.
       await supabaseAdmin.auth.admin.deleteUser(user.id);
-      throw new Error(`Profile update error: ${profileError.message}`);
+      throw new Error(`Profile insertion error: ${profileError.message}`);
     }
 
     return new Response(JSON.stringify({ message: `User ${email} created successfully.` }), {
