@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { KeyRound } from 'lucide-react';
 import { useMemo, useEffect } from 'react';
-import { auditLog } from '@/utils/audit';
 
 const UpdatePasswordForm = () => {
   const { t, i18n } = useTranslation();
@@ -38,7 +37,6 @@ const UpdatePasswordForm = () => {
     else {
       showSuccess(t('password_updated_successfully'));
       form.reset();
-      await auditLog('password_changed', {});
     }
   };
 

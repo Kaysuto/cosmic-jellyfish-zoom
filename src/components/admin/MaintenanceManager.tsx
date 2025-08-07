@@ -17,7 +17,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { motion } from 'framer-motion';
-import { auditLog } from '@/utils/audit';
 
 const MaintenanceManager = () => {
   const { t, i18n } = useTranslation();
@@ -46,21 +45,10 @@ const MaintenanceManager = () => {
     };
 
     let error;
-    let insertedData: any = null;
     if (selectedMaintenance) {
       ({ error } = await supabase.from('scheduled_maintenances').update(maintenanceData).eq('id', selectedMaintenance.id));
-      if (!error) {
-        // Audit log for update
-        await auditLog('maintenance_updated', { id: selectedMaintenance.id, changes: maintenanceData });
-      }
     } else {
-      const res = await supabase.from('scheduled_maintenances').insert(maintenanceData).select().single();
-      error = res.error;
-      insertedData = res.data;
-      if (!error) {
-        // Audit log for creation
-        await auditLog('maintenance_created', { id: insertedData?.id ?? null, values: maintenanceData });
-      }
+      ({ error } = await supabase.from('scheduled_maintenances').insert(maintenanceData));
     }
 
     if (error) {
@@ -89,8 +77,6 @@ const MaintenanceManager = () => {
       showError(t('error_deleting_maintenance'));
     } else {
       showSuccess(t('maintenance_deleted_successfully'));
-      // Audit log for deletion
-      await auditLog('maintenance_deleted', { id: maintenanceToDelete });
       refreshMaintenances();
     }
     

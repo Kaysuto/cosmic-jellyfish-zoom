@@ -11,7 +11,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Mail } from 'lucide-react';
 import { Profile } from '@/hooks/useProfile';
 import { useMemo, useEffect } from 'react';
-import { auditLog } from '@/utils/audit';
 
 const emailRegex = new RegExp(
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -40,10 +39,7 @@ const UpdateEmailForm = ({ profile }: UpdateEmailFormProps) => {
   const onSubmit = async (values: z.infer<typeof emailSchema>) => {
     const { error } = await supabase.auth.updateUser({ email: values.email });
     if (error) showError(t('error_updating_email'));
-    else {
-      showSuccess(t('email_update_confirmation_sent'));
-      await auditLog('email_updated', { profileId: profile.id, newEmail: values.email });
-    }
+    else showSuccess(t('email_update_confirmation_sent'));
   };
 
   return (
