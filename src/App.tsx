@@ -17,6 +17,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useEffect } from "react";
 import { useAudioStore } from "./stores/audioStore";
+import { useTranslation } from "react-i18next";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const queryClient = new QueryClient();
 const AppWrapper = () => {
   useLanguageDetection();
   const { setTracks, setCurrentTrackIndex } = useAudioStore();
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     const fetchTracks = async () => {
@@ -69,10 +71,10 @@ const AppWrapper = () => {
                   <Route element={<ProtectedRoute />}>
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/admin/settings" element={<Settings />} />
-                    <Route path="/admin/profile" element={<Profile />} />
+                    <Route path="/admin/profile" element={<Profile key={i18n.language} />} />
                   </Route>
                 </Route>
-                <Route path="/login" element={<Login />} />
+                <Route path="/login" element={<Login key={i18n.language} />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

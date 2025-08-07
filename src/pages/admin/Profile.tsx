@@ -29,7 +29,7 @@ const Profile = () => {
   const profileSchema = useMemo(() => z.object({
     first_name: z.string().min(1, { message: t('first_name_required') }),
     last_name: z.string().min(1, { message: t('last_name_required') }),
-  }), [t]);
+  }), [i18n.language]);
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -42,7 +42,7 @@ const Profile = () => {
 
   const emailSchema = useMemo(() => z.object({
     email: z.string().email({ message: t('invalid_email') }),
-  }), [t]);
+  }), [i18n.language]);
 
   const emailForm = useForm<z.infer<typeof emailSchema>>({
     resolver: zodResolver(emailSchema),
@@ -59,7 +59,7 @@ const Profile = () => {
   }).refine(data => data.password === data.confirmPassword, {
     message: t('passwords_do_not_match'),
     path: ['confirmPassword'],
-  }), [t]);
+  }), [i18n.language]);
 
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),

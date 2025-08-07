@@ -19,7 +19,7 @@ import { MadeWithDyad } from '@/components/made-with-dyad';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const Login = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
@@ -72,7 +72,7 @@ const Login = () => {
   const loginSchema = useMemo(() => z.object({
     email: z.string().email({ message: t('invalid_email') }),
     password: z.string().min(1, { message: t('password_required') }),
-  }), [t]);
+  }), [i18n.language]);
 
   const signupSchema = useMemo(() => z.object({
     email: z.string().email({ message: t('invalid_email') }),
@@ -81,7 +81,7 @@ const Login = () => {
       .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, { message: t('password_requirements') }),
     first_name: z.string().min(1, { message: t('first_name_required') }),
     last_name: z.string().min(1, { message: t('last_name_required') }),
-  }), [t]);
+  }), [i18n.language]);
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
