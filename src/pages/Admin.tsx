@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getGravatarURL } from '@/lib/gravatar';
 import { BarChart2, Wrench, AlertTriangle, Calendar, Users, Settings, LogOut, User, ArrowLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AnimatePresence, motion } from 'framer-motion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +30,6 @@ import {
 
 const Admin = () => {
   const { t } = useTranslation();
-  const location = useLocation();
   const navigate = useNavigate();
   const { profile, loading: profileLoading } = useProfile();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
@@ -114,17 +112,7 @@ const Admin = () => {
         </nav>
       </header>
       <main>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        <Outlet />
       </main>
       <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
         <AlertDialogContent>
