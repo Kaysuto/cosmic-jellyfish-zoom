@@ -28,6 +28,7 @@ const resources = {
       "admin": "Admin",
       "login": "Connexion",
       "settings": "Paramètres",
+      "settings_description": "Gérez les paramètres de votre compte et les préférences du site.",
       
       // Page d'accueil
       "welcome": "Statut en temps réel des services Jelly",
@@ -272,6 +273,7 @@ const resources = {
       "admin": "Admin",
       "login": "Login",
       "settings": "Settings",
+      "settings_description": "Manage your account settings and site preferences.",
 
       // Homepage
       "welcome": "Real-time Status of Jelly Services",

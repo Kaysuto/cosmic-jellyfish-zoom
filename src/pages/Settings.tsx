@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shield } from 'lucide-react';
+import { Shield, Languages } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from '@/integrations/supabase/client';
@@ -57,55 +57,67 @@ const Settings = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('language_settings')}</CardTitle>
-          <CardDescription>{t('select_language_desc')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="w-full max-w-xs">
-            <Select value={i18n.language} onValueChange={changeLanguage}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="fr">Français</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto space-y-8">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">{t('settings')}</h1>
+          <p className="text-muted-foreground">
+            {t('settings_description')}
+          </p>
+        </div>
 
-      {profile?.role === 'admin' && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              {t('registration_settings')}
+              <Languages className="h-5 w-5" />
+              {t('language_settings')}
             </CardTitle>
-            <CardDescription>{t('allow_new_registrations_desc')}</CardDescription>
+            <CardDescription>{t('select_language_desc')}</CardDescription>
           </CardHeader>
           <CardContent>
-            {loadingSettings ? (
-              <div className="flex items-center space-x-2">
-                <Skeleton className="h-6 w-10 rounded-full" />
-                <Skeleton className="h-5 w-48" />
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="allow-registrations"
-                  checked={allowRegistrations}
-                  onCheckedChange={handleRegistrationToggle}
-                />
-                <Label htmlFor="allow-registrations">{t('allow_new_registrations')}</Label>
-              </div>
-            )}
+            <div className="w-full max-w-xs">
+              <Select value={i18n.language} onValueChange={changeLanguage}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fr">Français</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
-      )}
+
+        {profile?.role === 'admin' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                {t('registration_settings')}
+              </CardTitle>
+              <CardDescription>{t('allow_new_registrations_desc')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingSettings ? (
+                <div className="flex items-center space-x-2">
+                  <Skeleton className="h-6 w-10 rounded-full" />
+                  <Skeleton className="h-5 w-48" />
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="allow-registrations"
+                    checked={allowRegistrations}
+                    onCheckedChange={handleRegistrationToggle}
+                  />
+                  <Label htmlFor="allow-registrations">{t('allow_new_registrations')}</Label>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
