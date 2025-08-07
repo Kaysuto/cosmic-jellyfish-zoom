@@ -12,6 +12,10 @@ import { Mail } from 'lucide-react';
 import { Profile } from '@/hooks/useProfile';
 import { useMemo, useEffect } from 'react';
 
+const emailRegex = new RegExp(
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+);
+
 interface UpdateEmailFormProps {
   profile: Profile;
 }
@@ -20,7 +24,7 @@ const UpdateEmailForm = ({ profile }: UpdateEmailFormProps) => {
   const { t, i18n } = useTranslation();
 
   const emailSchema = useMemo(() => z.object({
-    email: z.string().email({ message: t('invalid_email') }),
+    email: z.string().regex(emailRegex, { message: t('invalid_email') }),
   }), [t]);
 
   const form = useForm<z.infer<typeof emailSchema>>({

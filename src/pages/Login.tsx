@@ -18,6 +18,10 @@ import { ArrowLeft, Loader2, Terminal } from 'lucide-react';
 import { MadeWithDyad } from '@/components/made-with-dyad';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
+const emailRegex = new RegExp(
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+);
+
 const Login = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -75,7 +79,7 @@ const Login = () => {
   }), [i18n.language]);
 
   const signupSchema = useMemo(() => z.object({
-    email: z.string().email({ message: t('invalid_email') }),
+    email: z.string().regex(emailRegex, { message: t('invalid_email') }),
     password: z.string()
       .min(6, { message: t('password_too_short') })
       .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, { message: t('password_requirements') }),
