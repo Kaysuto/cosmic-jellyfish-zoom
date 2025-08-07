@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { strictEmailRegex } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +11,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Mail } from 'lucide-react';
 import { Profile } from '@/hooks/useProfile';
 import { useMemo, useEffect } from 'react';
+
+const emailRegex = new RegExp(
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+);
 
 interface UpdateEmailFormProps {
   profile: Profile;
@@ -21,7 +24,7 @@ const UpdateEmailForm = ({ profile }: UpdateEmailFormProps) => {
   const { t, i18n } = useTranslation();
 
   const emailSchema = useMemo(() => z.object({
-    email: z.string().regex(strictEmailRegex, { message: t('invalid_email') }),
+    email: z.string().regex(emailRegex, { message: t('invalid_email') }),
   }), [t]);
 
   const form = useForm<z.infer<typeof emailSchema>>({
