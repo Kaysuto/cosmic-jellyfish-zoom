@@ -15,21 +15,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
 import { MadeWithDyad } from '@/components/made-with-dyad';
+import { useSession } from '@/contexts/AuthContext';
 
 const UpdatePassword = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const { session, loading: sessionLoading } = useSession();
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setIsReady(true);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  const isReady = !sessionLoading && session;
 
   const passwordSchema = useMemo(() => z.object({
     password: z.string()
