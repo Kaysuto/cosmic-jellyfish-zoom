@@ -255,7 +255,12 @@ const resources = {
       "email_not_confirmed": "Veuillez confirmer votre adresse e-mail pour vous connecter. Un nouveau lien de confirmation a été envoyé.",
       "unexpected_login_error": "Une erreur inattendue est survenue. Veuillez réessayer.",
       "confirm_logout_title": "Confirmer la déconnexion ?",
-      "confirm_logout_description": "Êtes-vous sûr de vouloir vous déconnecter de votre compte ?"
+      "confirm_logout_description": "Êtes-vous sûr de vouloir vous déconnecter de votre compte ?",
+      "change_email_or_password": "Changer l'adresse e-mail ou le mot de passe",
+      "update_user_email_password_desc": "Mettez à jour l'e-mail ou réinitialisez le mot de passe de l'utilisateur.",
+      "new_password_optional": "Nouveau mot de passe (laisser vide pour ne pas changer)",
+      "manage_user_mfa_desc": "Gérer l'authentification à deux facteurs pour cet utilisateur.",
+      "user_mfa_disabled": "L'utilisateur n'a pas activé l'MFA."
     }
   },
   en: {
@@ -509,7 +514,12 @@ const resources = {
       "email_not_confirmed": "Please confirm your email address to sign in. A new confirmation link has been sent.",
       "unexpected_login_error": "An unexpected error occurred. Please try again.",
       "confirm_logout_title": "Confirm Logout?",
-      "confirm_logout_description": "Are you sure you want to log out of your account?"
+      "confirm_logout_description": "Are you sure you want to log out of your account?",
+      "change_email_or_password": "Change Email or Password",
+      "update_user_email_password_desc": "Update the user's email or reset their password.",
+      "new_password_optional": "New Password (leave blank to keep unchanged)",
+      "manage_user_mfa_desc": "Manage Two-Factor Authentication for this user.",
+      "user_mfa_disabled": "The user has not enabled MFA."
     }
   }
 };

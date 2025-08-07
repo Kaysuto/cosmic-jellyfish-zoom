@@ -66,14 +66,14 @@ const AdminUpdateUserForm = ({ user }: AdminUpdateUserFormProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5" /> {t('change_email')} & {t('change_password')}</CardTitle>
-        <CardDescription>Mettez à jour l'e-mail ou réinitialisez le mot de passe de l'utilisateur.</CardDescription>
+        <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5" /> {t('change_email_or_password')}</CardTitle>
+        <CardDescription>{t('update_user_email_password_desc')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="password" render={({ field }) => (<FormItem><FormLabel>{t('new_password')} (laisser vide pour ne pas changer)</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="password" render={({ field }) => (<FormItem><FormLabel>{t('new_password_optional')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>)} />
             <Button type="submit" disabled={form.formState.isSubmitting}>{t('save_changes')}</Button>
           </form>
         </Form>

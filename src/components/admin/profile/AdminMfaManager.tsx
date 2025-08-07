@@ -61,7 +61,7 @@ const AdminMfaManager = ({ user }: AdminMfaManagerProps) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5" /> {t('mfa_title')}</CardTitle>
-          <CardDescription>Gérer l'authentification à deux facteurs pour cet utilisateur.</CardDescription>
+          <CardDescription>{t('manage_user_mfa_desc')}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? <Skeleton className="h-10 w-32" /> : (
@@ -71,7 +71,7 @@ const AdminMfaManager = ({ user }: AdminMfaManagerProps) => {
                 {t('disable_mfa')}
               </Button>
             ) : (
-              <p className="text-sm text-muted-foreground">L'utilisateur n'a pas activé l'MFA.</p>
+              <p className="text-sm text-muted-foreground">{t('user_mfa_disabled')}</p>
             )
           )}
         </CardContent>
