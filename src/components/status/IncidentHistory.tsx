@@ -107,7 +107,7 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ incidents }) => {
           {t('incident_history')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow flex flex-col justify-start overflow-y-auto py-4">
+      <CardContent className="flex-grow flex flex-col justify-start py-4">
         {incidents.length === 0 ? (
           <div className="text-center py-8 flex flex-col items-center justify-center h-full">
             <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
