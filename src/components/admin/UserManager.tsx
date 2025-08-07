@@ -33,8 +33,6 @@ const UserManager = () => {
 
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
-  const otherUsers = users.filter(user => user.id !== session?.user?.id);
-
   const fetchMfaStatus = useCallback(async () => {
     setLoadingMfa(true);
     try {
@@ -118,13 +116,6 @@ const UserManager = () => {
           <CardTitle>{t('manage_users')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Alert className="mb-4 bg-blue-900/30 border-blue-500/30 text-blue-300">
-            <Info className="h-4 w-4" />
-            <AlertTitle>{t('note_title')}</AlertTitle>
-            <AlertDescription>
-              {t('user_management_note')}
-            </AlertDescription>
-          </Alert>
           <Table>
             <TableHeader>
               <TableRow>
@@ -136,10 +127,11 @@ const UserManager = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {otherUsers.map((user) => {
+              {users.map((user) => {
                 const hasMfa = mfaUserIds.includes(user.id);
+                const isCurrentUser = user.id === session?.user?.id;
                 return (
-                  <TableRow key={user.id}>
+                  <TableRow key={user.id} className={isCurrentUser ? 'bg-muted/50' : ''}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9"><AvatarImage src={user.avatar_url || getGravatarURL(user.email)} /><AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback></Avatar>
@@ -158,7 +150,7 @@ const UserManager = () => {
                     <TableCell>{format(new Date(user.updated_at), 'PP', { locale: currentLocale })}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" disabled={isCurrentUser}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
                             <Link to={`/admin/users/${user.id}/edit`} className="cursor-pointer">
