@@ -76,9 +76,11 @@ const IncidentStatusChart = ({ incidents }: IncidentStatusChartProps) => {
                 ))}
               </Pie>
               <Tooltip
+                cursor={{ fill: 'hsl(var(--muted))' }}
                 contentStyle={{
                   backgroundColor: 'hsl(var(--background))',
                   borderColor: 'hsl(var(--border))',
+                  borderRadius: 'var(--radius)',
                 }}
               />
             </PieChart>

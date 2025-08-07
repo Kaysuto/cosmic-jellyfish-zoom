@@ -16,8 +16,8 @@ const IncidentHistoryChart = ({ incidents }: IncidentHistoryChartProps) => {
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
   const data = useMemo(() => {
-    const thirtyDaysAgo = subDays(new Date(), 29);
-    const today = new Date();
+    const today = startOfDay(new Date());
+    const thirtyDaysAgo = subDays(today, 29);
     const dateRange = eachDayOfInterval({ start: thirtyDaysAgo, end: today });
 
     const incidentsByDay = incidents.reduce((acc, incident) => {
