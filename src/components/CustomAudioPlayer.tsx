@@ -213,8 +213,6 @@ const CustomAudioPlayer = () => {
             onWheel={handleVolumeWheel}
             className="p-1 text-gray-400 hover:text-white disabled:opacity-50 transition-colors relative" 
             disabled={!tracks || tracks.length === 0}
-            aria-label="Volume (utilisez la molette pour régler, maintenez Shift pour affiner)"
-            title="Utilisez la molette pour régler le volume (Shift = fin)"
           >
             <Volume2 className="h-3 w-3" />
           </button>
