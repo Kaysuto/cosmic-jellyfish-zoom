@@ -7,6 +7,8 @@ const resources = {
   fr: {
     translation: {
       // ... (toutes les traductions existantes)
+      "note_title": "Remarque",
+      "user_management_note": "Votre propre compte n'est pas affiché dans cette liste pour éviter toute auto-modification accidentelle. Pour gérer votre profil, veuillez vous rendre sur la page Profil.",
       "live_status_last_updated": "Statut en direct mis à jour",
       "next_update_in": "Prochaine mise à jour dans",
       "new_service_uptime_message": "L'historique de disponibilité pour les nouveaux services est généré après 24 heures. Les premières données apparaîtront demain.",
@@ -242,6 +244,8 @@ const resources = {
   en: {
     translation: {
       // ... (toutes les traductions existantes)
+      "note_title": "Note",
+      "user_management_note": "Your own account is not displayed in this list to prevent accidental self-modification. To manage your profile, please go to the Profile page.",
       "live_status_last_updated": "Live status updated",
       "next_update_in": "Next update in",
       "new_service_uptime_message": "Uptime history for new services is generated after 24 hours. The first data will appear tomorrow.",

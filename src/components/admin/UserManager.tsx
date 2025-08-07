@@ -6,7 +6,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trash2, MoreHorizontal, User, Shield, KeyRound, ShieldOff } from 'lucide-react';
+import { Trash2, MoreHorizontal, User, Shield, KeyRound, ShieldOff, Info } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
@@ -16,9 +16,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getGravatarURL } from '@/lib/gravatar';
 import { Badge } from '@/components/ui/badge';
 import { Profile } from '@/hooks/useProfile';
+import { useSession } from '@/contexts/AuthContext';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const UserManager = () => {
   const { t, i18n } = useTranslation();
+  const { session } = useSession();
   const { users, loading, refreshUsers } = useUsers();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<Profile | null>(null);
@@ -28,6 +31,8 @@ const UserManager = () => {
   const [loadingMfa, setLoadingMfa] = useState(true);
 
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
+
+  const otherUsers = users.filter(user => user.id !== session?.user?.id);
 
   const fetchMfaStatus = useCallback(async () => {
     setLoadingMfa(true);
@@ -112,6 +117,13 @@ const UserManager = () => {
           <CardTitle>{t('manage_users')}</CardTitle>
         </CardHeader>
         <CardContent>
+          <Alert className="mb-4 bg-blue-900/30 border-blue-500/30 text-blue-300">
+            <Info className="h-4 w-4" />
+            <AlertTitle>{t('note_title')}</AlertTitle>
+            <AlertDescription>
+              {t('user_management_note')}
+            </AlertDescription>
+          </Alert>
           <Table>
             <TableHeader>
               <TableRow>
@@ -123,7 +135,7 @@ const UserManager = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => {
+              {otherUsers.map((user) => {
                 const hasMfa = mfaUserIds.includes(user.id);
                 return (
                   <TableRow key={user.id}>
