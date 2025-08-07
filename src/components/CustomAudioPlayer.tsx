@@ -4,7 +4,6 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Slider } from "@/components/ui/slider";
 import { useAudioStore } from "@/stores/audioStore";
-import { useTranslation } from 'react-i18next';
 
 const CustomAudioPlayer = () => {
   const { 
@@ -19,8 +18,6 @@ const CustomAudioPlayer = () => {
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const { t } = useTranslation();
 
   const currentTrack = tracks && tracks.length > 0 ? tracks[currentTrackIndex] : null;
 
@@ -112,7 +109,7 @@ const CustomAudioPlayer = () => {
     return (
       <div className="flex items-center gap-3 bg-gray-800/30 rounded-full px-3 py-1.5 border border-gray-700/60 text-gray-500">
         <Disc3 className="h-4 w-4 text-gray-600" />
-        <div className="text-xs truncate max-w-[120px]">{t('no_tracks_available')}</div>
+        <div className="text-xs truncate max-w-[120px]">Aucune piste disponible</div>
       </div>
     );
   }
@@ -124,7 +121,8 @@ const CustomAudioPlayer = () => {
 
   const TrackName = () => {
     if (isLoading) {
-      return <>{t('track_loading')}</>;
+      return <>Chargement...</>;
+
     }
     if (isTruncated) {
       return (
@@ -192,7 +190,7 @@ const CustomAudioPlayer = () => {
         </HoverCardTrigger>
         <HoverCardContent className="w-40 bg-gray-800 border-gray-700">
           <div className="space-y-2">
-            <div className="text-xs text-gray-400 text-center">{t('volume_label', { volume })}</div>
+            <div className="text-xs text-gray-400 text-center">Volume: {volume}%</div>
             <Slider
               value={[volume]}
               max={100}

@@ -76,7 +76,7 @@ const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardP
     if (dbError) {
       showError(dbError.message);
     } else {
-      showSuccess(t('avatar_updated_successfully'));
+      showSuccess('Avatar mis à jour avec succès !');
       // Audit log
       await auditLog('avatar_updated', { profileId: profile.id, avatar_url: publicUrl });
       onProfileUpdate();
@@ -103,12 +103,12 @@ const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardP
         .eq('id', profile.id);
       if (dbError) throw dbError;
 
-      showSuccess(t('avatar_deleted_successfully'));
+      showSuccess("Avatar supprimé avec succès.");
       // Audit log
       await auditLog('avatar_deleted', { profileId: profile.id });
       onProfileUpdate();
     } catch (error: any) {
-      showError(`${t('error_deleting_avatar')}: ${error.message}`);
+      showError(`Erreur lors de la suppression de l'avatar: ${error.message}`);
     } finally {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
@@ -134,7 +134,7 @@ const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardP
                     onClick={handleAvatarClick}
                     disabled={isUploading || isDeleting}
                     className="p-2 text-white hover:text-blue-400 disabled:opacity-50"
-                    title={t('change_avatar') || 'Change avatar'}
+                    title="Modifier l'avatar"
                   >
                     {isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Edit className="h-5 w-5" />}
                   </button>
@@ -143,7 +143,7 @@ const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardP
                       onClick={() => setIsDeleteDialogOpen(true)}
                       disabled={isUploading || isDeleting}
                       className="p-2 text-white hover:text-red-400 disabled:opacity-50"
-                      title={t('delete')}
+                      title="Supprimer l'avatar"
                     >
                       {isDeleting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 className="h-5 w-5" />}
                     </button>
@@ -189,18 +189,20 @@ const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardP
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('delete_avatar_title')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('delete_avatar_desc')}</AlertDialogDescription>
+            <AlertDialogTitle>Supprimer l'avatar ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Votre avatar sera supprimé et remplacé par l'image par défaut de Gravatar.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAvatar}
               disabled={isDeleting}
               className={buttonVariants({ variant: "destructive" })}
             >
               {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {t('delete')}
+              Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -31,17 +31,17 @@ export const FooterContent = () => {
             ) : (
               <UKFlag className="w-5 h-auto mr-2 rounded-sm" />
             )}
-            {i18n.language === 'fr' ? t('language_fr') : t('language_en')}
+            {i18n.language === 'fr' ? 'Français' : 'English'}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem onClick={() => changeLanguage('fr')} className="cursor-pointer">
             <FranceFlag className="w-5 h-auto mr-2 rounded-sm" />
-            {t('language_fr')}
+            Français
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => changeLanguage('en')} className="cursor-pointer">
             <UKFlag className="w-5 h-auto mr-2 rounded-sm" />
-            {t('language_en')}
+            English
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
