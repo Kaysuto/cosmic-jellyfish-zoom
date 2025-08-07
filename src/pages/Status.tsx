@@ -83,17 +83,18 @@ const StatusPage = () => {
         <ScheduledMaintenances maintenances={maintenances} />
       </div>
 
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 flex-grow">
-        <div className="flex flex-col gap-8">
-          <ServicesStatus services={services} />
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 flex-grow">
+        <ServicesStatus services={services} />
+        
+        <IncidentHistory incidents={incidents} />
+
+        <div className="md:col-span-2 xl:col-span-1">
           <UptimeHistory 
             services={services}
             selectedServiceId={selectedServiceId}
             onServiceChange={setSelectedServiceId}
           />
         </div>
-        
-        <IncidentHistory incidents={incidents} />
       </div>
     </motion.div>
   );

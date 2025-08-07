@@ -88,7 +88,7 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
 
   const renderChart = () => {
     if (loading) {
-      return <Skeleton className="h-[300px] w-full" />;
+      return <Skeleton className="h-full w-full min-h-[300px]" />;
     }
 
     let emptyMessage = t('no_uptime_history');
@@ -101,7 +101,7 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
     }
 
     return (
-      <div className="relative h-[300px]">
+      <div className="relative h-full w-full flex-grow">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -127,7 +127,7 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
   };
 
   return (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex-grow">
             <CardTitle>{t('uptime_history')}</CardTitle>
@@ -153,7 +153,7 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
           <Button size="sm" variant={timeRange === 'month' ? 'secondary' : 'ghost'} onClick={() => setTimeRange('month')}>{t('time_range_month')}</Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-grow flex flex-col">
         {renderChart()}
       </CardContent>
     </Card>
