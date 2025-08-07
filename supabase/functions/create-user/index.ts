@@ -25,7 +25,7 @@ serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // 1. Créer l'utilisateur dans Supabase Auth avec confirmation automatique
+    // Créer l'utilisateur dans Supabase Auth, en passant toutes les informations nécessaires dans les métadonnées
     const { data: { user }, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -33,35 +33,21 @@ serve(async (req: Request) => {
       user_metadata: {
         first_name,
         last_name,
+        role, // Passer le rôle ici
       }
     })
 
     if (authError) {
       console.error('Error during user creation in Auth:', authError.message);
-      throw new Error(`Auth error: ${authError.message}`);
+      throw authError;
     }
     if (!user) {
       console.error('User object was null after creation attempt.');
       throw new Error("User creation failed in Auth.");
     }
 
-    // 2. Insérer le profil directement dans public.profiles
-    const { error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .insert({
-        id: user.id,
-        email: user.email,
-        first_name,
-        last_name,
-        role
-      });
-
-    if (profileError) {
-      console.error('Error inserting profile:', profileError.message);
-      // Si l'insertion du profil échoue, supprimer l'utilisateur créé pour éviter un état incohérent.
-      await supabaseAdmin.auth.admin.deleteUser(user.id);
-      throw new Error(`Profile insertion error: ${profileError.message}`);
-    }
+    // Le déclencheur de base de données 'handle_new_user' créera maintenant le profil.
+    // Il n'est plus nécessaire d'insérer dans la table 'profiles' depuis cette fonction.
 
     return new Response(JSON.stringify({ message: `User ${email} created successfully.` }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
