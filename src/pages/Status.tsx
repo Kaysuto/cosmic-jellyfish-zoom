@@ -83,12 +83,14 @@ const StatusPage = () => {
         <ScheduledMaintenances maintenances={maintenances} />
       </div>
 
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 flex-grow">
-        <ServicesStatus services={services} />
-        
-        <IncidentHistory incidents={incidents} />
-
-        <div className="md:col-span-2 xl:col-span-1">
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 flex-grow">
+        <div className="md:col-span-1 lg:col-span-1">
+          <ServicesStatus services={services} />
+        </div>
+        <div className="md:col-span-1 lg:col-span-1">
+          <IncidentHistory incidents={incidents} />
+        </div>
+        <div className="md:col-span-2 lg:col-span-1">
           <UptimeHistory 
             services={services}
             selectedServiceId={selectedServiceId}
