@@ -11,7 +11,6 @@ import Login from "./pages/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
-import UpdatePassword from "./pages/UpdatePassword";
 import { ThemeProvider } from "@/components/theme-provider";
 import MainLayout from "@/components/layout/MainLayout";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -92,7 +91,6 @@ const AppWrapper = () => {
                 </Route>
 
                 <Route path="/login" element={<Login />} />
-                <Route path="/update-password" element={<UpdatePassword />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
