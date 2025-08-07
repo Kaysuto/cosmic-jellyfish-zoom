@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/AuthContext';
 import { showSuccess, showError } from '@/utils/toast';
+import { strictEmailRegex } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,10 +18,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { ArrowLeft, Loader2, Terminal } from 'lucide-react';
 import { MadeWithDyad } from '@/components/made-with-dyad';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-const emailRegex = new RegExp(
-  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-);
 
 const Login = () => {
   const { t, i18n } = useTranslation();
@@ -74,12 +71,12 @@ const Login = () => {
   }, []);
 
   const loginSchema = useMemo(() => z.object({
-    email: z.string().regex(emailRegex, { message: t('invalid_email') }),
+    email: z.string().regex(strictEmailRegex, { message: t('invalid_email') }),
     password: z.string().min(1, { message: t('password_required') }),
   }), [i18n.language]);
 
   const signupSchema = useMemo(() => z.object({
-    email: z.string().regex(emailRegex, { message: t('invalid_email') }),
+    email: z.string().regex(strictEmailRegex, { message: t('invalid_email') }),
     password: z.string()
       .min(6, { message: t('password_too_short') })
       .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, { message: t('password_requirements') }),
@@ -88,7 +85,7 @@ const Login = () => {
   }), [i18n.language]);
   
   const forgotPasswordSchema = useMemo(() => z.object({
-    email: z.string().regex(emailRegex, { message: t('invalid_email') }),
+    email: z.string().regex(strictEmailRegex, { message: t('invalid_email') }),
   }), [i18n.language]);
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
