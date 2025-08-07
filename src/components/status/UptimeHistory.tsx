@@ -142,39 +142,40 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
     if (loading) {
       return <Skeleton className="h-[300px] w-full" />;
     }
-    if (chartData.length === 0) {
-      const serviceCreationDate = selectedService ? new Date(selectedService.created_at) : new Date(0);
-      const oneDayAgo = new Date();
-      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-      if (selectedService && serviceCreationDate > oneDayAgo) {
-        return (
-          <div className="flex items-center justify-center h-[300px] text-muted-foreground text-center p-4">
-            {t('new_service_uptime_message')}
-          </div>
-        );
+    let emptyMessage = t('no_uptime_history');
+    if (selectedService) {
+      const serviceCreationDate = new Date(selectedService.created_at);
+      const oneDayAgo = subDays(new Date(), 1);
+      if (serviceCreationDate > oneDayAgo) {
+        emptyMessage = t('new_service_uptime_message');
       }
-      
-      return (
-        <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-          {t('no_uptime_history')}
-        </div>
-      );
     }
 
     return (
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-          <YAxis yAxisId="left" stroke="hsl(var(--primary))" fontSize={12} tickLine={false} axisLine={false} domain={[80, 100]} tickFormatter={(value) => `${value}%`} />
-          <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}ms`} />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
-          <Line yAxisId="left" type="monotone" dataKey="uptime_percentage" name={t('uptime_legend')} stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
-          <Line yAxisId="right" type="monotone" dataKey="avg_response_time_ms" name={t('ping_legend')} stroke="hsl(var(--muted-foreground))" dot={false} strokeWidth={2} strokeDasharray="5 5" />
-        </LineChart>
-      </ResponsiveContainer>
+      <div className="relative h-[300px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+            <YAxis yAxisId="left" stroke="hsl(var(--primary))" fontSize={12} tickLine={false} axisLine={false} domain={[80, 100]} tickFormatter={(value) => `${value}%`} />
+            <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} domain={[0, 1000]} tickFormatter={(value) => `${value}ms`} allowDataOverflow />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend />
+            {chartData.length > 0 && (
+              <>
+                <Line yAxisId="left" type="monotone" dataKey="uptime_percentage" name={t('uptime_legend')} stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
+                <Line yAxisId="right" type="monotone" dataKey="avg_response_time_ms" name={t('ping_legend')} stroke="hsl(var(--muted-foreground))" dot={false} strokeWidth={2} strokeDasharray="5 5" />
+              </>
+            )}
+          </LineChart>
+        </ResponsiveContainer>
+        {chartData.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-center p-4 bg-background/50 rounded-md">
+            {emptyMessage}
+          </div>
+        )}
+      </div>
     );
   };
 
