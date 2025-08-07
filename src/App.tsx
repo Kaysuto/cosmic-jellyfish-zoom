@@ -27,25 +27,25 @@ import MaintenanceManager from "@/components/admin/MaintenanceManager";
 import UserManager from "@/components/admin/UserManager";
 import EditUserPage from "./pages/admin/EditUser";
 import LogsPage from "./pages/admin/Logs";
-import { useAppSettings } from "./hooks/useAppSettings";
+import { SettingsProvider, useSettings } from "./contexts/SettingsContext";
 
 const queryClient = new QueryClient();
+
+const DynamicTitle = () => {
+  const { getSetting, loading } = useSettings();
+  useEffect(() => {
+    if (!loading) {
+      const siteTitle = getSetting('site_title', 'Statut des Services Jelly');
+      document.title = siteTitle;
+    }
+  }, [loading, getSetting]);
+  return null;
+};
 
 // Composant wrapper pour la détection de langue
 const AppWrapper = () => {
   useLanguageDetection();
   const { setTracks, setCurrentTrackIndex } = useAudioStore();
-  const { i18n } = useTranslation();
-  const { getSetting, loading: settingsLoading, settings } = useAppSettings();
-
-  useEffect(() => {
-    if (!settingsLoading) {
-      const siteTitle = getSetting('site_title');
-      if (siteTitle) {
-        document.title = siteTitle;
-      }
-    }
-  }, [settingsLoading, getSetting, settings]);
 
   useEffect(() => {
     const fetchTracks = async () => {
@@ -77,39 +77,42 @@ const AppWrapper = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="ui-theme">
         <TooltipProvider delayDuration={100}>
-          <AuthProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route element={<MainLayout />}>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/status" element={<StatusPage />} />
-                  
-                  <Route element={<ProtectedRoute />}>
-                    <Route path="/profile" element={<Profile />} />
+          <SettingsProvider>
+            <AuthProvider>
+              <DynamicTitle />
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route element={<MainLayout />}>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/status" element={<StatusPage />} />
+                    
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="/profile" element={<Profile />} />
+                    </Route>
                   </Route>
-                </Route>
 
-                <Route element={<AdminRoute />}>
-                  <Route path="/admin" element={<Admin />}>
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="services" element={<ServiceManager />} />
-                    <Route path="incidents" element={<IncidentManager />} />
-                    <Route path="maintenance" element={<MaintenanceManager />} />
-                    <Route path="users" element={<UserManager />} />
-                    <Route path="users/:userId/edit" element={<EditUserPage />} />
-                    <Route path="settings" element={<Settings />} />
-                    <Route path="logs" element={<LogsPage />} />
+                  <Route element={<AdminRoute />}>
+                    <Route path="/admin" element={<Admin />}>
+                      <Route index element={<AdminDashboard />} />
+                      <Route path="services" element={<ServiceManager />} />
+                      <Route path="incidents" element={<IncidentManager />} />
+                      <Route path="maintenance" element={<MaintenanceManager />} />
+                      <Route path="users" element={<UserManager />} />
+                      <Route path="users/:userId/edit" element={<EditUserPage />} />
+                      <Route path="settings" element={<Settings />} />
+                      <Route path="logs" element={<LogsPage />} />
+                    </Route>
                   </Route>
-                </Route>
 
-                <Route path="/login" element={<Login />} />
-                <Route path="/update-password" element={<UpdatePassword />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </AuthProvider>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/update-password" element={<UpdatePassword />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </AuthProvider>
+          </SettingsProvider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

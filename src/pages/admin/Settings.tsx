@@ -9,7 +9,7 @@ import { showSuccess, showError } from '@/utils/toast';
 import { useState, useEffect, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProfile } from '@/hooks/useProfile';
-import { useAppSettings } from '@/hooks/useAppSettings';
+import { useSettings } from '@/contexts/SettingsContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 const Settings = () => {
   const { t, i18n } = useTranslation();
   const { profile } = useProfile();
-  const { getSetting, refreshSettings, loading: settingsLoading } = useAppSettings();
+  const { getSetting, refreshSettings, loading: settingsLoading } = useSettings();
   
   const [allowRegistrations, setAllowRegistrations] = useState(true);
   const [loadingRegistrations, setLoadingRegistrations] = useState(true);
