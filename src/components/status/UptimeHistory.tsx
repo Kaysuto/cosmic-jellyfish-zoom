@@ -101,7 +101,7 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
     }
 
     return (
-      <div className="relative h-full w-full">
+      <div className="relative h-full w-full flex-grow">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
