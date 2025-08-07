@@ -15,10 +15,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { useSession } from '@/contexts/AuthContext';
 
 const ServiceManager = () => {
   const { t } = useTranslation();
   const { services, loading, refreshServices } = useServices();
+  const { session } = useSession();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -63,18 +65,28 @@ const ServiceManager = () => {
       position: selectedService ? selectedService.position : (services.length > 0 ? Math.max(...services.map(s => s.position)) + 1 : 1),
     };
 
-    let error;
     if (selectedService) {
-      ({ error } = await supabase.from('services').update(serviceData).eq('id', selectedService.id));
+      const { error } = await supabase.from('services').update(serviceData).eq('id', selectedService.id);
+      if (error) {
+        showError(t('error_saving_service'));
+      } else {
+        showSuccess(t('service_saved_successfully'));
+        if (session?.user.id) {
+          await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'service_updated', details: { service_id: selectedService.id, name: values.name } });
+        }
+        refreshServices();
+      }
     } else {
-      ({ error } = await supabase.from('services').insert(serviceData));
-    }
-
-    if (error) {
-      showError(t('error_saving_service'));
-    } else {
-      showSuccess(t('service_saved_successfully'));
-      refreshServices();
+      const { data, error } = await supabase.from('services').insert(serviceData).select().single();
+      if (error) {
+        showError(t('error_saving_service'));
+      } else {
+        showSuccess(t('service_saved_successfully'));
+        if (data && session?.user.id) {
+          await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'service_created', details: { service_id: data.id, name: values.name } });
+        }
+        refreshServices();
+      }
     }
 
     setIsSheetOpen(false);
@@ -90,12 +102,16 @@ const ServiceManager = () => {
   const handleDelete = async () => {
     if (!serviceToDelete) return;
     
+    const serviceName = services.find(s => s.id === serviceToDelete)?.name;
     const { error } = await supabase.from('services').delete().eq('id', serviceToDelete);
     
     if (error) {
       showError(t('error_deleting_service'));
     } else {
       showSuccess(t('service_deleted_successfully'));
+      if (session?.user.id) {
+        await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'service_deleted', details: { service_id: serviceToDelete, name: serviceName } });
+      }
       refreshServices();
     }
     

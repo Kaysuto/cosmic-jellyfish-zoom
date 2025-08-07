@@ -76,22 +76,34 @@ const IncidentManager = () => {
       position: selectedIncident ? selectedIncident.position : (incidents.length > 0 ? Math.max(...incidents.map(i => i.position)) + 1 : 1),
     };
 
-    let error;
     if (selectedIncident) {
-      ({ error } = await supabase.from('incidents').update(incidentData).eq('id', selectedIncident.id));
+      const { error } = await supabase.from('incidents').update(incidentData).eq('id', selectedIncident.id);
+      if (error) {
+        showError(t('error_saving_incident'));
+        console.error(error);
+      } else {
+        showSuccess(t('incident_saved_successfully'));
+        if (session?.user.id) {
+          await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'incident_updated', details: { incident_id: selectedIncident.id, title: values.title } });
+        }
+        refreshIncidents();
+      }
     } else {
-      ({ error } = await supabase.from('incidents').insert(incidentData));
+      const { data, error } = await supabase.from('incidents').insert(incidentData).select().single();
+      if (error) {
+        showError(t('error_saving_incident'));
+        console.error(error);
+      } else {
+        showSuccess(t('incident_saved_successfully'));
+        if (data && session?.user.id) {
+          await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'incident_created', details: { incident_id: data.id, title: values.title } });
+        }
+        refreshIncidents();
+      }
     }
 
-    if (error) {
-      showError(t('error_saving_incident'));
-      console.error(error);
-    } else {
-      showSuccess(t('incident_saved_successfully'));
-      setIsSheetOpen(false);
-      setSelectedIncident(null);
-      refreshIncidents();
-    }
+    setIsSheetOpen(false);
+    setSelectedIncident(null);
     setIsSubmitting(false);
   };
 
@@ -103,6 +115,7 @@ const IncidentManager = () => {
   const handleDelete = async () => {
     if (!incidentToDelete) return;
     
+    const incidentTitle = incidents.find(i => i.id === incidentToDelete)?.title;
     const { error } = await supabase.from('incidents').delete().eq('id', incidentToDelete);
     
     if (error) {
@@ -110,6 +123,9 @@ const IncidentManager = () => {
       console.error(error);
     } else {
       showSuccess(t('incident_deleted_successfully'));
+      if (session?.user.id) {
+        await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'incident_deleted', details: { incident_id: incidentToDelete, title: incidentTitle } });
+      }
       refreshIncidents();
     }
     
