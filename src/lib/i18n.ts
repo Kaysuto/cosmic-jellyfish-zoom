@@ -247,7 +247,9 @@ const resources = {
       "confirm_disable_mfa_desc": "Êtes-vous sûr de vouloir désactiver l'MFA pour l'utilisateur {{email}} ? Il perdra cette couche de sécurité supplémentaire.",
       "mfa_disabled_for_user": "L'MFA a été désactivé pour l'utilisateur {{email}}.",
       "error_disabling_mfa": "Erreur lors de la désactivation de l'MFA.",
-      "invalid_login_credentials": "Identifiants de connexion invalides."
+      "invalid_login_credentials": "Identifiants de connexion invalides.",
+      "email_not_confirmed": "Veuillez confirmer votre adresse e-mail pour vous connecter. Un nouveau lien de confirmation a été envoyé.",
+      "unexpected_login_error": "Une erreur inattendue est survenue. Veuillez réessayer."
     }
   },
   en: {
@@ -493,7 +495,9 @@ const resources = {
       "confirm_disable_mfa_desc": "Are you sure you want to disable MFA for user {{email}}? They will lose this extra security layer.",
       "mfa_disabled_for_user": "MFA has been disabled for user {{email}}.",
       "error_disabling_mfa": "Error disabling MFA.",
-      "invalid_login_credentials": "Invalid login credentials."
+      "invalid_login_credentials": "Invalid login credentials.",
+      "email_not_confirmed": "Please confirm your email address to sign in. A new confirmation link has been sent.",
+      "unexpected_login_error": "An unexpected error occurred. Please try again."
     }
   }
 };

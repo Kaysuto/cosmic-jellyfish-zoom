@@ -120,11 +120,16 @@ const Login = () => {
       email: values.email,
       password: values.password,
     });
+
     if (error) {
       if (error.message === 'Invalid login credentials') {
         showError(t('invalid_login_credentials'));
+      } else if (error.message === 'Email not confirmed') {
+        await supabase.auth.resend({ type: 'signup', email: values.email });
+        showError(t('email_not_confirmed'));
       } else {
-        showError(error.message);
+        showError(t('unexpected_login_error'));
+        console.error("Login error:", error.message);
       }
     } else {
       showSuccess(t('login_successful'));
