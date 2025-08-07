@@ -28,7 +28,7 @@ const resources = {
       // Audio player
       no_tracks_available: "Aucune piste disponible",
       track_loading: "Chargement...",
-      volume_label: "Volume : {{volume}}%",
+      volume_label: "Volume: {{volume}}%",
 
       // Avatar / profile
       avatar_updated_successfully: "Avatar mis à jour avec succès !",
@@ -37,7 +37,6 @@ const resources = {
       delete_avatar_desc:
         "Cette action est irréversible. Votre avatar sera supprimé et remplacé par l'image par défaut.",
       error_deleting_avatar: "Erreur lors de la suppression de l'avatar",
-      change_avatar: "Modifier l'avatar",
 
       // Navbar / auth
       hello_user: "Bonjour, {{name}}",
@@ -130,8 +129,6 @@ const resources = {
       error_deleting_user: "Erreur lors de la suppression de l'utilisateur.",
       error_updating_role: "Erreur lors de la mise à jour du rôle.",
       role_updated_successfully: "Rôle mis à jour avec succès.",
-      cannot_edit_self_tooltip:
-        "Vous ne pouvez pas modifier votre propre compte depuis cette liste. Allez sur la page Profil.",
 
       // Settings
       general_settings: "Paramètres généraux",
@@ -151,40 +148,6 @@ const resources = {
       confirm_global_changes_title: "Confirmer les changements globaux ?",
       confirm_global_changes_desc:
         "Ces modifications affecteront l'ensemble du site pour tous les visiteurs. Êtes-vous sûr de vouloir continuer ?",
-
-      // Auth / Login / Signup / Password reset
-      sign_in: "Se connecter",
-      sign_up: "S'inscrire",
-      already_have_account: "Vous avez déjà un compte ?",
-      dont_have_account: "Pas de compte ?",
-      forgot_password: "Mot de passe oublié ?",
-      send_recovery_link: "Envoyer le lien de réinitialisation",
-      back_to_login: "Retour à la connexion",
-      access_your_dashboard: "Accédez à votre tableau de bord",
-      create_a_new_account: "Créez un nouveau compte",
-      reset_password_title: "Réinitialiser le mot de passe",
-      reset_password_desc:
-        "Entrez votre adresse e-mail pour recevoir un lien de réinitialisation.",
-      account_created_check_email:
-        "Compte créé — vérifiez votre e-mail pour confirmer votre adresse.",
-      password_reset_email_sent:
-        "Un e-mail de réinitialisation de mot de passe a été envoyé.",
-      invalid_login_credentials: "Identifiants de connexion invalides.",
-      email_not_confirmed: "E-mail non confirmé. Vérifiez votre boîte de réception.",
-      unexpected_login_error:
-        "Erreur inattendue lors de la connexion. Veuillez réessayer.",
-      login_successful: "Connexion réussie !",
-      email_placeholder: "Votre adresse e-mail",
-      password_placeholder: "Votre mot de passe",
-      first_name_required: "Le prénom est requis",
-      last_name_required: "Le nom est requis",
-      loading_session: "Chargement de la session...",
-      email_link_expired: "Le lien envoyé par e-mail a expiré.",
-
-      // Update password page
-      update_password: "Mettre à jour le mot de passe",
-      update_your_password: "Mettez à jour votre mot de passe pour sécuriser votre compte",
-      password_updated_successfully: "Mot de passe mis à jour avec succès.",
 
       // Misc / UI
       page_not_found: "Oups ! Page non trouvée",
@@ -207,9 +170,6 @@ const resources = {
       action: "Action",
       details: "Détails",
       system: "Système",
-
-      // Misc messages used in code
-      cannot_edit_self: "Impossible de modifier ce compte ici.",
     },
   },
   en: {
@@ -246,7 +206,6 @@ const resources = {
       delete_avatar_desc:
         "This action is irreversible. Your avatar will be removed and replaced with the default image.",
       error_deleting_avatar: "Error deleting avatar",
-      change_avatar: "Change avatar",
 
       // Navbar / auth
       hello_user: "Hello, {{name}}",
@@ -338,8 +297,6 @@ const resources = {
       error_deleting_user: "Error deleting user.",
       error_updating_role: "Error updating role.",
       role_updated_successfully: "Role updated successfully.",
-      cannot_edit_self_tooltip:
-        "You cannot edit your own account from this list. Go to your Profile page.",
 
       // Settings
       general_settings: "General Settings",
@@ -359,40 +316,6 @@ const resources = {
       confirm_global_changes_title: "Confirm Global Changes?",
       confirm_global_changes_desc:
         "These changes will affect the entire site for all visitors. Are you sure you want to continue?",
-
-      // Auth / Login / Signup / Password reset
-      sign_in: "Sign in",
-      sign_up: "Sign up",
-      already_have_account: "Already have an account?",
-      dont_have_account: "Don't have an account?",
-      forgot_password: "Forgot password?",
-      send_recovery_link: "Send recovery link",
-      back_to_login: "Back to login",
-      access_your_dashboard: "Access your dashboard",
-      create_a_new_account: "Create a new account",
-      reset_password_title: "Reset password",
-      reset_password_desc:
-        "Enter your email address to receive a password reset link.",
-      account_created_check_email:
-        "Account created — check your email to confirm your address.",
-      password_reset_email_sent:
-        "A password reset email has been sent.",
-      invalid_login_credentials: "Invalid login credentials.",
-      email_not_confirmed: "Email not confirmed. Check your inbox.",
-      unexpected_login_error:
-        "Unexpected error during login. Please try again.",
-      login_successful: "Login successful!",
-      email_placeholder: "Your email address",
-      password_placeholder: "Your password",
-      first_name_required: "First name is required",
-      last_name_required: "Last name is required",
-      loading_session: "Loading session...",
-      email_link_expired: "The email link has expired.",
-
-      // Update password page
-      update_password: "Update password",
-      update_your_password: "Update your password to secure your account",
-      password_updated_successfully: "Password updated successfully.",
 
       // Misc / UI
       page_not_found: "Oops! Page not found",
@@ -414,9 +337,6 @@ const resources = {
       action: "Action",
       details: "Details",
       system: "System",
-
-      // Misc messages used in code
-      cannot_edit_self: "Cannot edit this account here.",
     },
   },
 };
