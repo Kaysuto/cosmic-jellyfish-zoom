@@ -80,6 +80,7 @@ const IncidentStatusChart = ({ incidents }: IncidentStatusChartProps) => {
                 contentStyle={{
                   backgroundColor: 'hsl(var(--background))',
                   borderColor: 'hsl(var(--border))',
+                  color: 'hsl(var(--foreground))',
                   borderRadius: 'var(--radius)',
                 }}
               />

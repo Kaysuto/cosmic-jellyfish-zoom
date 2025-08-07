@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,9 +14,9 @@ interface IncidentHistoryChartProps {
 const IncidentHistoryChart = ({ incidents }: IncidentHistoryChartProps) => {
   const { t, i18n } = useTranslation();
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
+  const [today] = useState(startOfDay(new Date()));
 
   const data = useMemo(() => {
-    const today = startOfDay(new Date());
     const thirtyDaysAgo = subDays(today, 29);
     const dateRange = eachDayOfInterval({ start: thirtyDaysAgo, end: today });
 
@@ -33,7 +33,7 @@ const IncidentHistoryChart = ({ incidents }: IncidentHistoryChartProps) => {
         count: incidentsByDay[dayKey] || 0,
       };
     });
-  }, [incidents, currentLocale]);
+  }, [incidents, currentLocale, today]);
 
   return (
     <Card>
@@ -55,6 +55,7 @@ const IncidentHistoryChart = ({ incidents }: IncidentHistoryChartProps) => {
                 contentStyle={{
                   backgroundColor: 'hsl(var(--background))',
                   borderColor: 'hsl(var(--border))',
+                  color: 'hsl(var(--foreground))',
                 }}
               />
               <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
