@@ -25,12 +25,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Récupérer tous les facteurs pour l'utilisateur
     const { data: factors, error: listError } = await supabaseAdmin.auth.admin.mfa.listFactors({ userId })
 
     if (listError) throw listError;
 
-    // Supprimer chaque facteur
     for (const factor of factors) {
       const { error: deleteError } = await supabaseAdmin.auth.admin.mfa.deleteFactor({
         id: factor.id,
@@ -38,7 +36,6 @@ serve(async (req) => {
       })
       if (deleteError) {
         console.error(`Failed to delete factor ${factor.id} for user ${userId}:`, deleteError.message)
-        // On continue même en cas d'erreur pour essayer de supprimer les autres
       }
     }
 
