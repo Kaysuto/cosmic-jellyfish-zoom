@@ -193,11 +193,20 @@ const Login = () => {
               <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                 <FormField control={loginForm.control} name="email" render={({ field }) => (<FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" placeholder={t('email_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={loginForm.control} name="password" render={({ field }) => (<FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" placeholder={t('password_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <div className="text-right text-sm"><Button variant="link" type="button" className="p-0 h-auto text-blue-400" onClick={() => setView('forgot_password')}>{t('forgot_password')}</Button></div>
                 <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_in')}</Button>
               </form>
             </Form>
-            {allowRegistrations && <div className="text-center text-sm text-gray-400 mt-4">{t('dont_have_account')}{' '}<Button variant="link" className="p-0 h-auto text-blue-400" onClick={() => setView('signup')}>{t('sign_up')}</Button></div>}
+            <div className="mt-4 space-y-2 text-center text-sm">
+                <div>
+                    <Button variant="link" type="button" className="p-0 h-auto text-blue-400" onClick={() => setView('forgot_password')}>{t('forgot_password')}</Button>
+                </div>
+                {allowRegistrations && (
+                    <div className="text-gray-400">
+                        {t('dont_have_account')}{' '}
+                        <Button variant="link" className="p-0 h-auto text-blue-400" onClick={() => setView('signup')}>{t('sign_up')}</Button>
+                    </div>
+                )}
+            </div>
             {!allowRegistrations && <Alert className="mt-6 bg-blue-900/30 border-blue-500/30 text-blue-300"><Terminal className="h-4 w-4" /><AlertTitle>Information</AlertTitle><AlertDescription>{t('registrations_are_closed')}</AlertDescription></Alert>}
           </>
         );
