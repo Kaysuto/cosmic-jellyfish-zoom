@@ -11,7 +11,9 @@ const userSchema = z.object({
   first_name: z.string().min(1, { message: 'Le prénom est requis' }),
   last_name: z.string().min(1, { message: 'Le nom est requis' }),
   email: z.string().email({ message: "L'adresse e-mail n'est pas valide" }),
-  password: z.string().min(6, { message: 'Le mot de passe doit faire au moins 6 caractères' }),
+  password: z.string()
+    .min(6, { message: 'Le mot de passe doit faire au moins 6 caractères.' })
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, { message: 'Doit contenir une majuscule, une minuscule et un chiffre.' }),
   role: z.enum(['user', 'admin']),
 });
 

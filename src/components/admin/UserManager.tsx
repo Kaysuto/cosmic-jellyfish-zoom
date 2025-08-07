@@ -167,7 +167,7 @@ const UserManager = () => {
     try {
       const { error } = await supabase.functions.invoke('create-user', { body: values });
       if (error) throw error;
-      showSuccess(`Utilisateur ${values.email} créé. Un e-mail de confirmation a été envoyé.`);
+      showSuccess(`Utilisateur ${values.email} créé avec succès.`);
       refreshUsers();
       setIsSheetOpen(false);
     } catch (error: any) {
