@@ -8,15 +8,16 @@ import { motion } from 'framer-motion';
 
 import UserProfileCard from '@/components/admin/profile/UserProfileCard';
 import UpdateProfileForm from '@/components/admin/profile/UpdateProfileForm';
-import UpdateEmailForm from '@/components/admin/profile/UpdateEmailForm';
-import UpdatePasswordForm from '@/components/admin/profile/UpdatePasswordForm';
-import MfaManager from '@/components/admin/profile/MfaManager';
+import AdminUpdateUserForm from '@/components/admin/profile/AdminUpdateUserForm';
+import AdminMfaManager from '@/components/admin/profile/AdminMfaManager';
+import { useSession } from '@/contexts/AuthContext';
 
 const EditUserPage = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user, loading, refreshUser } = useUserById(userId);
+  const { session } = useSession();
 
   const LoadingSkeleton = () => (
     <div className="space-y-6">
@@ -55,16 +56,12 @@ const EditUserPage = () => {
       </Button>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-1 space-y-6">
-          {/* Note: UserProfileCard might need adjustments if it relies on session */}
-          <UserProfileCard profile={user} session={null} onProfileUpdate={refreshUser} />
+          <UserProfileCard profile={user} session={session} onProfileUpdate={refreshUser} />
         </div>
         <div className="lg:col-span-2 space-y-6">
           <UpdateProfileForm profile={user} />
-          {/* These components might need refactoring to work for another user */}
-          {/* For now, they might only work for the logged-in user */}
-          {/* <MfaManager />
-          <UpdateEmailForm profile={user} />
-          <UpdatePasswordForm /> */}
+          <AdminUpdateUserForm user={user} />
+          <AdminMfaManager user={user} />
         </div>
       </div>
     </motion.div>

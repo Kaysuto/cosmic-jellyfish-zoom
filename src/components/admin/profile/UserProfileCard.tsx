@@ -24,17 +24,19 @@ const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardP
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  const isOwnProfile = session?.user?.id === profile.id;
+
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !session?.user) return;
+    if (!file) return;
 
     setIsUploading(true);
     const fileName = `${Date.now()}_${file.name}`;
-    const filePath = `${session.user.id}/${fileName}`;
+    const filePath = `${profile.id}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
@@ -53,7 +55,7 @@ const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardP
     const { error: dbError } = await supabase
       .from('profiles')
       .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
-      .eq('id', session.user.id);
+      .eq('id', profile.id);
 
     if (dbError) {
       showError(dbError.message);
@@ -111,7 +113,7 @@ const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardP
             {profile.role === 'admin' ? t('admin_role') : t('user_role')}
           </Badge>
         </div>
-        {session?.user?.created_at && (
+        {isOwnProfile && session?.user?.created_at && (
           <div>
             <h3 className="text-xs font-semibold text-muted-foreground mb-1">{t('member_since')}</h3>
             <div className="flex items-center gap-2 text-sm text-foreground">
