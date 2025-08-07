@@ -19,7 +19,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useEffect } from "react";
 import { useAudioStore } from "./stores/audioStore";
 import { useTranslation } from "react-i18next";
-import AdminLayout from "@/components/admin/AdminLayout";
+import Admin from "./pages/Admin";
 import ServiceManager from "@/components/admin/ServiceManager";
 import IncidentManager from "@/components/admin/IncidentManager";
 import MaintenanceManager from "@/components/admin/MaintenanceManager";
@@ -77,7 +77,7 @@ const AppWrapper = () => {
                 </Route>
                 
                 <Route element={<ProtectedRoute />}>
-                  <Route path="/admin" element={<AdminLayout />}>
+                  <Route path="/admin" element={<Admin />}>
                     <Route index element={<AdminDashboard />} />
                     <Route path="services" element={<ServiceManager />} />
                     <Route path="incidents" element={<IncidentManager />} />

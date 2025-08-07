@@ -1,9 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Shield } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from '@/integrations/supabase/client';
@@ -57,63 +55,53 @@ const Settings = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <Button asChild variant="ghost">
-          <Link to="/admin">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t('return_to_dashboard')}
-          </Link>
-        </Button>
-      </div>
-      <div className="max-w-2xl mx-auto space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('language_settings')}</CardTitle>
-            <CardDescription>{t('select_language_desc')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full max-w-xs">
-              <Select value={i18n.language} onValueChange={changeLanguage}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fr">Français</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('language_settings')}</CardTitle>
+          <CardDescription>{t('select_language_desc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="w-full max-w-xs">
+            <Select value={i18n.language} onValueChange={changeLanguage}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="fr">Français</SelectItem>
+                <SelectItem value="en">English</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              {t('registration_settings')}
-            </CardTitle>
-            <CardDescription>{t('allow_new_registrations_desc')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loadingSettings ? (
-              <div className="flex items-center space-x-2">
-                <Skeleton className="h-6 w-10 rounded-full" />
-                <Skeleton className="h-5 w-48" />
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="allow-registrations"
-                  checked={allowRegistrations}
-                  onCheckedChange={handleRegistrationToggle}
-                />
-                <Label htmlFor="allow-registrations">{t('allow_new_registrations')}</Label>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            {t('registration_settings')}
+          </CardTitle>
+          <CardDescription>{t('allow_new_registrations_desc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loadingSettings ? (
+            <div className="flex items-center space-x-2">
+              <Skeleton className="h-6 w-10 rounded-full" />
+              <Skeleton className="h-5 w-48" />
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="allow-registrations"
+                checked={allowRegistrations}
+                onCheckedChange={handleRegistrationToggle}
+              />
+              <Label htmlFor="allow-registrations">{t('allow_new_registrations')}</Label>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
