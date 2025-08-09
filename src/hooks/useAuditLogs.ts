@@ -14,17 +14,21 @@ export interface AuditLog {
 export const useAuditLogs = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    setError(null);
+    
+    const { data, error: fetchError } = await supabase
       .from('audit_logs')
-      .select('*, profiles!user_id(email, first_name, last_name)')
+      .select('*, profiles(*)')
       .order('created_at', { ascending: false })
       .limit(100);
     
-    if (error) {
-      console.error('Error fetching audit logs:', error);
+    if (fetchError) {
+      console.error('Error fetching audit logs:', fetchError);
+      setError(fetchError.message);
       setLogs([]);
     } else {
       setLogs(data as any[] || []);
@@ -55,5 +59,5 @@ export const useAuditLogs = () => {
     };
   }, [fetchLogs]);
 
-  return { logs, loading, refreshLogs: fetchLogs };
+  return { logs, loading, error, refreshLogs: fetchLogs };
 };

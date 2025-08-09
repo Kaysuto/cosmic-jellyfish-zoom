@@ -7,6 +7,9 @@ const resources = {
   fr: {
     translation: {
       // ... (toutes les traductions existantes)
+      "error": "Erreur",
+      "no_logs_found_title": "Aucun log trouvé",
+      "no_logs_found_desc": "Il n'y a aucun événement à afficher pour le moment. Les nouvelles actions apparaîtront ici.",
       "check_status": "Vérifier le statut",
       "checking_status_now": "Vérification du statut en cours...",
       "check_complete_status_soon": "Vérification terminée. Le statut sera mis à jour dans quelques instants.",
@@ -294,6 +297,9 @@ const resources = {
   en: {
     translation: {
       // ... (toutes les traductions existantes)
+      "error": "Error",
+      "no_logs_found_title": "No Logs Found",
+      "no_logs_found_desc": "There are no events to display at the moment. New actions will appear here.",
       "check_status": "Check Status",
       "checking_status_now": "Checking status now...",
       "check_complete_status_soon": "Check complete. Status will update shortly.",
