@@ -8,7 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
-import { motion } from 'framer-motion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -146,11 +145,7 @@ const LogsPage = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4, ease: 'easeInOut' }}
-    >
+    <div>
       <Card>
         <CardHeader>
           <CardTitle>{t('audit_logs')}</CardTitle>
@@ -193,7 +188,7 @@ const LogsPage = () => {
           </div>
         )}
       </Card>
-    </motion.div>
+    </div>
   );
 };
 

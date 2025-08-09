@@ -4,7 +4,6 @@ import { useUserById } from '@/hooks/useUserById';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 import UserProfileCard from '@/components/admin/profile/UserProfileCard';
 import UpdateProfileForm from '@/components/admin/profile/UpdateProfileForm';
@@ -44,11 +43,8 @@ const EditUserPage = () => {
   }
 
   return (
-    <motion.div 
+    <div 
       className="space-y-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4, ease: 'easeInOut' }}
     >
       <Button variant="outline" onClick={() => navigate('/admin/users')}>
         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -64,7 +60,7 @@ const EditUserPage = () => {
           <AdminMfaManager user={user} />
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

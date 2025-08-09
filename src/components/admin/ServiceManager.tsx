@@ -14,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 import { useSession } from '@/contexts/AuthContext';
 
 const ServiceManager = () => {
@@ -155,11 +154,7 @@ const ServiceManager = () => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4, ease: 'easeInOut' }}
-    >
+    <div>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t('manage_services')}</CardTitle>
@@ -269,7 +264,7 @@ const ServiceManager = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </motion.div>
+    </div>
   );
 };
 

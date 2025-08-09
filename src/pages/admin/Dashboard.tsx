@@ -7,7 +7,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from 'react-i18next';
 import { differenceInHours } from 'date-fns';
 import { Activity, BarChart, ShieldCheck, Timer } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
@@ -54,11 +53,8 @@ const AdminDashboard = () => {
   }
 
   return (
-    <motion.div 
+    <div 
       className="space-y-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4, ease: 'easeInOut' }}
     >
        <h1 className="text-3xl font-bold">{t('admin_dashboard')}</h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -75,7 +71,7 @@ const AdminDashboard = () => {
           <IncidentStatusChart incidents={incidents} />
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

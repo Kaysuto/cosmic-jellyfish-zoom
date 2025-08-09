@@ -16,7 +16,6 @@ import { useSession } from '@/contexts/AuthContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { motion } from 'framer-motion';
 
 const MaintenanceManager = () => {
   const { t, i18n } = useTranslation();
@@ -118,11 +117,7 @@ const MaintenanceManager = () => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4, ease: 'easeInOut' }}
-    >
+    <div>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t('manage_maintenance')}</CardTitle>
@@ -207,7 +202,7 @@ const MaintenanceManager = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </motion.div>
+    </div>
   );
 };
 
