@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ShieldCheck, ShieldOff } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Profile } from '@/hooks/useProfile';
+import { useSession } from '@/contexts/AuthContext';
 
 interface AdminMfaManagerProps {
   user: Profile;
@@ -15,6 +16,7 @@ interface AdminMfaManagerProps {
 
 const AdminMfaManager = ({ user }: AdminMfaManagerProps) => {
   const { t } = useTranslation();
+  const { session } = useSession();
   const [hasMfa, setHasMfa] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isUnenrollDialogOpen, setIsUnenrollDialogOpen] = useState(false);
@@ -44,10 +46,12 @@ const AdminMfaManager = ({ user }: AdminMfaManagerProps) => {
   }, [fetchMfaStatus]);
 
   const handleDisableMfa = async () => {
+    if (!session?.user) return;
     try {
       const { error } = await supabase.functions.invoke('admin-unenroll-mfa', { body: { userId: user.id } });
       if (error) throw error;
       showSuccess(t('mfa_disabled_for_user', { email: user.email }));
+      await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'admin_mfa_disabled', details: { target_user_id: user.id, email: user.email } });
       fetchMfaStatus();
     } catch (error: any) {
       showError(`${t('error_disabling_mfa')}: ${error.message}`);

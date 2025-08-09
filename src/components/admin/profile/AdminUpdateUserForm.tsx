@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Mail, KeyRound } from 'lucide-react';
 import { Profile } from '@/hooks/useProfile';
 import { useMemo, useEffect } from 'react';
+import { useSession } from '@/contexts/AuthContext';
 
 const emailRegex = new RegExp(
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -22,6 +23,7 @@ interface AdminUpdateUserFormProps {
 
 const AdminUpdateUserForm = ({ user }: AdminUpdateUserFormProps) => {
   const { t, i18n } = useTranslation();
+  const { session } = useSession();
 
   const formSchema = useMemo(() => z.object({
     email: z.string().regex(emailRegex, { message: t('invalid_email') }),
@@ -38,6 +40,8 @@ const AdminUpdateUserForm = ({ user }: AdminUpdateUserFormProps) => {
   }, [i18n.language, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!session?.user) return;
+
     const attributes: { email?: string; password?: string } = {};
     if (values.email && values.email !== user.email) {
       attributes.email = values.email;
@@ -57,6 +61,7 @@ const AdminUpdateUserForm = ({ user }: AdminUpdateUserFormProps) => {
       });
       if (error) throw error;
       showSuccess("Détails de l'utilisateur mis à jour avec succès.");
+      await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'admin_user_details_updated', details: { target_user_id: user.id, changes: attributes } });
       form.reset({ ...values, password: '' });
     } catch (error: any) {
       showError(`Erreur: ${error.message}`);

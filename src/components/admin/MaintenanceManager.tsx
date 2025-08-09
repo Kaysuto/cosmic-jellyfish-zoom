@@ -44,22 +44,32 @@ const MaintenanceManager = () => {
       updated_at: new Date().toISOString(),
     };
 
-    let error;
     if (selectedMaintenance) {
-      ({ error } = await supabase.from('scheduled_maintenances').update(maintenanceData).eq('id', selectedMaintenance.id));
+      const { error } = await supabase.from('scheduled_maintenances').update(maintenanceData).eq('id', selectedMaintenance.id);
+      if (error) {
+        showError(t('error_saving_maintenance'));
+        console.error(error);
+      } else {
+        showSuccess(t('maintenance_saved_successfully'));
+        await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'maintenance_updated', details: { maintenance_id: selectedMaintenance.id, title: values.title } });
+        refreshMaintenances();
+      }
     } else {
-      ({ error } = await supabase.from('scheduled_maintenances').insert(maintenanceData));
+      const { data, error } = await supabase.from('scheduled_maintenances').insert(maintenanceData).select().single();
+      if (error) {
+        showError(t('error_saving_maintenance'));
+        console.error(error);
+      } else {
+        showSuccess(t('maintenance_saved_successfully'));
+        if (data) {
+          await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'maintenance_created', details: { maintenance_id: data.id, title: values.title } });
+        }
+        refreshMaintenances();
+      }
     }
 
-    if (error) {
-      showError(t('error_saving_maintenance'));
-      console.error(error);
-    } else {
-      showSuccess(t('maintenance_saved_successfully'));
-      setIsSheetOpen(false);
-      setSelectedMaintenance(null);
-      refreshMaintenances();
-    }
+    setIsSheetOpen(false);
+    setSelectedMaintenance(null);
     setIsSubmitting(false);
   };
 
@@ -69,14 +79,16 @@ const MaintenanceManager = () => {
   };
 
   const handleDelete = async () => {
-    if (!maintenanceToDelete) return;
+    if (!maintenanceToDelete || !session?.user) return;
     
+    const maintenanceTitle = maintenances.find(m => m.id === maintenanceToDelete)?.title;
     const { error } = await supabase.from('scheduled_maintenances').delete().eq('id', maintenanceToDelete);
     
     if (error) {
       showError(t('error_deleting_maintenance'));
     } else {
       showSuccess(t('maintenance_deleted_successfully'));
+      await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'maintenance_deleted', details: { maintenance_id: maintenanceToDelete, title: maintenanceTitle } });
       refreshMaintenances();
     }
     

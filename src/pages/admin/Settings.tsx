@@ -26,9 +26,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useSession } from '@/contexts/AuthContext';
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
+  const { session } = useSession();
   const { profile } = useProfile();
   const { getSetting, refreshSettings, loading: settingsLoading } = useSettings();
   
@@ -61,7 +63,7 @@ const Settings = () => {
   }, [settingsLoading, getSetting, form]);
 
   const handleRegistrationToggle = async (checked: boolean) => {
-    console.log('Toggling registrations to:', checked);
+    if (!session?.user) return;
     const originalState = allowRegistrations;
     setAllowRegistrations(checked);
     const { error } = await supabase
@@ -69,25 +71,22 @@ const Settings = () => {
       .upsert({ key: 'allow_registrations', value: checked.toString() }, { onConflict: 'key' });
 
     if (error) {
-      console.error('Error updating registration setting:', error);
       showError(t('error_updating_setting'));
       setAllowRegistrations(originalState);
     } else {
-      console.log('Registration setting updated successfully.');
       showSuccess(t(checked ? 'registrations_enabled' : 'registrations_disabled'));
+      await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'setting_updated', details: { key: 'allow_registrations', value: checked.toString() } });
       refreshSettings();
     }
   };
 
   const handleGeneralSettingsSubmit = (values: z.infer<typeof generalSettingsSchema>) => {
-    console.log('Attempting to submit general settings:', values);
     setPendingSettings(values);
     setIsConfirmOpen(true);
   };
 
   const handleConfirmSave = async () => {
-    if (!pendingSettings) return;
-    console.log('Confirming save for general settings:', pendingSettings);
+    if (!pendingSettings || !session?.user) return;
 
     const settingsToUpdate = [
       { key: 'site_title', value: pendingSettings.site_title },
@@ -97,11 +96,12 @@ const Settings = () => {
     const { error } = await supabase.from('app_settings').upsert(settingsToUpdate, { onConflict: 'key' });
 
     if (error) {
-      console.error('Error updating general settings:', error);
       showError(t('error_updating_setting'));
     } else {
-      console.log('General settings updated successfully.');
       showSuccess(t('settings_updated_successfully'));
+      for (const setting of settingsToUpdate) {
+        await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'setting_updated', details: setting });
+      }
       refreshSettings();
     }
     setIsConfirmOpen(false);

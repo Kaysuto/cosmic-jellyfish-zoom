@@ -119,11 +119,12 @@ const UserManager = () => {
   };
 
   const handleDelete = async () => {
-    if (!userToDelete) return;
+    if (!userToDelete || !session?.user) return;
     try {
       const { error } = await supabase.functions.invoke('delete-user', { body: { userId: userToDelete.id } });
       if (error) throw error;
       showSuccess(t('user_deleted_successfully'));
+      await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'user_deleted', details: { deleted_user_id: userToDelete.id, email: userToDelete.email } });
       refreshUsers();
     } catch (error: any) {
       showError(`${t('error_deleting_user')}: ${error.message}`);
@@ -134,10 +135,12 @@ const UserManager = () => {
   };
 
   const handleRoleChange = async (userId: string, newRole: 'admin' | 'user') => {
+    if (!session?.user) return;
     const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId);
     if (error) showError(t('error_updating_role'));
     else {
       showSuccess(t('role_updated_successfully'));
+      await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'user_role_changed', details: { target_user_id: userId, new_role: newRole } });
       refreshUsers();
     }
   };
@@ -148,11 +151,12 @@ const UserManager = () => {
   };
 
   const handleDisableMfa = async () => {
-    if (!userToEditMfa) return;
+    if (!userToEditMfa || !session?.user) return;
     try {
       const { error } = await supabase.functions.invoke('admin-unenroll-mfa', { body: { userId: userToEditMfa.id } });
       if (error) throw error;
       showSuccess(t('mfa_disabled_for_user', { email: userToEditMfa.email }));
+      await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'admin_mfa_disabled', details: { target_user_id: userToEditMfa.id, email: userToEditMfa.email } });
       fetchMfaStatus();
     } catch (error: any) {
       showError(`${t('error_disabling_mfa')}: ${error.message}`);
@@ -162,29 +166,28 @@ const UserManager = () => {
     }
   };
 
-  // Improved create-user handling: surface detailed error, handle different invoke result shapes
   const handleCreateUser = async (values: UserFormValues) => {
+    if (!session?.user) return;
     setIsSubmitting(true);
     try {
-      // supabase.functions.invoke may return { data, error } or throw; normalize handling
       const res: any = await supabase.functions.invoke('create-user', { body: values });
 
-      // If the SDK returned an error object
       if (res?.error) {
-        // res.error may be an object with message
         const errMessage = res.error?.message ?? JSON.stringify(res.error);
         throw new Error(errMessage);
       }
 
-      // If the SDK returned a raw response, try to inspect .data
-      const data = res?.data ?? null;
+      const data = res?.data ?? {};
+      const newUser = data.user;
 
       showSuccess(t('user_created_successfully', { email: values.email }));
+      if (newUser?.id) {
+        await supabase.from('audit_logs').insert({ user_id: session.user.id, action: 'user_created_by_admin', details: { new_user_id: newUser.id, email: values.email, role: values.role } });
+      }
       refreshUsers();
       setIsSheetOpen(false);
     } catch (error: any) {
       console.error('create-user invoke error:', error);
-      // Provide as much detail as possible to the admin via toast
       const message = error?.message ?? (typeof error === 'string' ? error : JSON.stringify(error));
       showError(`Erreur lors de la création de l'utilisateur: ${message}`);
     } finally {
