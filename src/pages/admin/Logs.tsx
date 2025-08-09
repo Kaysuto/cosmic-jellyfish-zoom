@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuditLogs, AuditLog } from '@/hooks/useAuditLogs';
 import { useTranslation } from 'react-i18next';
-import { TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, Info, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getGravatarURL } from '@/lib/gravatar';
 import { Button } from '@/components/ui/button';
@@ -68,13 +67,11 @@ const LogsPage = () => {
               <TableHead><Skeleton className="h-5 w-24" /></TableHead>
               <TableHead><Skeleton className="h-5 w-32" /></TableHead>
               <TableHead><Skeleton className="h-5 w-48" /></TableHead>
-              <TableHead><Skeleton className="h-5 w-20" /></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {[...Array(itemsPerPage)].map((_, i) => (
               <TableRow key={i}>
-                <TableCell><Skeleton className="h-5 w-full" /></TableCell>
                 <TableCell><Skeleton className="h-5 w-full" /></TableCell>
                 <TableCell><Skeleton className="h-5 w-full" /></TableCell>
                 <TableCell><Skeleton className="h-5 w-full" /></TableCell>
@@ -112,7 +109,6 @@ const LogsPage = () => {
             <TableHead className="w-[200px]">{t('date')}</TableHead>
             <TableHead className="w-[250px]">{t('user')}</TableHead>
             <TableHead>{t('description')}</TableHead>
-            <TableHead className="w-[50px] text-right">{t('details')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -141,20 +137,6 @@ const LogsPage = () => {
               <TableCell>
                 <p className="text-sm">{getActionDescription(log, t)}</p>
                 <Badge variant="outline" className="mt-1">{log.action}</Badge>
-              </TableCell>
-              <TableCell className="text-right">
-                {log.details && Object.keys(log.details).length > 0 && (
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="item-1" className="border-none">
-                      <AccordionTrigger className="p-2 hover:no-underline">&nbsp;</AccordionTrigger>
-                      <AccordionContent>
-                        <pre className="text-xs bg-muted p-2 rounded-md overflow-x-auto max-w-md ml-auto">
-                          {JSON.stringify(log.details, null, 2)}
-                        </pre>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                )}
               </TableCell>
             </TableRow>
           ))}
