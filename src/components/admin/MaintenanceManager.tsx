@@ -138,7 +138,7 @@ const MaintenanceManager = () => {
                   <TableCell>{format(new Date(maintenance.start_time), 'PPpp', { locale: currentLocale })}</TableCell>
                   <TableCell>{format(new Date(maintenance.end_time), 'PPpp', { locale: currentLocale })}</TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
                           <MoreHorizontal className="h-4 w-4" />

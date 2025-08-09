@@ -19,7 +19,7 @@ export const FooterContent = () => {
   
   return (
     <div className="p-6 flex flex-col items-center justify-center gap-4">
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button 
             variant="outline" 

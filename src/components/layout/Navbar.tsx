@@ -93,7 +93,7 @@ const Navbar = () => {
     );
 
   const UserMenu = () => (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <button className={cn(desktopNavLinkClasses({ isActive: false }), "flex items-center gap-2 group")}>
           <Avatar className="h-6 w-6">

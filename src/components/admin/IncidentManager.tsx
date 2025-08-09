@@ -202,7 +202,7 @@ const IncidentManager = () => {
                   <TableCell>{incident.services ? t(incident.services.name.toLowerCase().replace(/ /g, '_')) : t('system_wide_incident')}</TableCell>
                   <TableCell>{format(new Date(incident.updated_at), 'PP', { locale: currentLocale })}</TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
                           <MoreHorizontal className="h-4 w-4" />
