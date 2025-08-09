@@ -11,8 +11,9 @@ export interface AuditLog {
   profiles: { email: string | null, first_name: string | null, last_name: string | null } | null;
 }
 
-export const useAuditLogs = () => {
+export const useAuditLogs = (page: number, perPage: number) => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,21 +21,26 @@ export const useAuditLogs = () => {
     setLoading(true);
     setError(null);
     
-    const { data, error: fetchError } = await supabase
+    const from = (page - 1) * perPage;
+    const to = from + perPage - 1;
+
+    const { data, error: fetchError, count } = await supabase
       .from('audit_logs')
-      .select('*, profiles(*)')
+      .select('*, profiles(*)', { count: 'exact' })
       .order('created_at', { ascending: false })
-      .limit(100);
+      .range(from, to);
     
     if (fetchError) {
       console.error('Error fetching audit logs:', fetchError);
       setError(fetchError.message);
       setLogs([]);
+      setTotalCount(0);
     } else {
       setLogs(data as any[] || []);
+      setTotalCount(count || 0);
     }
     setLoading(false);
-  }, []);
+  }, [page, perPage]);
 
   useEffect(() => {
     fetchLogs();
@@ -59,5 +65,5 @@ export const useAuditLogs = () => {
     };
   }, [fetchLogs]);
 
-  return { logs, loading, error, refreshLogs: fetchLogs };
+  return { logs, loading, error, totalCount, refreshLogs: fetchLogs };
 };
