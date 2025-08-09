@@ -10,9 +10,11 @@ import { ShieldCheck } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Factor } from '@supabase/supabase-js';
+import { useSession } from '@/contexts/AuthContext';
 
 const MfaManager = () => {
   const { t } = useTranslation();
+  const { session } = useSession();
   const [mfaFactors, setMfaFactors] = useState<Factor[]>([]);
   const [isLoadingMfa, setIsLoadingMfa] = useState(true);
   const [isMfaDialogVisible, setIsMfaDialogVisible] = useState(false);
@@ -91,6 +93,13 @@ const MfaManager = () => {
         setEnrollError(verifyError.message);
       } else {
         showSuccess(t('mfa_enabled_successfully'));
+        if (session?.user) {
+          await supabase.from('audit_logs').insert({
+            user_id: session.user.id,
+            action: 'user_mfa_enabled',
+            details: { email: session.user.email }
+          });
+        }
         setIsMfaDialogVisible(false);
         setVerificationCode('');
         fetchMfaStatus();
@@ -106,6 +115,13 @@ const MfaManager = () => {
       showError(error.message);
     } else {
       showSuccess(t('mfa_disabled_successfully'));
+      if (session?.user) {
+        await supabase.from('audit_logs').insert({
+          user_id: session.user.id,
+          action: 'user_mfa_disabled',
+          details: { email: session.user.email }
+        });
+      }
       fetchMfaStatus();
     }
     setIsUnenrollDialogVisible(false);

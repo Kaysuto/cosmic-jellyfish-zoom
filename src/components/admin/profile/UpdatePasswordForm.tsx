@@ -10,9 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { KeyRound } from 'lucide-react';
 import { useMemo, useEffect } from 'react';
+import { useSession } from '@/contexts/AuthContext';
 
 const UpdatePasswordForm = () => {
   const { t, i18n } = useTranslation();
+  const { session } = useSession();
 
   const passwordSchema = useMemo(() => z.object({
     password: z.string().min(6, { message: t('password_too_short') }).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, { message: t('password_requirements') }),
@@ -33,9 +35,17 @@ const UpdatePasswordForm = () => {
 
   const onSubmit = async (values: z.infer<typeof passwordSchema>) => {
     const { error } = await supabase.auth.updateUser({ password: values.password });
-    if (error) showError(t('error_updating_password'));
-    else {
+    if (error) {
+      showError(t('error_updating_password'));
+    } else {
       showSuccess(t('password_updated_successfully'));
+      if (session?.user) {
+        await supabase.from('audit_logs').insert({
+          user_id: session.user.id,
+          action: 'user_password_updated',
+          details: { email: session.user.email }
+        });
+      }
       form.reset();
     }
   };

@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { User } from 'lucide-react';
 import { Profile } from '@/hooks/useProfile';
 import { useMemo, useEffect } from 'react';
+import { useSession } from '@/contexts/AuthContext';
 
 interface UpdateProfileFormProps {
   profile: Profile;
@@ -18,6 +19,7 @@ interface UpdateProfileFormProps {
 
 const UpdateProfileForm = ({ profile }: UpdateProfileFormProps) => {
   const { t, i18n } = useTranslation();
+  const { session } = useSession();
 
   const profileSchema = useMemo(() => z.object({
     first_name: z.string().min(1, { message: t('first_name_required') }),
@@ -35,8 +37,22 @@ const UpdateProfileForm = ({ profile }: UpdateProfileFormProps) => {
 
   const onSubmit = async (values: z.infer<typeof profileSchema>) => {
     const { error } = await supabase.from('profiles').update(values).eq('id', profile.id);
-    if (error) showError(t('error_updating_profile'));
-    else showSuccess(t('profile_updated_successfully'));
+    if (error) {
+      showError(t('error_updating_profile'));
+    } else {
+      showSuccess(t('profile_updated_successfully'));
+      if (session?.user) {
+        const isSelfUpdate = session.user.id === profile.id;
+        await supabase.from('audit_logs').insert({
+          user_id: session.user.id,
+          action: isSelfUpdate ? 'user_profile_updated' : 'admin_profile_updated',
+          details: {
+            target_user_id: profile.id,
+            changes: values
+          }
+        });
+      }
+    }
   };
 
   return (

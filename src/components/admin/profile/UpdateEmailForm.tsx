@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Mail } from 'lucide-react';
 import { Profile } from '@/hooks/useProfile';
 import { useMemo, useEffect } from 'react';
+import { useSession } from '@/contexts/AuthContext';
 
 const emailRegex = new RegExp(
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -22,6 +23,7 @@ interface UpdateEmailFormProps {
 
 const UpdateEmailForm = ({ profile }: UpdateEmailFormProps) => {
   const { t, i18n } = useTranslation();
+  const { session } = useSession();
 
   const emailSchema = useMemo(() => z.object({
     email: z.string().regex(emailRegex, { message: t('invalid_email') }),
@@ -38,8 +40,18 @@ const UpdateEmailForm = ({ profile }: UpdateEmailFormProps) => {
 
   const onSubmit = async (values: z.infer<typeof emailSchema>) => {
     const { error } = await supabase.auth.updateUser({ email: values.email });
-    if (error) showError(t('error_updating_email'));
-    else showSuccess(t('email_update_confirmation_sent'));
+    if (error) {
+      showError(t('error_updating_email'));
+    } else {
+      showSuccess(t('email_update_confirmation_sent'));
+      if (session?.user) {
+        await supabase.from('audit_logs').insert({
+          user_id: session.user.id,
+          action: 'user_email_change_request',
+          details: { new_email: values.email }
+        });
+      }
+    }
   };
 
   return (

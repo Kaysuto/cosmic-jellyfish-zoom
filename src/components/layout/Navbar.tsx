@@ -74,6 +74,13 @@ const Navbar = () => {
   };
 
   const confirmLogout = async () => {
+    if (session?.user) {
+      await supabase.from('audit_logs').insert({
+        user_id: session.user.id,
+        action: 'user_logout',
+        details: { email: session.user.email }
+      });
+    }
     await supabase.auth.signOut();
     navigate('/');
   };
