@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Service } from '@/hooks/useServices';
@@ -12,6 +12,19 @@ const serviceSchema = z.object({
   name: z.string().min(1, { message: 'Le nom est requis' }),
   description: z.string().optional(),
   url: z.string().url({ message: "L'URL n'est pas valide" }).optional().or(z.literal('')),
+  ip_address: z.string().optional().nullable(),
+  port: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number({ invalid_type_error: "Le port doit être un nombre." })
+      .positive({ message: "Le port doit être un nombre positif." })
+      .int()
+      .min(1, "Le port doit être supérieur à 0.")
+      .max(65535, "Le port doit être inférieur à 65536.")
+      .optional()
+  ),
+}).refine(data => !!data.ip_address === !!data.port, {
+    message: "L'adresse IP et le port doivent être fournis ensemble, ou aucun des deux.",
+    path: ["port"],
 });
 
 export type ServiceFormValues = z.infer<typeof serviceSchema>;
@@ -32,6 +45,8 @@ const ServiceForm = ({ service, onSubmit, onCancel, isSubmitting }: ServiceFormP
       name: service?.name || '',
       description: service?.description || '',
       url: service?.url || '',
+      ip_address: service?.ip_address || null,
+      port: service?.port || undefined,
     },
   });
 
@@ -77,6 +92,38 @@ const ServiceForm = ({ service, onSubmit, onCancel, isSubmitting }: ServiceFormP
               <p className="text-xs text-muted-foreground">
                 Laissez vide si le service n'a pas d'URL à surveiller. Le statut sera défini sur "En maintenance".
               </p>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="ip_address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Adresse IP (Optionnel)</FormLabel>
+              <FormControl>
+                <Input {...field} value={field.value || ''} placeholder="123.45.67.89" />
+              </FormControl>
+              <FormDescription>
+                IP du serveur d'origine pour contourner Cloudflare pour les vérifications.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="port"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Port (Optionnel)</FormLabel>
+              <FormControl>
+                <Input {...field} value={field.value ?? ''} onChange={field.onChange} placeholder="443" />
+              </FormControl>
+              <FormDescription>
+                Port du serveur d'origine. Doit être utilisé avec l'adresse IP.
+              </FormDescription>
+              <FormMessage />
             </FormItem>
           )}
         />

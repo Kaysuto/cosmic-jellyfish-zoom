@@ -13,6 +13,8 @@ interface Service {
   id: string;
   url: string | null;
   status: string;
+  ip_address: string | null;
+  port: number | null;
 }
 
 serve(async (req) => {
@@ -28,7 +30,7 @@ serve(async (req) => {
 
     const { data: services, error: servicesError } = await supabaseAdmin
       .from('services')
-      .select('id, url, status');
+      .select('id, url, status, ip_address, port');
 
     if (servicesError) throw servicesError;
 
@@ -41,12 +43,26 @@ serve(async (req) => {
       let check_status: 'up' | 'down' = 'up';
       let response_time_ms: number | null = null;
 
+      let fetchUrl = service.url;
+      const fetchOptions: RequestInit = {
+          method: 'GET',
+          redirect: 'follow',
+      };
+
+      // If IP and port are provided, use them for a direct check
+      if (service.ip_address && service.port) {
+          const originalUrl = new URL(service.url);
+          fetchUrl = `${originalUrl.protocol}//${service.ip_address}:${service.port}${originalUrl.pathname}${originalUrl.search}`;
+          fetchOptions.headers = { 'Host': originalUrl.hostname };
+      }
+
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
+        fetchOptions.signal = controller.signal;
         
         const startTime = Date.now();
-        const response = await fetch(service.url, { method: 'GET', redirect: 'follow', signal: controller.signal });
+        const response = await fetch(fetchUrl, fetchOptions);
         const endTime = Date.now();
         
         clearTimeout(timeoutId);
@@ -56,7 +72,7 @@ serve(async (req) => {
           check_status = 'down';
         }
       } catch (e) {
-        console.error(`Error pinging ${service.url}:`, e.message);
+        console.error(`Error pinging ${fetchUrl} (for ${service.url}):`, e.message);
         check_status = 'down';
         response_time_ms = null;
       }

@@ -17,6 +17,8 @@ export interface Service {
   url: string | null;
   position: number;
   last_response_time_ms: number | null;
+  ip_address: string | null;
+  port: number | null;
 }
 
 export const useServices = () => {

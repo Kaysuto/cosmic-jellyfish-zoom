@@ -27,7 +27,7 @@ serve(async (req) => {
 
     const { data: service, error: serviceError } = await supabaseAdmin
       .from('services')
-      .select('id, url, status')
+      .select('id, url, status, ip_address, port')
       .eq('id', service_id)
       .single();
 
@@ -43,12 +43,25 @@ serve(async (req) => {
     let check_status: 'up' | 'down' = 'up';
     let response_time_ms: number | null = null;
     
+    let fetchUrl = service.url;
+    const fetchOptions: RequestInit = {
+        method: 'GET',
+        redirect: 'follow',
+    };
+
+    if (service.ip_address && service.port) {
+        const originalUrl = new URL(service.url);
+        fetchUrl = `${originalUrl.protocol}//${service.ip_address}:${service.port}${originalUrl.pathname}${originalUrl.search}`;
+        fetchOptions.headers = { 'Host': originalUrl.hostname };
+    }
+
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
+      fetchOptions.signal = controller.signal;
       
       const startTime = Date.now();
-      const response = await fetch(service.url, { method: 'GET', redirect: 'follow', signal: controller.signal });
+      const response = await fetch(fetchUrl, fetchOptions);
       const endTime = Date.now();
       
       clearTimeout(timeoutId);
@@ -58,7 +71,7 @@ serve(async (req) => {
         check_status = 'down';
       }
     } catch (e) {
-      console.error(`Immediate check error for ${service.url}:`, e.message);
+      console.error(`Immediate check error for ${fetchUrl} (for ${service.url}):`, e.message);
       check_status = 'down';
       response_time_ms = null;
     }
