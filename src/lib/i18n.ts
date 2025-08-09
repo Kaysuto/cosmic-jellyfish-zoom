@@ -7,6 +7,10 @@ const resources = {
   fr: {
     translation: {
       // ... (toutes les traductions existantes)
+      "check_status": "Vérifier le statut",
+      "checking_status_now": "Vérification du statut en cours...",
+      "check_complete_status_soon": "Vérification terminée. Le statut sera mis à jour dans quelques instants.",
+      "error_during_check": "Erreur lors de la vérification",
       "user_created_successfully": "Utilisateur {{email}} créé avec succès. Il peut maintenant se connecter.",
       "general_settings": "Paramètres généraux",
       "general_settings_desc": "Gérez les paramètres globaux du site, comme le titre et la langue par défaut.",
@@ -290,6 +294,10 @@ const resources = {
   en: {
     translation: {
       // ... (toutes les traductions existantes)
+      "check_status": "Check Status",
+      "checking_status_now": "Checking status now...",
+      "check_complete_status_soon": "Check complete. Status will update shortly.",
+      "error_during_check": "Error during check",
       "user_created_successfully": "User {{email}} created successfully. They can now log in.",
       "general_settings": "General Settings",
       "general_settings_desc": "Manage global site settings, such as the title and default language.",

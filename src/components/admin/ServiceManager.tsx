@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PlusCircle, Edit, Trash2, MoreHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, MoreHorizontal, ChevronUp, ChevronDown, Zap } from 'lucide-react';
 import ServiceForm, { ServiceFormValues } from './ServiceForm';
-import { showSuccess, showError } from '@/utils/toast';
+import { showSuccess, showError, showLoading, dismissToast } from '@/utils/toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -26,6 +26,22 @@ const ServiceManager = () => {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
+
+  const handleImmediateCheck = async (serviceId: string) => {
+    const toastId = showLoading(t('checking_status_now'));
+    try {
+      const { error } = await supabase.functions.invoke('immediate-health-check', {
+        body: { service_id: serviceId },
+      });
+      if (error) throw error;
+      showSuccess(t('check_complete_status_soon'));
+      setTimeout(refreshServices, 2000);
+    } catch (error: any) {
+      showError(`${t('error_during_check')}: ${error.message}`);
+    } finally {
+      dismissToast(toastId);
+    }
+  };
 
   const statusConfig = {
     operational: { text: t('operational'), className: 'bg-green-500/20 text-green-500 border-green-500/30' },
@@ -203,6 +219,10 @@ const ServiceManager = () => {
                         <DropdownMenuItem onClick={() => openEditForm(service)}>
                           <Edit className="mr-2 h-4 w-4" />
                           <span>{t('edit')}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleImmediateCheck(service.id)} disabled={!service.url}>
+                          <Zap className="mr-2 h-4 w-4" />
+                          <span>{t('check_status')}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => confirmDelete(service.id)} className="text-destructive">
                           <Trash2 className="mr-2 h-4 w-4" />
