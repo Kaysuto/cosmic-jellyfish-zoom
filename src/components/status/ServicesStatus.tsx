@@ -15,6 +15,7 @@ type Service = {
   name: string;
   status: 'operational' | 'degraded' | 'downtime' | 'maintenance';
   uptime_percentage: number;
+  last_response_time_ms?: number | null;
 };
 
 type ServicesStatusProps = {
@@ -73,9 +74,14 @@ const ServicesStatus = ({ services }: ServicesStatusProps) => {
                 </div>
                 <div className="flex items-center gap-4 pl-6 sm:pl-0">
                   {service.status !== 'downtime' && service.status !== 'maintenance' && (
-                    <span className="text-sm text-muted-foreground">{t('uptime')} {service.uptime_percentage.toFixed(2)}%</span>
+                    <span className="text-sm text-muted-foreground">{service.uptime_percentage.toFixed(2)}%</span>
                   )}
-                  <span className="text-sm font-semibold text-foreground">{t(statusConfig.textKey)}</span>
+                  
+                  {service.status === 'operational' && service.last_response_time_ms !== null ? (
+                    <span className="text-sm text-green-400">{service.last_response_time_ms} ms</span>
+                  ) : (
+                    <span className="text-sm font-semibold text-foreground">{t(statusConfig.textKey)}</span>
+                  )}
                 </div>
               </div>
             );

@@ -16,6 +16,7 @@ export interface Service {
   updated_at: string;
   url: string | null;
   position: number;
+  last_response_time_ms: number | null;
 }
 
 export const useServices = () => {
