@@ -19,7 +19,7 @@ export const useAuditLogs = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('audit_logs')
-      .select('*, profiles:user_id(email, first_name, last_name)')
+      .select('*, profiles!user_id(email, first_name, last_name)')
       .order('created_at', { ascending: false })
       .limit(100);
     
