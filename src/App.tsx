@@ -28,7 +28,13 @@ import EditUserPage from "./pages/admin/EditUser";
 import LogsPage from "./pages/admin/Logs";
 import { SettingsProvider, useSettings } from "./contexts/SettingsContext";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const AppStateInitializer = ({ children }: { children: React.ReactNode }) => {
   const { getSetting, loading: settingsLoading } = useSettings();
