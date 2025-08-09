@@ -17,6 +17,26 @@ interface Service {
   port: number | null;
 }
 
+// Helper to add a timeout to a promise
+const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error(`Promise timed out after ${ms} ms`));
+    }, ms);
+
+    promise.then(
+      (res) => {
+        clearTimeout(timeoutId);
+        resolve(res);
+      },
+      (err) => {
+        clearTimeout(timeoutId);
+        reject(err);
+      }
+    );
+  });
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -35,7 +55,6 @@ serve(async (req) => {
     if (servicesError) throw servicesError;
 
     const checks = services.map(async (service: Service) => {
-      // Ne pas vérifier les services en maintenance
       if (!service.url || service.status === 'maintenance') {
         return;
       }
@@ -43,41 +62,49 @@ serve(async (req) => {
       let check_status: 'up' | 'down' = 'up';
       let response_time_ms: number | null = null;
 
-      let fetchUrl = service.url;
-      const fetchOptions: RequestInit = {
-          method: 'GET',
-          redirect: 'follow',
-      };
-
-      // If IP and port are provided, use them for a direct check
-      if (service.ip_address && service.port) {
-          const originalUrl = new URL(service.url);
-          fetchUrl = `${originalUrl.protocol}//${service.ip_address}:${service.port}${originalUrl.pathname}${originalUrl.search}`;
-          fetchOptions.headers = { 'Host': originalUrl.hostname };
-      }
-
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        fetchOptions.signal = controller.signal;
-        
         const startTime = Date.now();
-        const response = await fetch(fetchUrl, fetchOptions);
-        const endTime = Date.now();
         
-        clearTimeout(timeoutId);
-        response_time_ms = endTime - startTime;
-
-        if (!response.ok || response.type === 'error') {
-          check_status = 'down';
+        if (service.ip_address && service.port) {
+          const originalUrl = new URL(service.url);
+          if (originalUrl.protocol === 'https:') {
+            const connectPromise = Deno.connectTls({
+              hostname: service.ip_address,
+              port: service.port,
+              serverName: originalUrl.hostname,
+            });
+            const conn = await withTimeout(connectPromise, 5000);
+            conn.close();
+          } else {
+            const fetchUrl = `${originalUrl.protocol}//${service.ip_address}:${service.port}${originalUrl.pathname}${originalUrl.search}`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const response = await fetch(fetchUrl, {
+              method: 'GET',
+              headers: { 'Host': originalUrl.hostname },
+              signal: controller.signal,
+            });
+            clearTimeout(timeoutId);
+            if (!response.ok) throw new Error(`HTTP status ${response.status}`);
+          }
+        } else {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          const response = await fetch(service.url, { method: 'GET', signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (!response.ok) throw new Error(`HTTP status ${response.status}`);
         }
+
+        const endTime = Date.now();
+        response_time_ms = endTime - startTime;
+        check_status = 'up';
+
       } catch (e) {
-        console.error(`Error pinging ${fetchUrl} (for ${service.url}):`, e.message);
+        console.error(`Health check failed for service ${service.id} (${service.url}):`, e.message);
         check_status = 'down';
         response_time_ms = null;
       }
 
-      // Insérer uniquement le résultat. Le trigger s'occupera du reste.
       const { error: insertError } = await supabaseAdmin
         .from('health_check_results')
         .insert({
