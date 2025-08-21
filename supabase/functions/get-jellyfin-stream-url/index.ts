@@ -6,9 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const JELLYFIN_BASE_URL = Deno.env.get("JELLYFIN_BASE_URL");
-const JELLYFIN_API_KEY = Deno.env.get("JELLYFIN_API_KEY");
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -20,38 +17,12 @@ serve(async (req) => {
       throw new Error("jellyfinId is required");
     }
 
-    // 1. Get Item details to check if it's a Movie or Series
-    const itemInfoUrl = `${JELLYFIN_BASE_URL}/Items/${jellyfinId}?api_key=${JELLYFIN_API_KEY}`;
-    const itemInfoRes = await fetch(itemInfoUrl);
-    if (!itemInfoRes.ok) {
-      const errorBody = await itemInfoRes.text();
-      throw new Error(`Jellyfin Item Info API error: ${itemInfoRes.status} ${itemInfoRes.statusText}. Response: ${errorBody}`);
-    }
-    const itemInfo = await itemInfoRes.json();
+    // --- START OF TEST CODE ---
+    // All Jellyfin logic is temporarily disabled for debugging.
+    const dummyUrl = `https://example.com/stream/${jellyfinId}`;
+    // --- END OF TEST CODE ---
 
-    let playableItemId = jellyfinId;
-
-    // 2. If it's a Series, find the first episode
-    if (itemInfo.Type === 'Series') {
-      const episodesUrl = `${JELLYFIN_BASE_URL}/Items?ParentId=${jellyfinId}&IncludeItemTypes=Episode&Recursive=true&SortBy=SortName&Limit=1&api_key=${JELLYFIN_API_KEY}`;
-      const episodesRes = await fetch(episodesUrl);
-      if (!episodesRes.ok) {
-        const errorBody = await episodesRes.text();
-        throw new Error(`Jellyfin Episodes API error: ${episodesRes.status} ${episodesRes.statusText}. Response: ${errorBody}`);
-      }
-      const episodesData = await episodesRes.json();
-      
-      if (episodesData.Items && episodesData.Items.length > 0) {
-        playableItemId = episodesData.Items[0].Id;
-      } else {
-        throw new Error("This series has no episodes available on Jellyfin.");
-      }
-    }
-
-    // 3. Directly construct the stream URL
-    const streamUrl = `${JELLYFIN_BASE_URL}/Videos/${playableItemId}/stream?api_key=${JELLYFIN_API_KEY}`;
-
-    return new Response(JSON.stringify({ url: streamUrl }), {
+    return new Response(JSON.stringify({ url: dummyUrl }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
