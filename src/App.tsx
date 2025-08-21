@@ -18,7 +18,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AdminRoute from "@/components/auth/AdminRoute";
 import { useEffect } from "react";
-import { useAudioStore } from "./stores/audioStore";
 import Admin from "./pages/Admin";
 import ServiceManager from "@/components/admin/ServiceManager";
 import IncidentManager from "@/components/admin/IncidentManager";
@@ -40,7 +39,6 @@ const queryClient = new QueryClient({
 
 const AppStateInitializer = ({ children }: { children: React.ReactNode }) => {
   const { getSetting, loading: settingsLoading } = useSettings();
-  const { setTracks, setCurrentTrackIndex } = useAudioStore();
 
   const defaultLanguage = getSetting('default_language', 'fr') as 'fr' | 'en';
   useLanguageDetection(defaultLanguage);
@@ -51,32 +49,6 @@ const AppStateInitializer = ({ children }: { children: React.ReactNode }) => {
       document.title = siteTitle;
     }
   }, [settingsLoading, getSetting]);
-
-  useEffect(() => {
-    const fetchTracks = async () => {
-      try {
-        const response = await fetch('/audio/tracks.json');
-        const tracks = await response.json();
-        setTracks(tracks);
-
-        const savedIndex = sessionStorage.getItem('audioPlayerTrackIndex');
-        if (savedIndex === null) {
-          const randomTrackIndex = Math.floor(Math.random() * tracks.length);
-          setCurrentTrackIndex(randomTrackIndex);
-        } else {
-          const parsedIndex = parseInt(savedIndex, 10);
-          if (isNaN(parsedIndex) || parsedIndex >= tracks.length) {
-            const randomTrackIndex = Math.floor(Math.random() * tracks.length);
-            setCurrentTrackIndex(randomTrackIndex);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch audio tracks:", error);
-      }
-    };
-
-    fetchTracks();
-  }, [setTracks, setCurrentTrackIndex]);
 
   return <>{children}</>;
 };

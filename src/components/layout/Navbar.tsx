@@ -18,7 +18,6 @@ import { useSession } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { getGravatarURL } from "@/lib/gravatar";
 import { supabase } from "@/integrations/supabase/client";
-import CustomAudioPlayer from "@/components/CustomAudioPlayer";
 import { useBodyScrollLockCompensation } from "@/hooks/useBodyScrollLockCompensation";
 import {
   AlertDialog,
@@ -158,7 +157,6 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <CustomAudioPlayer />
             {session && profile ? <UserMenu /> : (
               <Button asChild variant="ghost" className="hidden md:inline-flex">
                 <Link to="/login">{t('login')}</Link>
