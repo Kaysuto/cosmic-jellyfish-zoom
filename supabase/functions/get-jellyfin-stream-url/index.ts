@@ -24,7 +24,8 @@ serve(async (req) => {
     const itemInfoUrl = `${JELLYFIN_BASE_URL}/Items/${jellyfinId}?api_key=${JELLYFIN_API_KEY}`;
     const itemInfoRes = await fetch(itemInfoUrl);
     if (!itemInfoRes.ok) {
-      throw new Error(`Jellyfin Item Info API error: ${itemInfoRes.status} ${itemInfoRes.statusText}`);
+      const errorBody = await itemInfoRes.text();
+      throw new Error(`Jellyfin Item Info API error: ${itemInfoRes.status} ${itemInfoRes.statusText}. Response: ${errorBody}`);
     }
     const itemInfo = await itemInfoRes.json();
 
@@ -35,7 +36,8 @@ serve(async (req) => {
       const episodesUrl = `${JELLYFIN_BASE_URL}/Items?ParentId=${jellyfinId}&IncludeItemTypes=Episode&Recursive=true&SortBy=SortName&Limit=1&api_key=${JELLYFIN_API_KEY}`;
       const episodesRes = await fetch(episodesUrl);
       if (!episodesRes.ok) {
-        throw new Error(`Jellyfin Episodes API error: ${episodesRes.status} ${episodesRes.statusText}`);
+        const errorBody = await episodesRes.text();
+        throw new Error(`Jellyfin Episodes API error: ${episodesRes.status} ${episodesRes.statusText}. Response: ${errorBody}`);
       }
       const episodesData = await episodesRes.json();
       
@@ -46,7 +48,7 @@ serve(async (req) => {
       }
     }
 
-    // 3. Directly construct the stream URL without calling PlaybackInfo
+    // 3. Directly construct the stream URL
     const streamUrl = `${JELLYFIN_BASE_URL}/Videos/${playableItemId}/stream?api_key=${JELLYFIN_API_KEY}`;
 
     return new Response(JSON.stringify({ url: streamUrl }), {
