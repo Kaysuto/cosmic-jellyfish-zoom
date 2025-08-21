@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Server, CheckCircle, XCircle, Zap } from 'lucide-react';
+import { RefreshCw, Server, CheckCircle, XCircle, Zap, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError, showLoading, dismissToast } from '@/utils/toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import WebhookInstructions from '@/components/admin/WebhookInstructions';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
 
 const JellyfinSettings = () => {
   const { t } = useTranslation();
@@ -17,6 +18,12 @@ const JellyfinSettings = () => {
   const [debugLog, setDebugLog] = useState<any[]>([]);
   const [isTestingConn, setIsTestingConn] = useState(false);
   const [connStatus, setConnStatus] = useState<{ success: boolean; message: string; data?: any } | null>(null);
+  const appUrl = window.location.origin;
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    showSuccess("URL copiée !");
+  };
 
   const handleTestConnection = async () => {
     setIsTestingConn(true);
@@ -117,6 +124,27 @@ const JellyfinSettings = () => {
               </AlertDescription>
             </Alert>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Configuration CORS</CardTitle>
+          <CardDescription>
+            Pour que la lecture vidéo fonctionne, vous devez autoriser cette application dans les paramètres CORS de votre serveur Jellyfin.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm">1. Allez dans votre <span className="font-semibold">Tableau de bord Jellyfin</span> &gt; <span className="font-semibold">Réseau</span>.</p>
+          <p className="text-sm">2. Dans le champ <span className="font-semibold">"Domaines de partage de ressources inter-origines (CORS) connus"</span>, ajoutez l'URL suivante :</p>
+          <div className="flex items-center gap-2">
+            <Input readOnly value={appUrl} className="font-mono text-xs" />
+            <Button variant="outline" size="icon" onClick={() => copyToClipboard(appUrl)}>
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">Si vous utilisez un nom de domaine personnalisé, ajoutez-le également. Vous pouvez ajouter plusieurs domaines en les séparant par une virgule.</p>
+          <p className="text-sm">3. Enregistrez les modifications en bas de la page de votre tableau de bord Jellyfin.</p>
         </CardContent>
       </Card>
 

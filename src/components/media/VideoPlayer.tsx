@@ -18,7 +18,7 @@ const VideoPlayer = ({ src, title }: VideoPlayerProps) => {
 
   function onError(event: MediaErrorEvent) {
     console.error('Vidstack: Erreur du lecteur. Event:', event);
-    alert(`Erreur du lecteur vidéo. Vérifiez la console (F12) pour les détails techniques. Cela peut être dû à un problème de CORS sur votre serveur Jellyfin.`);
+    alert(`Erreur du lecteur vidéo. Vérifiez la console (F12) pour les détails techniques. Cela est souvent dû à un problème de CORS sur votre serveur Jellyfin. Assurez-vous que l'URL de cette application est ajoutée aux domaines autorisés dans les paramètres réseau de Jellyfin.`);
   }
 
   return (
