@@ -7,7 +7,7 @@ import { Copy } from 'lucide-react';
 import { showSuccess } from '@/utils/toast';
 
 const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZmZrd29la3VhZXRhaHJ3aW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzNzc5OTMsImV4cCI6MjA2OTk1Mzk5M30.2Or0n42Hc6OjdWL-oGwoQHMjPqTwg0yMGKXnEysiJP4";
-const WEBHOOK_URL = "https://tgffkwoekuaetahrwioo.supabase.co/rest/v1/webhook_events";
+const WEBHOOK_URL = "https://tgffkwoekuaetahrwioo.supabase.co/rest/v1/rpc/handle_webhook";
 
 const WebhookInstructions = () => {
   const { t } = useTranslation();
@@ -65,14 +65,6 @@ const WebhookInstructions = () => {
               </div>
               <div className="col-span-2">
                 <Input readOnly value="application/json" className="font-mono text-xs h-8" />
-              </div>
-            </div>
-             <div className="grid grid-cols-3 gap-2 items-center">
-              <div className="col-span-1">
-                <Input readOnly value="Prefer" className="font-mono text-xs h-8" />
-              </div>
-              <div className="col-span-2">
-                <Input readOnly value="return=minimal" className="font-mono text-xs h-8" />
               </div>
             </div>
           </div>
