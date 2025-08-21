@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ interface MediaResult {
   poster_path: string;
   release_date?: string;
   first_air_date?: string;
+  media_type: 'movie' | 'tv';
 }
 
 const MediaSearch = () => {
@@ -25,12 +26,33 @@ const MediaSearch = () => {
   const [query, setQuery] = useState('');
   const [mediaType, setMediaType] = useState<'movie' | 'tv'>('movie');
   const [results, setResults] = useState<MediaResult[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [featured, setFeatured] = useState<MediaResult[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('get-featured-media', {
+          body: { language: i18n.language },
+        });
+        if (error) throw error;
+        setFeatured(data);
+      } catch (error: any) {
+        showError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFeatured();
+  }, [i18n.language]);
 
   const handleSearch = async (e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
     if (!query.trim()) return;
     setLoading(true);
+    setHasSearched(true);
     setResults([]);
     try {
       const { data, error } = await supabase.functions.invoke('search-media', {
@@ -44,6 +66,9 @@ const MediaSearch = () => {
       setLoading(false);
     }
   };
+
+  const mediaToDisplay = hasSearched ? results : featured;
+  const displayMediaType = hasSearched ? mediaType : undefined;
 
   return (
     <div className="space-y-6">
@@ -73,35 +98,38 @@ const MediaSearch = () => {
         </div>
       )}
 
-      {!loading && results.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {results.map(media => (
-            <Link to={`/media/${mediaType}/${media.id}`} key={media.id}>
-              <Card className="overflow-hidden flex flex-col h-full transition-transform hover:scale-105 hover:shadow-lg">
-                <div className="aspect-[2/3] bg-muted">
-                  {media.poster_path ? (
-                    <img src={`https://image.tmdb.org/t/p/w500${media.poster_path}`} alt={media.title || media.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                      <Film className="h-12 w-12" />
-                    </div>
-                  )}
-                </div>
-                <CardContent className="p-3 flex-grow flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-semibold line-clamp-2 text-sm">{media.title || media.name}</h3>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(media.release_date || media.first_air_date || '').getFullYear() || ''}
-                    </p>
+      {!loading && mediaToDisplay.length > 0 && (
+        <div>
+          {!hasSearched && <h2 className="text-2xl font-bold mb-4">{t('featured_media')}</h2>}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {mediaToDisplay.map(media => (
+              <Link to={`/media/${displayMediaType || media.media_type}/${media.id}`} key={media.id}>
+                <Card className="overflow-hidden flex flex-col h-full transition-transform hover:scale-105 hover:shadow-lg">
+                  <div className="aspect-[2/3] bg-muted">
+                    {media.poster_path ? (
+                      <img src={`https://image.tmdb.org/t/p/w500${media.poster_path}`} alt={media.title || media.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                        <Film className="h-12 w-12" />
+                      </div>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                  <CardContent className="p-3 flex-grow flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-semibold line-clamp-2 text-sm">{media.title || media.name}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(media.release_date || media.first_air_date || '').getFullYear() || ''}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 
-      {!loading && results.length === 0 && query && (
+      {!loading && hasSearched && results.length === 0 && (
         <p className="text-center text-muted-foreground py-8">{t('no_results_found')}</p>
       )}
     </div>
