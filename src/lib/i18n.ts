@@ -6,6 +6,9 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "confirm_delete_request": "Êtes-vous sûr de vouloir supprimer votre demande pour \"{{title}}\" ? Cette action est irréversible.",
+      "request_deleted_successfully": "Votre demande a été supprimée avec succès.",
+      "error_deleting_request": "Une erreur est survenue lors de la suppression de votre demande.",
       "featured_media": "En vedette",
       "back": "Retour",
       "seasons": "saison",
@@ -352,6 +355,9 @@ const resources = {
   },
   en: {
     translation: {
+      "confirm_delete_request": "Are you sure you want to delete your request for \"{{title}}\"? This action is irreversible.",
+      "request_deleted_successfully": "Your request has been successfully deleted.",
+      "error_deleting_request": "An error occurred while deleting your request.",
       "featured_media": "Featured Media",
       "back": "Back",
       "seasons": "season",
