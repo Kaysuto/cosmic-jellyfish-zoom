@@ -37,7 +37,14 @@ serve(async (req) => {
     }
     const data = await response.json();
 
-    return new Response(JSON.stringify(data), {
+    // The 'similar' endpoint for movies returns movies, and for TV returns TV shows.
+    // The results from TMDB don't have a `media_type` field, so we add it here.
+    const resultsWithMediaType = data.results.map((item: any) => ({
+        ...item,
+        media_type: mediaType 
+    }));
+
+    return new Response(JSON.stringify(resultsWithMediaType), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });

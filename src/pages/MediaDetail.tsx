@@ -100,7 +100,13 @@ const MediaDetailPage = () => {
         setDetails(detailsResult.data);
 
         if (videosResult.error) console.error('Error fetching videos:', videosResult.error); else setVideos(videosResult.data.results);
-        if (similarResult.error) console.error('Error fetching similar media:', similarResult.error); else setSimilar(similarResult.data.results);
+        
+        if (similarResult.error) {
+          console.error('Error fetching similar media:', similarResult.error);
+        } else {
+          setSimilar(similarResult.data);
+        }
+        
         if (creditsResult.error) console.error('Error fetching credits:', creditsResult.error); else setCredits(creditsResult.data);
         if (statusResult.data) setRequestStatus(statusResult.data.status as RequestStatus);
 
