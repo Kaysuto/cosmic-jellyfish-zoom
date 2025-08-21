@@ -1,5 +1,3 @@
-/// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
-
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
@@ -31,13 +29,38 @@ async function fetchJellyfinItemsByPage(startIndex = 0, limit = 200) {
     throw e;
   }
 
-  const normalized = items.map((it) => {
+  const normalizedItems = [];
+  for (const it of items) {
     const tmdbIdStr = it.ProviderIds?.Tmdb;
     const tmdbIdInt = tmdbIdStr ? parseInt(tmdbIdStr, 10) : null;
-    return {
+    
+    let playableItemId = it.Id;
+    let itemType = it.Type;
+
+    if (itemType === 'Series') {
+      try {
+        const episodesUrl = `${JELLYFIN_BASE_URL}/Items?ParentId=${it.Id}&IncludeItemTypes=Episode&Recursive=true&SortBy=SortName&Limit=1&api_key=${JELLYFIN_API_KEY}`;
+        const episodesRes = await fetch(episodesUrl);
+        if (episodesRes.ok) {
+          const episodesData = await episodesRes.json();
+          if (episodesData.Items && episodesData.Items.length > 0) {
+            playableItemId = episodesData.Items[0].Id;
+          } else {
+            playableItemId = null;
+          }
+        } else {
+           playableItemId = null;
+        }
+      } catch (e) {
+        console.error(`Error fetching episodes for series ${it.Id}:`, e.message);
+        playableItemId = null;
+      }
+    }
+
+    normalizedItems.push({
       jellyfin_id: it.Id || it.id,
       name: it.Name || it.name,
-      type: it.Type || it.type,
+      type: itemType || it.type,
       year: it.ProductionYear || null,
       overview: it.Overview || null,
       genres: (it.Genres || []).join(","),
@@ -45,11 +68,12 @@ async function fetchJellyfinItemsByPage(startIndex = 0, limit = 200) {
       parent_id: it.SeriesId || it.ParentId || null,
       tmdb_id: !isNaN(tmdbIdInt) ? tmdbIdInt : null,
       thumbnail: it?.ImageTags?.Primary ? `${JELLYFIN_BASE_URL}/Items/${it.Id}/Images/Primary?api_key=${JELLYFIN_API_KEY}` : null,
-      direct_stream_url: `${JELLYFIN_BASE_URL}/Videos/${it.Id}/stream?api_key=${JELLYFIN_API_KEY}`,
+      direct_stream_url: playableItemId ? `${JELLYFIN_BASE_URL}/Videos/${playableItemId}/stream?api_key=${JELLYFIN_API_KEY}` : null,
       raw: it,
-    };
-  });
-  return { items: normalized, total: totalRecordCount };
+    });
+  }
+  
+  return { items: normalizedItems, total: totalRecordCount };
 }
 
 async function upsertBatchToSupabase(items) {
@@ -99,7 +123,6 @@ serve(async (req) => {
     const body = await req.json();
     const path = body?._path;
 
-    // --- ROUTE: Full Sync ---
     if (path === '/sync') {
       let totalUpserted = 0;
       let startIndex = 0;
@@ -123,7 +146,6 @@ serve(async (req) => {
       });
     }
     
-    // --- ROUTE: Debug Sync (Default action) ---
     const { startIndex = 0, limit = 50 } = body;
     const log = { request: { startIndex, limit }, fetch: {}, upsert: {} };
     let fetchedItems;

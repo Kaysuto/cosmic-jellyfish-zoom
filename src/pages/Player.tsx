@@ -18,31 +18,27 @@ const PlayerPage = () => {
       if (!id) return;
       setLoading(true);
       try {
-        // D'abord, on récupère l'ID Jellyfin et le titre depuis notre base de données
         const { data: mediaData, error: mediaError } = await supabase
           .from('media')
-          .select('jellyfin_id, title')
+          .select('direct_stream_url, title')
           .eq('tmdb_id', id)
           .eq('available', true)
           .single();
 
-        if (mediaError || !mediaData || !mediaData.jellyfin_id) {
-          throw new Error('Média non trouvé ou non disponible pour le streaming.');
+        if (mediaError) {
+          throw new Error('Média non trouvé dans la base de données.');
         }
         
+        if (!mediaData.direct_stream_url) {
+          throw new Error('Ce média n\'est pas disponible en streaming pour le moment (URL de lecture manquante). Veuillez lancer une synchronisation complète.');
+        }
+
         setTitle(mediaData.title || 'Video');
+        setStreamUrl(mediaData.direct_stream_url);
 
-        // Ensuite, on récupère l'URL de streaming HLS depuis la nouvelle fonction Edge
-        const { data: streamData, error: streamError } = await supabase.functions.invoke('get-jellyfin-stream-url', {
-          body: { jellyfinId: mediaData.jellyfin_id }
-        });
-
-        if (streamError) throw streamError;
-
-        setStreamUrl(streamData.url);
       } catch (err: any) {
-        showError(`Erreur: ${JSON.stringify(err, null, 2)}`);
-        navigate(`/media/${type}/${id}`); // Retour en cas d'échec
+        showError(err.message);
+        navigate(`/media/${type}/${id}`);
       } finally {
         setLoading(false);
       }
@@ -72,14 +68,6 @@ const PlayerPage = () => {
         )}
         {streamUrl && <VideoPlayer src={streamUrl} title={title} />}
       </div>
-
-      {streamUrl && (
-        <div className="absolute bottom-5 right-5 z-20">
-          <a href={streamUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 bg-black/50 p-2 rounded hover:underline">
-            Tester le lien de streaming direct
-          </a>
-        </div>
-      )}
     </div>
   );
 };
