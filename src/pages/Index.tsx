@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import FeaturedMedia from '../components/home/FeaturedMedia';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -16,7 +17,7 @@ const Index = () => {
       </div>
 
       {/* Contenu principal */}
-      <div className="relative z-10 flex flex-col items-center justify-center flex-grow text-center px-4">
+      <div className="relative z-10 flex flex-col items-center justify-center flex-grow text-center px-4 pt-24">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -38,6 +39,10 @@ const Index = () => {
             </Link>
           </div>
         </motion.div>
+      </div>
+      
+      <div className="relative z-10 w-full">
+        <FeaturedMedia />
       </div>
     </div>
   );

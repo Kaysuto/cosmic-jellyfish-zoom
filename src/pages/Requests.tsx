@@ -12,12 +12,6 @@ const RequestsPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState("search");
 
-  const handleRequestMade = () => {
-    setRefreshKey(prev => prev + 1);
-    // Switch to "my requests" tab after making a request
-    setActiveTab("my_requests");
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold tracking-tight mb-6">{t('media_requests')}</h1>
@@ -30,7 +24,7 @@ const RequestsPage = () => {
           )}
         </TabsList>
         <TabsContent value="search" className="mt-6">
-          <MediaSearch onRequestMade={handleRequestMade} />
+          <MediaSearch />
         </TabsContent>
         <TabsContent value="my_requests" className="mt-6">
           <RequestList key={refreshKey} />

@@ -6,7 +6,18 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
-      // ... (toutes les traductions existantes)
+      "featured_media": "En vedette",
+      "back": "Retour",
+      "seasons": "saison",
+      "seasons_plural": "saisons",
+      "seasons_0": "saisons",
+      "seasons_1": "saison",
+      "seasons_2": "saisons",
+      "seasons_3": "saisons",
+      "seasons_4": "saisons",
+      "seasons_5": "saisons",
+      "seasons_6": "saisons",
+      "seasons_other": "saisons",
       "requests": "Demandes",
       "media_requests": "Demandes de médias",
       "new_request": "Nouvelle demande",
@@ -114,20 +125,15 @@ const resources = {
       "action": "Action",
       "details": "Détails",
       "system": "Système",
-      // Navigation
       "home": "Accueil",
       "status": "Statut",
       "admin": "Admin",
       "login": "Connexion",
       "settings": "Paramètres",
       "settings_description": "Gérez les paramètres de votre compte et les préférences du site.",
-      
-      // Page d'accueil
       "welcome": "Statut en temps réel des services Jelly",
       "homepage_description": "Cette page fournit des informations détaillées sur la disponibilité de nos systèmes. En cas d'incident, vous trouverez ici toutes les mises à jour.",
       "view_status": "Voir le statut du système",
-      
-      // Page de statut
       "status_title": "Statut des services",
       "all_systems_operational": "Tous les systèmes sont opérationnels",
       "partial_outage": "Panne partielle du système",
@@ -173,16 +179,10 @@ const resources = {
       "page": "Page",
       "previous": "Précédent",
       "next": "Suivant",
-      
-      // Composants
       "made_with_love": "Créé avec",
       "by_kaysuto": "par Kaysuto Kimiya",
-      
-      // Messages d'erreur
       "page_not_found": "Oups ! Page non trouvée",
       "return_home": "Retour à l'accueil",
-
-      // Admin & Auth
       "admin_login": "Connexion",
       "email_address": "Adresse e-mail",
       "password": "Mot de passe",
@@ -352,7 +352,13 @@ const resources = {
   },
   en: {
     translation: {
-      // ... (toutes les traductions existantes)
+      "featured_media": "Featured Media",
+      "back": "Back",
+      "seasons": "season",
+      "seasons_plural": "seasons",
+      "seasons_0": "seasons",
+      "seasons_1": "season",
+      "seasons_other": "seasons",
       "requests": "Requests",
       "media_requests": "Media Requests",
       "new_request": "New Request",
@@ -415,7 +421,6 @@ const resources = {
       "check_status": "Check Status",
       "checking_status_now": "Checking status now...",
       "check_complete_status_soon": "Check complete. Status will update shortly.",
-
       "error_during_check": "Error during check",
       "user_created_successfully": "User {{email}} created successfully. They can now log in.",
       "general_settings": "General Settings",
@@ -461,20 +466,15 @@ const resources = {
       "action": "Action",
       "details": "Details",
       "system": "System",
-      // Navigation
       "home": "Home",
       "status": "Status",
       "admin": "Admin",
       "login": "Login",
       "settings": "Settings",
       "settings_description": "Manage your account settings and site preferences.",
-
-      // Homepage
       "welcome": "Real-time Status of Jelly Services",
       "homepage_description": "This page provides detailed information about the availability of our systems. In case of an incident, you will find all updates here.",
       "view_status": "View System Status",
-
-      // Status Page
       "status_title": "Services Status",
       "all_systems_operational": "All Systems Operational",
       "partial_outage": "Partial System Outage",
@@ -520,16 +520,10 @@ const resources = {
       "page": "Page",
       "previous": "Previous",
       "next": "Next",
-
-      // Components
       "made_with_love": "Created with",
       "by_kaysuto": "by Kaysuto Kimiya",
-
-      // Error Messages
       "page_not_found": "Oops! Page not found",
       "return_home": "Return Home",
-
-      // Admin & Auth
       "admin_login": "Login",
       "email_address": "Email address",
       "password": "Password",

@@ -28,6 +28,7 @@ import EditUserPage from "./pages/admin/EditUser";
 import LogsPage from "./pages/admin/Logs";
 import { SettingsProvider, useSettings } from "./contexts/SettingsContext";
 import RequestsPage from "./pages/Requests";
+import MediaDetailPage from "./pages/MediaDetail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -94,6 +95,7 @@ const App = () => (
                   <Route element={<MainLayout />}>
                     <Route path="/" element={<Index />} />
                     <Route path="/status" element={<StatusPage />} />
+                    <Route path="/media/:type/:id" element={<MediaDetailPage />} />
                     <Route element={<ProtectedRoute />}>
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/requests" element={<RequestsPage />} />
