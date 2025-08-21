@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shield, Settings as SettingsIcon } from 'lucide-react';
+import { Shield, Settings as SettingsIcon, Link as LinkIcon, Copy } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from '@/integrations/supabase/client';
@@ -38,6 +38,13 @@ const Settings = () => {
   const [loadingRegistrations, setLoadingRegistrations] = useState(true);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingSettings, setPendingSettings] = useState<z.infer<typeof generalSettingsSchema> | null>(null);
+
+  const webhookUrl = `https://tgffkwoekuaetahrwioo.supabase.co/functions/v1/media-sync?secret=VOTRE_SECRET_ICI`;
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(webhookUrl.replace('VOTRE_SECRET_ICI', '...'));
+    showSuccess(t('url_copied_to_clipboard'));
+  };
 
   const generalSettingsSchema = useMemo(() => z.object({
     site_title: z.string().min(1, { message: t('site_title_empty_error') }),
@@ -185,6 +192,25 @@ const Settings = () => {
                       <Label htmlFor="allow-registrations">{t('allow_new_registrations')}</Label>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><LinkIcon className="h-5 w-5" />{t('integrations')}</CardTitle>
+                  <CardDescription>{t('integrations_desc')}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="webhook-url">{t('webhook_url_label')}</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input id="webhook-url" readOnly value={webhookUrl} className="font-mono text-xs" />
+                      <Button variant="outline" size="icon" onClick={copyToClipboard}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">{t('webhook_url_desc')}</p>
+                  </div>
                 </CardContent>
               </Card>
             </>

@@ -6,6 +6,11 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "integrations": "Intégrations",
+      "integrations_desc": "Connectez des services externes pour automatiser les tâches.",
+      "webhook_url_label": "URL du Webhook Sonarr/Radarr",
+      "webhook_url_desc": "Utilisez cette URL dans les paramètres de connexion de Sonarr/Radarr. N'oubliez pas de remplacer VOTRE_SECRET_ICI par le secret que vous avez créé dans les paramètres de Supabase.",
+      "url_copied_to_clipboard": "URL copiée dans le presse-papiers !",
       "catalog": "Catalogue",
       "catalog_description": "Explorez tous les films et séries disponibles sur notre plateforme.",
       "search_in_catalog": "Rechercher dans le catalogue...",
@@ -368,6 +373,11 @@ const resources = {
   },
   en: {
     translation: {
+      "integrations": "Integrations",
+      "integrations_desc": "Connect external services to automate tasks.",
+      "webhook_url_label": "Sonarr/Radarr Webhook URL",
+      "webhook_url_desc": "Use this URL in your Sonarr/Radarr connection settings. Remember to replace YOUR_SECRET_HERE with the secret you created in your Supabase settings.",
+      "url_copied_to_clipboard": "URL copied to clipboard!",
       "catalog": "Catalog",
       "catalog_description": "Explore all the movies and series available on our platform.",
       "search_in_catalog": "Search in catalog...",
