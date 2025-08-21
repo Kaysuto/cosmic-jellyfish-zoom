@@ -1,7 +1,9 @@
 import 'vidstack/styles/defaults.css';
 import 'vidstack/styles/community-skin/video.css';
 
-import { MediaPlayer, MediaOutlet, DefaultVideoLayout, defaultLayoutIcons } from '@vidstack/react';
+import { MediaPlayer, MediaOutlet } from '@vidstack/react';
+import { DefaultVideoLayout } from '@vidstack/react/components/layouts/default';
+import { defaultLayoutIcons } from '@vidstack/react/components/layouts/default/icons';
 
 interface VideoPlayerProps {
   src: string;
