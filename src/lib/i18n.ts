@@ -6,6 +6,16 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "episodes": "Épisodes",
+      "videos_and_trailers": "Vidéos & Bande-Annonces",
+      "similar_content": "Contenu similaire",
+      "cast_and_production": "Casting & Production",
+      "tmdb_disclaimer_title": "Petite précision",
+      "tmdb_disclaimer_content": "Les informations sur les saisons et épisodes affichées ici proviennent de TMDB. Comme leur classement peut dépendre de versions internationales, d'épisodes spéciaux ou de modifications apportées par la communauté, l'ordre peut donc parfois différer de celui auquel tu es habitué.",
+      "no_trailer_available": "Aucune bande-annonce disponible.",
+      "no_similar_content": "Aucun contenu similaire trouvé.",
+      "no_cast_info": "Aucune information sur le casting disponible.",
+      "cast": "Casting",
       "minutes": "{{count}} min",
       "no_description_available": "Aucune description disponible.",
       "filter": "Filtrer",
@@ -398,6 +408,16 @@ const resources = {
   },
   en: {
     translation: {
+      "episodes": "Episodes",
+      "videos_and_trailers": "Videos & Trailers",
+      "similar_content": "Similar Content",
+      "cast_and_production": "Cast & Production",
+      "tmdb_disclaimer_title": "Quick Note",
+      "tmdb_disclaimer_content": "The season and episode information displayed here comes from TMDB. As their classification may depend on international versions, special episodes, or community edits, the order may sometimes differ from what you are used to.",
+      "no_trailer_available": "No trailer available.",
+      "no_similar_content": "No similar content found.",
+      "no_cast_info": "No cast information available.",
+      "cast": "Cast",
       "minutes": "{{count}} min",
       "no_description_available": "No description available.",
       "filter": "Filter",
