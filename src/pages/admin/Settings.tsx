@@ -67,6 +67,24 @@ const Settings = () => {
     }
   }, [settingsLoading, getSetting, form]);
 
+  const handleSyncJellyfin = async () => {
+    setIsSyncing(true);
+    const toastId = showLoading("Synchronisation avec Jellyfin en cours...");
+    try {
+      const { data, error } = await supabase.functions.invoke('media-sync', {
+        body: { _path: '/sync' }
+      });
+      if (error) throw error;
+      dismissToast(toastId);
+      showSuccess(`Synchronisation terminée ! ${data.upserted || 0} éléments traités.`);
+    } catch (error: any) {
+      dismissToast(toastId);
+      showError(`Erreur de synchronisation: ${error.message}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleDebugSync = async () => {
     setIsSyncing(true);
     const toastId = showLoading(`Test du lot commençant à ${debugStartIndex}...`);
@@ -173,6 +191,19 @@ const Settings = () => {
                   {loadingRegistrations ? <Skeleton className="h-6 w-52" /> : (
                     <div className="flex items-center space-x-2"><Switch id="allow-registrations" checked={allowRegistrations} onCheckedChange={handleRegistrationToggle} /><Label htmlFor="allow-registrations">{t('allow_new_registrations')}</Label></div>
                   )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Jellyfin</CardTitle>
+                  <CardDescription>Synchronisez votre bibliothèque Jellyfin avec l'application.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button onClick={handleSyncJellyfin} disabled={isSyncing}>
+                    <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                    {isSyncing ? "Synchronisation..." : "Lancer la synchronisation Jellyfin"}
+                  </Button>
                 </CardContent>
               </Card>
 

@@ -13,7 +13,7 @@ const JELLYFIN_API_KEY = Deno.env.get("JELLYFIN_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-async function fetchJellyfinItemsByPage(startIndex = 0, limit = 50) {
+async function fetchJellyfinItemsByPage(startIndex = 0, limit = 200) {
   let items = [];
   let totalRecordCount = 0;
   try {
@@ -96,9 +96,49 @@ serve(async (req) => {
   }
 
   try {
-    const { startIndex = 0, limit = 50 } = await req.json();
-    const log = { request: { startIndex, limit }, fetch: {}, upsert: {} };
+    const body = await req.json();
+    const path = body?._path;
 
+    // --- ROUTE 1: Get Stream URL ---
+    if (path === '/stream-url') {
+      const jellyfinId = body?.jellyfinId;
+      if (!jellyfinId) {
+        throw new Error("jellyfinId is required for /stream-url");
+      }
+      const streamUrl = `${JELLYFIN_BASE_URL}/Videos/${jellyfinId}/stream?api_key=${JELLYFIN_API_KEY}`;
+      return new Response(JSON.stringify({ url: streamUrl }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // --- ROUTE 2: Full Sync ---
+    if (path === '/sync') {
+      let totalUpserted = 0;
+      let startIndex = 0;
+      const limit = 200;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { items, total } = await fetchJellyfinItemsByPage(startIndex, limit);
+        if (items.length > 0) {
+          const upsertedCount = await upsertBatchToSupabase(items);
+          totalUpserted += upsertedCount;
+        }
+        startIndex += items.length;
+        if (items.length < limit || (total > 0 && startIndex >= total)) {
+          hasMore = false;
+        }
+      }
+      return new Response(JSON.stringify({ success: true, upserted: totalUpserted }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+    
+    // --- ROUTE 3: Debug Sync (Default action) ---
+    const { startIndex = 0, limit = 50 } = body;
+    const log = { request: { startIndex, limit }, fetch: {}, upsert: {} };
     let fetchedItems;
     try {
       const { items, total } = await fetchJellyfinItemsByPage(startIndex, limit);
@@ -108,20 +148,19 @@ serve(async (req) => {
       log.fetch = { status: 'error', message: e.message };
       return new Response(JSON.stringify({ log }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-
     try {
       const upsertedCount = await upsertBatchToSupabase(fetchedItems);
       log.upsert = { status: 'success', count: upsertedCount };
     } catch (e) {
       log.upsert = { status: 'error', message: e.message, itemsSent: fetchedItems.map(i => ({ name: i.name, tmdb_id: i.tmdb_id, jellyfin_id: i.jellyfin_id })) };
     }
-
     return new Response(JSON.stringify({ log }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
 
   } catch (error) {
+    console.error("Error in media-sync function:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
