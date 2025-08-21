@@ -28,9 +28,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useSession } from '@/contexts/AuthContext';
 import WebhookInstructions from '@/components/admin/WebhookInstructions';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const Settings = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { session } = useSession();
   const { profile } = useProfile();
   const { getSetting, refreshSettings, loading: settingsLoading } = useSettings();
@@ -40,6 +41,10 @@ const Settings = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingSettings, setPendingSettings] = useState<z.infer<typeof generalSettingsSchema> | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  
+  const [debugStartIndex, setDebugStartIndex] = useState(0);
+  const [debugBatchSize] = useState(50);
+  const [debugLog, setDebugLog] = useState<any[]>([]);
 
   const generalSettingsSchema = useMemo(() => z.object({
     site_title: z.string().min(1, { message: t('site_title_empty_error') }),
@@ -53,30 +58,35 @@ const Settings = () => {
 
   useEffect(() => {
     if (!settingsLoading) {
-      const regValue = getSetting('allow_registrations', 'true');
-      setAllowRegistrations(regValue === 'true');
-      setLoadingRegistrations(false);
-
       form.reset({
         site_title: getSetting('site_title', 'Statut des Services Jelly'),
         default_language: getSetting('default_language', 'fr') as 'fr' | 'en',
       });
+      setAllowRegistrations(getSetting('allow_registrations', 'true') === 'true');
+      setLoadingRegistrations(false);
     }
   }, [settingsLoading, getSetting, form]);
 
-  const handleSyncJellyfin = async () => {
+  const handleDebugSync = async () => {
     setIsSyncing(true);
-    const toastId = showLoading("Synchronisation avec Jellyfin en cours...");
+    const toastId = showLoading(`Test du lot commençant à ${debugStartIndex}...`);
     try {
       const { data, error } = await supabase.functions.invoke('media-sync', {
-        body: { _path: '/sync' }
+        body: { startIndex: debugStartIndex, limit: debugBatchSize }
       });
       if (error) throw error;
+      
+      setDebugLog(prev => [data.log, ...prev]);
+      if (data.log.upsert.status === 'success' && data.log.fetch.count > 0) {
+        setDebugStartIndex(prev => prev + debugBatchSize);
+      }
       dismissToast(toastId);
-      showSuccess(`Synchronisation terminée ! ${data.upserted || 0} éléments traités.`);
+      showSuccess("Test du lot terminé.");
+
     } catch (error: any) {
+      setDebugLog(prev => [{ error: error.message }, ...prev]);
       dismissToast(toastId);
-      showError(`Erreur de synchronisation: ${error.message}`);
+      showError(`Erreur du test: ${error.message}`);
     } finally {
       setIsSyncing(false);
     }
@@ -107,14 +117,11 @@ const Settings = () => {
 
   const handleConfirmSave = async () => {
     if (!pendingSettings || !session?.user) return;
-
     const settingsToUpdate = [
       { key: 'site_title', value: pendingSettings.site_title },
       { key: 'default_language', value: pendingSettings.default_language },
     ];
-
     const { error } = await supabase.from('app_settings').upsert(settingsToUpdate, { onConflict: 'key' });
-
     if (error) {
       showError(t('error_updating_setting'));
     } else {
@@ -148,35 +155,8 @@ const Settings = () => {
                   {settingsLoading ? <Skeleton className="h-48 w-full" /> : (
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(handleGeneralSettingsSubmit)} className="space-y-6">
-                        <FormField
-                          control={form.control}
-                          name="site_title"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('site_title_label')}</FormLabel>
-                              <FormControl><Input {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="default_language"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('default_language')}</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                  <SelectItem value="fr">Français</SelectItem>
-                                  <SelectItem value="en">English</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormDescription>{t('default_language_desc')}</FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <FormField control={form.control} name="site_title" render={({ field }) => (<FormItem><FormLabel>{t('site_title_label')}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name="default_language" render={({ field }) => (<FormItem><FormLabel>{t('default_language')}</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="fr">Français</SelectItem><SelectItem value="en">English</SelectItem></SelectContent></Select><FormDescription>{t('default_language_desc')}</FormDescription><FormMessage /></FormItem>)} />
                         <Button type="submit" disabled={form.formState.isSubmitting}>{t('save_changes')}</Button>
                       </form>
                     </Form>
@@ -190,34 +170,40 @@ const Settings = () => {
                   <CardDescription>{t('allow_new_registrations_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {loadingRegistrations ? (
-                    <div className="flex items-center space-x-2">
-                      <Skeleton className="h-6 w-10 rounded-full" />
-                      <Skeleton className="h-5 w-48" />
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="allow-registrations"
-                        checked={allowRegistrations}
-                        onCheckedChange={handleRegistrationToggle}
-                      />
-                      <Label htmlFor="allow-registrations">{t('allow_new_registrations')}</Label>
-                    </div>
+                  {loadingRegistrations ? <Skeleton className="h-6 w-52" /> : (
+                    <div className="flex items-center space-x-2"><Switch id="allow-registrations" checked={allowRegistrations} onCheckedChange={handleRegistrationToggle} /><Label htmlFor="allow-registrations">{t('allow_new_registrations')}</Label></div>
                   )}
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">Jellyfin</CardTitle>
-                  <CardDescription>Synchronisez votre bibliothèque Jellyfin avec l'application.</CardDescription>
+                  <CardTitle>Outil de débogage Jellyfin</CardTitle>
+                  <CardDescription>Exécutez la synchronisation par petits lots pour trouver le point de défaillance.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <Button onClick={handleSyncJellyfin} disabled={isSyncing}>
-                    <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                    {isSyncing ? "Synchronisation..." : "Lancer la synchronisation Jellyfin"}
-                  </Button>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-4">
+                      <p className="text-sm">Lot de <strong>{debugBatchSize}</strong> éléments, commençant à l'index <strong>{debugStartIndex}</strong>.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleDebugSync} disabled={isSyncing}>
+                      <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                      {isSyncing ? "Test en cours..." : "Lancer le test du prochain lot"}
+                    </Button>
+                    <Button variant="outline" onClick={() => { setDebugStartIndex(0); setDebugLog([]); }}>Réinitialiser</Button>
+                  </div>
+                  {debugLog.length > 0 && (
+                      <div className="space-y-2">
+                          <h4 className="font-semibold">Logs de débogage:</h4>
+                          <ScrollArea className="h-96 w-full rounded-md border p-4 bg-muted/50">
+                              {debugLog.map((log, index) => (
+                                  <div key={index} className="mb-4 p-2 border-b">
+                                      <pre className="text-xs font-mono whitespace-pre-wrap">{JSON.stringify(log, null, 2)}</pre>
+                                  </div>
+                              ))}
+                          </ScrollArea>
+                      </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -228,14 +214,8 @@ const Settings = () => {
       </div>
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('confirm_global_changes_title')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('confirm_global_changes_desc')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingSettings(null)}>{t('cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmSave}>{t('save_changes')}</AlertDialogAction>
-          </AlertDialogFooter>
+          <AlertDialogHeader><AlertDialogTitle>{t('confirm_global_changes_title')}</AlertDialogTitle><AlertDialogDescription>{t('confirm_global_changes_desc')}</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel onClick={() => setPendingSettings(null)}>{t('cancel')}</AlertDialogCancel><AlertDialogAction onClick={handleConfirmSave}>{t('save_changes')}</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
