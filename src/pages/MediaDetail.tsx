@@ -7,7 +7,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -63,6 +63,7 @@ const MediaDetailPage = () => {
   const [videos, setVideos] = useState<any[]>([]);
   const [similar, setSimilar] = useState<any[]>([]);
   const [credits, setCredits] = useState<{ cast: any[], crew: any[] }>({ cast: [], crew: [] });
+  const [videoPage, setVideoPage] = useState(1);
 
   const fetchSeasonDetails = async (seasonNumber: number) => {
     if (!type || !id) return;
@@ -179,6 +180,13 @@ const MediaDetailPage = () => {
   const youtubeVideos = videos.filter(v => v.site === 'YouTube');
   const similarWithMediaType = similar.map(item => ({ ...item, media_type: type }));
 
+  const VIDEOS_PER_PAGE = 4;
+  const totalVideoPages = Math.ceil(youtubeVideos.length / VIDEOS_PER_PAGE);
+  const currentVideos = youtubeVideos.slice(
+    (videoPage - 1) * VIDEOS_PER_PAGE,
+    videoPage * VIDEOS_PER_PAGE
+  );
+
   return (
     <div className="relative -mt-16">
       <div className="absolute inset-0 h-[60vh] overflow-hidden">
@@ -264,23 +272,50 @@ const MediaDetailPage = () => {
 
             <TabsContent value="videos" className="mt-6">
               {youtubeVideos.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {youtubeVideos.map(video => (
-                    <div key={video.id}>
-                      <div className="aspect-video mb-2">
-                        <iframe 
-                          className="w-full h-full rounded-lg" 
-                          src={`https://www.youtube.com/embed/${video.key}`} 
-                          title={video.name} 
-                          frameBorder="0" 
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                          allowFullScreen>
-                        </iframe>
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {currentVideos.map(video => (
+                      <div key={video.id}>
+                        <div className="aspect-video mb-2">
+                          <iframe 
+                            className="w-full h-full rounded-lg" 
+                            src={`https://www.youtube.com/embed/${video.key}`} 
+                            title={video.name} 
+                            frameBorder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowFullScreen>
+                          </iframe>
+                        </div>
+                        <h4 className="font-semibold">{video.name}</h4>
+                        <p className="text-sm text-muted-foreground">{video.type}</p>
                       </div>
-                      <h4 className="font-semibold">{video.name}</h4>
-                      <p className="text-sm text-muted-foreground">{video.type}</p>
+                    ))}
+                  </div>
+                  {totalVideoPages > 1 && (
+                    <div className="flex items-center justify-center gap-4 mt-6">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setVideoPage(p => p - 1)}
+                        disabled={videoPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        {t('previous')}
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        {t('page')} {videoPage} / {totalVideoPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setVideoPage(p => p + 1)}
+                        disabled={videoPage === totalVideoPages}
+                      >
+                        {t('next')}
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
                     </div>
-                  ))}
+                  )}
                 </div>
               ) : (
                 <p>{t('no_trailer_available')}</p>
