@@ -6,6 +6,8 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "minutes": "{{count}} min",
+      "no_description_available": "Aucune description disponible.",
       "filter": "Filtrer",
       "filter_and_sort": "Filtrer et trier",
       "genres": "Genres",
@@ -396,6 +398,8 @@ const resources = {
   },
   en: {
     translation: {
+      "minutes": "{{count}} min",
+      "no_description_available": "No description available.",
       "filter": "Filter",
       "filter_and_sort": "Filter & Sort",
       "genres": "Genres",

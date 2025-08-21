@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card } from '@/components/ui/card';
 
 interface MediaDetails {
   id: number;
@@ -35,6 +36,7 @@ interface Episode {
   still_path: string;
   vote_average: number;
   air_date: string;
+  runtime?: number;
 }
 
 interface SeasonDetails {
@@ -229,42 +231,40 @@ const MediaDetailPage = () => {
               </Select>
             </div>
             {seasonLoading ? (
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="flex gap-6 p-4">
-                    <Skeleton className="h-28 w-1/3 md:w-1/4 rounded-md" />
-                    <div className="flex-grow space-y-2">
-                      <Skeleton className="h-6 w-3/4" />
-                      <Skeleton className="h-4 w-1/2" />
-                      <Skeleton className="h-12 w-full" />
-                    </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="space-y-2 border border-border rounded-lg p-4 bg-muted/20">
+                    <Skeleton className="aspect-video w-full" />
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-10 w-full" />
                   </div>
                 ))}
               </div>
             ) : selectedSeason && (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {selectedSeason.episodes.map(episode => (
-                  <div key={episode.id} className="flex flex-col md:flex-row gap-6 p-4 bg-muted/20 rounded-lg border border-border">
-                    <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0">
-                      {episode.still_path ? (
-                        <img src={`https://image.tmdb.org/t/p/w300${episode.still_path}`} alt={`Still from ${episode.name}`} className="rounded-md w-full" />
-                      ) : (
-                        <div className="w-full aspect-video flex items-center justify-center bg-muted text-muted-foreground rounded-md">
-                          <Tv className="h-12 w-12" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-grow">
-                      <h3 className="text-xl font-semibold mb-2">
-                        {episode.episode_number}. {episode.name}
-                      </h3>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                        {episode.air_date && <span>{new Date(episode.air_date).toLocaleDateString(i18n.language)}</span>}
-                        <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-yellow-400" /> {episode.vote_average > 0 ? `${episode.vote_average.toFixed(1)} / 10` : 'N/A'}</span>
+                  <Card key={episode.id} className="overflow-hidden bg-muted/20 border-border flex flex-col">
+                    {episode.still_path ? (
+                      <img src={`https://image.tmdb.org/t/p/w500${episode.still_path}`} alt={`Still from ${episode.name}`} className="w-full h-auto object-cover aspect-video" />
+                    ) : (
+                      <div className="w-full aspect-video flex items-center justify-center bg-muted text-muted-foreground">
+                        <Tv className="h-12 w-12" />
                       </div>
-                      <p className="text-muted-foreground text-sm">{episode.overview || "No description available."}</p>
+                    )}
+                    <div className="p-4 flex flex-col flex-grow">
+                      <h3 className="font-semibold truncate">{episode.episode_number}. {episode.name}</h3>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
+                        {episode.runtime ? (
+                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {t('minutes', { count: episode.runtime })}</span>
+                        ) : <span />}
+                        {episode.air_date && (
+                          <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(episode.air_date).toLocaleDateString(i18n.language)}</span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-3 line-clamp-3 flex-grow">{episode.overview || t('no_description_available')}</p>
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             )}
