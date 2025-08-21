@@ -67,7 +67,20 @@ const MediaSearch = () => {
     }
   };
 
-  const mediaToDisplay = hasSearched ? results : featured;
+  const handleMediaTypeChange = (value: string) => {
+    setMediaType(value as 'movie' | 'tv');
+    // Reset search state when changing media type to show featured media for the new type
+    if (hasSearched) {
+      setHasSearched(false);
+      setQuery('');
+      setResults([]);
+    }
+  };
+
+  const mediaToDisplay = hasSearched 
+    ? results 
+    : featured.filter(item => item.media_type === mediaType);
+    
   const displayMediaType = hasSearched ? mediaType : undefined;
 
   return (
@@ -85,7 +98,7 @@ const MediaSearch = () => {
         <Button type="submit" disabled={loading}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('search')}</Button>
       </form>
       
-      <Tabs value={mediaType} onValueChange={(value) => setMediaType(value as any)}>
+      <Tabs value={mediaType} onValueChange={handleMediaTypeChange}>
         <TabsList>
           <TabsTrigger value="movie"><Film className="mr-2 h-4 w-4" />{t('movie')}</TabsTrigger>
           <TabsTrigger value="tv"><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</TabsTrigger>
