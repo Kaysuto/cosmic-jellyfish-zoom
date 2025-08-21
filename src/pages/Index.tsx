@@ -2,29 +2,12 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { ArrowRight, Tv, CheckCircle, Users } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import CommunitySection from '@/components/widgets/CommunitySection';
+import FeaturedMedia from '@/components/home/FeaturedMedia';
 
 const Index = () => {
   const { t } = useTranslation();
-
-  const featureCards = [
-    {
-      icon: <CheckCircle className="h-8 w-8 text-green-400" />,
-      title: t('feature_1_title'),
-      description: t('feature_1_desc'),
-    },
-    {
-      icon: <Tv className="h-8 w-8 text-blue-400" />,
-      title: t('feature_2_title'),
-      description: t('feature_2_desc'),
-    },
-    {
-      icon: <Users className="h-8 w-8 text-purple-400" />,
-      title: t('feature_3_title'),
-      description: t('feature_3_desc'),
-    },
-  ];
 
   return (
     <div className="relative flex-grow w-full overflow-hidden bg-gray-900 text-white flex flex-col">
@@ -64,29 +47,9 @@ const Index = () => {
         </motion.div>
       </div>
       
-      {/* Section Fonctionnalités */}
+      {/* Section Médias en vedette */}
       <div className="relative z-10 w-full py-16 bg-gray-900/50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">{t('features_title')}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featureCards.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-gray-800/50 p-6 rounded-lg border border-gray-700/50 text-center"
-              >
-                <div className="inline-block p-4 bg-gray-700/50 rounded-full mb-4">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-400">{feature.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        <FeaturedMedia />
       </div>
 
       {/* Section Communauté */}

@@ -40,8 +40,8 @@ const FeaturedMedia = () => {
   }, [i18n.language]);
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <h2 className="text-3xl font-bold mb-6">{t('featured_media')}</h2>
+    <div className="container mx-auto px-4">
+      <h2 className="text-3xl font-bold mb-6">{t('weekly_trends')}</h2>
       {loading ? (
         <div className="flex space-x-4">
           {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-[300px] w-[200px]" />)}
