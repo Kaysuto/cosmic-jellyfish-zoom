@@ -36,7 +36,10 @@ serve(async (req) => {
       throw new Error("query and mediaType are required");
     }
 
-    const searchUrl = `${TMDB_API_URL}/search/${mediaType}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=${language || 'en-US'}`;
+    const isAnimeSearch = mediaType === 'anime';
+    const searchType = isAnimeSearch ? 'tv' : mediaType;
+
+    const searchUrl = `${TMDB_API_URL}/search/${searchType}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=${language || 'en-US'}`;
     console.log("Constructed TMDB URL:", searchUrl.replace(TMDB_API_KEY, 'REDACTED'));
     
     const response = await fetch(searchUrl);
@@ -47,10 +50,23 @@ serve(async (req) => {
       throw new Error(`TMDB API error: ${response.statusText}. Check your API key and permissions.`);
     }
     
-    const data = await response.json();
-    console.log(`Found ${data.results.length} results from TMDB.`);
+    let data = await response.json();
+    console.log(`Found ${data.results.length} results from TMDB before filtering.`);
 
-    return new Response(JSON.stringify(data.results), {
+    if (isAnimeSearch) {
+      // Filter for anime using genre ID 16 (Animation)
+      data.results = data.results.filter(item => 
+        item.genre_ids?.includes(16)
+      );
+      console.log(`Found ${data.results.length} anime results after filtering.`);
+    }
+
+    const finalResults = data.results.map(item => ({
+      ...item,
+      media_type: searchType
+    }));
+
+    return new Response(JSON.stringify(finalResults), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });

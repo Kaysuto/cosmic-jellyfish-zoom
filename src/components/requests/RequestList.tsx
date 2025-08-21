@@ -17,7 +17,7 @@ interface MediaRequest {
   status: 'pending' | 'approved' | 'rejected' | 'available';
   poster_path: string;
   requested_at: string;
-  media_type: 'movie' | 'tv';
+  media_type: 'movie' | 'tv' | 'anime';
 }
 
 const RequestList = () => {

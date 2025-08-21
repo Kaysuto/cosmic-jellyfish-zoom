@@ -19,7 +19,7 @@ interface MediaRequest {
   title: string;
   status: 'pending' | 'approved' | 'rejected' | 'available';
   requested_at: string;
-  media_type: 'movie' | 'tv';
+  media_type: 'movie' | 'tv' | 'anime';
   user_id: string;
   profiles: {
     first_name: string | null;

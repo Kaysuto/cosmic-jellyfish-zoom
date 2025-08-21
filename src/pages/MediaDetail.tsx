@@ -42,7 +42,7 @@ interface SeasonDetails {
 }
 
 const MediaDetailPage = () => {
-  const { type, id } = useParams<{ type: 'movie' | 'tv'; id: string }>();
+  const { type, id } = useParams<{ type: 'movie' | 'tv' | 'anime'; id: string }>();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { session } = useSession();
@@ -75,12 +75,13 @@ const MediaDetailPage = () => {
       if (!type || !id) return;
       setLoading(true);
       try {
+        const apiMediaType = type === 'anime' ? 'tv' : type;
         const { data, error } = await supabase.functions.invoke('get-media-details', {
-          body: { mediaType: type, mediaId: id, language: i18n.language },
+          body: { mediaType: apiMediaType, mediaId: id, language: i18n.language },
         });
         if (error) throw error;
         setDetails(data);
-        if (type === 'tv' && data.seasons && data.seasons.length > 0) {
+        if (apiMediaType === 'tv' && data.seasons && data.seasons.length > 0) {
           const initialSeason = data.seasons.find((s: any) => s.season_number > 0) || data.seasons[0];
           setSelectedSeasonNumber(initialSeason.season_number);
         }
@@ -108,8 +109,10 @@ const MediaDetailPage = () => {
   }, [type, id, i18n.language, session]);
 
   useEffect(() => {
-    if (type === 'tv' && selectedSeasonNumber !== null) {
-      fetchSeasonDetails(selectedSeasonNumber);
+    if (type === 'tv' || type === 'anime') {
+      if (selectedSeasonNumber !== null) {
+        fetchSeasonDetails(selectedSeasonNumber);
+      }
     }
   }, [selectedSeasonNumber, type, id, i18n.language]);
 
@@ -150,6 +153,7 @@ const MediaDetailPage = () => {
   const title = details.title || details.name;
   const releaseDate = details.release_date || details.first_air_date;
   const runtime = type === 'movie' ? details.runtime : details.episode_run_time?.[0];
+  const apiMediaType = type === 'anime' ? 'tv' : type;
 
   return (
     <div className="relative -mt-16">
@@ -171,7 +175,7 @@ const MediaDetailPage = () => {
               {releaseDate && <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" /> {new Date(releaseDate).getFullYear()}</span>}
               <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-yellow-400" /> {details.vote_average.toFixed(1)} / 10</span>
               {runtime && <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {runtime} min</span>}
-              {type === 'tv' && details.number_of_seasons && <span className="flex items-center gap-1.5"><Tv className="h-4 w-4" /> {details.number_of_seasons} {t('seasons', { count: details.number_of_seasons })}</span>}
+              {apiMediaType === 'tv' && details.number_of_seasons && <span className="flex items-center gap-1.5"><Tv className="h-4 w-4" /> {details.number_of_seasons} {t('seasons', { count: details.number_of_seasons })}</span>}
             </div>
             <div className="flex flex-wrap gap-2 mt-4">
               {details.genres.map(genre => <Badge key={genre.id} variant="secondary">{genre.name}</Badge>)}
@@ -186,7 +190,7 @@ const MediaDetailPage = () => {
           </div>
         </div>
 
-        {type === 'tv' && details.seasons && (
+        {apiMediaType === 'tv' && details.seasons && (
           <div className="mt-12">
             <div className="flex items-center gap-4 mb-6">
               <h2 className="text-3xl font-bold">{t('seasons', { count: 2})}</h2>

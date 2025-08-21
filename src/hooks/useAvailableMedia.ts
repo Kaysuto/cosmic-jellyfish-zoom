@@ -7,7 +7,7 @@ export interface AvailableMedia {
   status: 'pending' | 'approved' | 'rejected' | 'available';
   poster_path: string;
   release_date: string;
-  media_type: 'movie' | 'tv';
+  media_type: 'movie' | 'tv' | 'anime';
   tmdb_id: number;
   updated_at: string;
 }

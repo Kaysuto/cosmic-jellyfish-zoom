@@ -6,6 +6,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "anime": "Animés",
       "webhook_url_desc_simplified": "Utilisez cette URL dans les paramètres de connexion de Sonarr/Radarr.",
       "security_warning": "Avertissement de sécurité",
       "webhook_secret_warning": "Votre secret de webhook est sensible. Ne le partagez jamais publiquement. Si vous pensez qu'il a été compromis, changez-le immédiatement dans les paramètres de votre projet Supabase.",
@@ -380,6 +381,7 @@ const resources = {
   },
   en: {
     translation: {
+      "anime": "Anime",
       "webhook_url_desc_simplified": "Use this URL in your Sonarr/Radarr connection settings.",
       "security_warning": "Security Warning",
       "webhook_secret_warning": "Your webhook secret is sensitive. Never share it publicly. If you believe it has been compromised, change it immediately in your Supabase project settings.",

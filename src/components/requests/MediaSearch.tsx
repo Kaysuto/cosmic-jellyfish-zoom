@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Tv, Film, Loader2 } from 'lucide-react';
+import { Search, Tv, Film, Loader2, Flame } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MediaResult {
@@ -20,12 +20,13 @@ interface MediaResult {
   release_date?: string;
   first_air_date?: string;
   media_type: 'movie' | 'tv';
+  genre_ids?: number[];
 }
 
 const MediaSearch = () => {
   const { t, i18n } = useTranslation();
   const [query, setQuery] = useState('');
-  const [mediaType, setMediaType] = useState<'movie' | 'tv'>('movie');
+  const [mediaType, setMediaType] = useState<'movie' | 'tv' | 'anime'>('movie');
   const [results, setResults] = useState<MediaResult[]>([]);
   const [featured, setFeatured] = useState<MediaResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +70,7 @@ const MediaSearch = () => {
   };
 
   const handleMediaTypeChange = (value: string) => {
-    setMediaType(value as 'movie' | 'tv');
+    setMediaType(value as 'movie' | 'tv' | 'anime');
     if (hasSearched) {
       setHasSearched(false);
       setQuery('');
@@ -77,11 +78,17 @@ const MediaSearch = () => {
     }
   };
 
-  const mediaToDisplay = hasSearched 
-    ? results 
-    : featured.filter(item => item.media_type === mediaType);
+  const mediaToDisplay = useMemo(() => {
+    if (hasSearched) {
+      return results;
+    }
+    if (mediaType === 'anime') {
+      return featured.filter(item => item.media_type === 'tv' && item.genre_ids?.includes(16));
+    }
+    return featured.filter(item => item.media_type === mediaType);
+  }, [hasSearched, results, featured, mediaType]);
     
-  const displayMediaType = hasSearched ? mediaType : undefined;
+  const displayMediaType = hasSearched ? mediaType : (mediaType === 'anime' ? 'anime' : undefined);
 
   return (
     <div className="space-y-6">
@@ -102,6 +109,7 @@ const MediaSearch = () => {
         <TabsList>
           <TabsTrigger value="movie"><Film className="mr-2 h-4 w-4" />{t('movie')}</TabsTrigger>
           <TabsTrigger value="tv"><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</TabsTrigger>
+          <TabsTrigger value="anime"><Flame className="mr-2 h-4 w-4" />{t('anime')}</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -125,7 +133,7 @@ const MediaSearch = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Link to={`/media/${displayMediaType || media.media_type}/${media.id}`}>
+                  <Link to={`/media/${mediaType === 'anime' ? 'anime' : media.media_type}/${media.id}`}>
                     <Card className="overflow-hidden flex flex-col h-full transition-transform hover:scale-105 hover:shadow-lg">
                       <div className="aspect-[2/3] bg-muted">
                         {media.poster_path ? (
