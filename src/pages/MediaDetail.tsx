@@ -13,6 +13,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import MediaGrid from '@/components/catalog/MediaGrid';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import VideoPlayer from '@/components/media/VideoPlayer';
 
 interface MediaDetails {
   id: number;
@@ -64,6 +66,9 @@ const MediaDetailPage = () => {
   const [similar, setSimilar] = useState<any[]>([]);
   const [credits, setCredits] = useState<{ cast: any[], crew: any[] }>({ cast: [], crew: [] });
   const [videoPage, setVideoPage] = useState(1);
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const [playerSrc, setPlayerSrc] = useState('');
+  const [playerTitle, setPlayerTitle] = useState('');
 
   const fetchSeasonDetails = async (seasonNumber: number) => {
     if (!type || !id) return;
@@ -156,9 +161,17 @@ const MediaDetailPage = () => {
     }
   };
 
+  const handlePlay = () => {
+    // This is where we would fetch the streaming URL from your media server in a real scenario.
+    // For now, I'm using a placeholder video to demonstrate the player.
+    setPlayerSrc('https://stream.mux.com/A3VXy02VoUinw01pwyomKw3G6P2O42bEV/high.mp4');
+    setPlayerTitle(details?.title || details?.name || 'Video');
+    setIsPlayerOpen(true);
+  };
+
   const renderActionButton = () => {
     if (requestStatus === 'available') {
-      return <Button size="lg" className="bg-green-600 hover:bg-green-700"><Play className="mr-2 h-4 w-4" /> {t('play')}</Button>;
+      return <Button size="lg" className="bg-green-600 hover:bg-green-700" onClick={handlePlay}><Play className="mr-2 h-4 w-4" /> {t('play')}</Button>;
     }
     if (requestStatus) {
       return <Button size="lg" disabled><Check className="mr-2 h-4 w-4" /> {t('requested')}</Button>;
@@ -349,6 +362,11 @@ const MediaDetailPage = () => {
           </Tabs>
         </div>
       </div>
+      <Dialog open={isPlayerOpen} onOpenChange={setIsPlayerOpen}>
+        <DialogContent className="max-w-5xl w-full p-0 border-0 bg-black aspect-video">
+          <VideoPlayer src={playerSrc} title={playerTitle} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
