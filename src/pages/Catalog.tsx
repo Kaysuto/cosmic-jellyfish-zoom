@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import FilterSidebar from '../components/catalog/FilterSidebar';
+import CatalogFilters from '../components/catalog/CatalogFilters';
 
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
@@ -120,8 +120,8 @@ const CatalogPage = () => {
   };
 
   const LoadingSkeleton = () => (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-      {[...Array(18)].map((_, i) => (
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+      {[...Array(12)].map((_, i) => (
         <div key={i} className="space-y-2">
           <Skeleton className="h-[300px] w-full" />
           <Skeleton className="h-4 w-3/4" />
@@ -163,16 +163,9 @@ const CatalogPage = () => {
           )}
         </>
       ) : (
-        <>
-          <div className="flex items-center justify-between mb-8">
-            <Tabs value={mediaType} onValueChange={(value) => setMediaType(value as any)}>
-              <TabsList>
-                <TabsTrigger value="movie"><Film className="mr-2 h-4 w-4" />{t('movie')}</TabsTrigger>
-                <TabsTrigger value="tv"><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</TabsTrigger>
-                <TabsTrigger value="anime"><Flame className="mr-2 h-4 w-4" />{t('anime')}</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <FilterSidebar
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+          <aside className="lg:col-span-1 lg:sticky lg:top-24">
+            <CatalogFilters
               genres={genres}
               selectedGenres={selectedGenres}
               onGenreToggle={handleGenreToggle}
@@ -180,14 +173,23 @@ const CatalogPage = () => {
               onSortByChange={setSortBy}
               onReset={handleResetFilters}
             />
+          </aside>
+          <div className="lg:col-span-3">
+            <Tabs value={mediaType} onValueChange={(value) => setMediaType(value as any)} className="mb-8">
+              <TabsList>
+                <TabsTrigger value="movie"><Film className="mr-2 h-4 w-4" />{t('movie')}</TabsTrigger>
+                <TabsTrigger value="tv"><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</TabsTrigger>
+                <TabsTrigger value="anime"><Flame className="mr-2 h-4 w-4" />{t('anime')}</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            {discoverLoading && page === 1 ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} />}
+            {page < totalPages && !discoverLoading && (
+              <div className="text-center mt-8">
+                <Button onClick={() => setPage(p => p + 1)}>{t('load_more')}</Button>
+              </div>
+            )}
           </div>
-          {discoverLoading && page === 1 ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} />}
-          {page < totalPages && !discoverLoading && (
-            <div className="text-center mt-8">
-              <Button onClick={() => setPage(p => p + 1)}>{t('load_more')}</Button>
-            </div>
-          )}
-        </>
+        </div>
       )}
     </div>
   );
