@@ -37,12 +37,19 @@ serve(async (req) => {
     }
     const data = await response.json();
 
-    // The 'similar' endpoint for movies returns movies, and for TV returns TV shows.
-    // The results from TMDB don't have a `media_type` field, so we add it here.
     const resultsWithMediaType = data.results.map((item: any) => ({
         ...item,
         media_type: mediaType 
     }));
+
+    // Sort by release date (descending)
+    resultsWithMediaType.sort((a: any, b: any) => {
+      const dateA = new Date(a.release_date || a.first_air_date);
+      const dateB = new Date(b.release_date || b.first_air_date);
+      if (isNaN(dateB.getTime())) return -1;
+      if (isNaN(dateA.getTime())) return 1;
+      return dateB.getTime() - dateA.getTime();
+    });
 
     return new Response(JSON.stringify(resultsWithMediaType), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
