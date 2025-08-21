@@ -9,25 +9,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET');
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
-  if (!WEBHOOK_SECRET) {
-    console.error('WEBHOOK_SECRET is not set in environment variables.');
-    return new Response(JSON.stringify({ error: 'Webhook secret not configured on server.' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-  }
-
-  const url = new URL(req.url);
-  const secret = url.searchParams.get('secret');
-
-  if (secret !== WEBHOOK_SECRET) {
-    console.warn('Invalid or missing webhook secret.');
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-  }
+  // La vérification de l'authentification est maintenant gérée par la passerelle Supabase via l'en-tête 'apikey'.
+  // Aucune vérification de secret supplémentaire n'est nécessaire ici.
 
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -36,7 +24,7 @@ serve(async (req) => {
   try {
     const payload = await req.json();
     
-    // Radarr uses movie.tmdbId, Sonarr v3/v4 uses series.tvdbId or series.tmdbId
+    // Radarr utilise movie.tmdbId, Sonarr v3/v4 utilise series.tvdbId ou series.tmdbId
     const tmdbId = payload.movie?.tmdbId || payload.series?.tmdbId;
     const eventType = payload.eventType;
 

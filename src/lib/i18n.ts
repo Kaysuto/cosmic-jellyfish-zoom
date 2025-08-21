@@ -6,6 +6,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "webhook_url_desc_simplified": "Utilisez cette URL dans les paramètres de connexion de Sonarr/Radarr.",
       "security_warning": "Avertissement de sécurité",
       "webhook_secret_warning": "Votre secret de webhook est sensible. Ne le partagez jamais publiquement. Si vous pensez qu'il a été compromis, changez-le immédiatement dans les paramètres de votre projet Supabase.",
       "webhook_url_desc_detailed": "Copiez l'URL de base et ajoutez `?secret=VOTRE_NOUVEAU_SECRET` à la fin, en remplaçant `VOTRE_NOUVEAU_SECRET` par le secret que vous avez créé.",
@@ -379,6 +380,7 @@ const resources = {
   },
   en: {
     translation: {
+      "webhook_url_desc_simplified": "Use this URL in your Sonarr/Radarr connection settings.",
       "security_warning": "Security Warning",
       "webhook_secret_warning": "Your webhook secret is sensitive. Never share it publicly. If you believe it has been compromised, change it immediately in your Supabase project settings.",
       "webhook_url_desc_detailed": "Copy the base URL and append `?secret=YOUR_NEW_SECRET` to the end, replacing `YOUR_NEW_SECRET` with the secret you created.",

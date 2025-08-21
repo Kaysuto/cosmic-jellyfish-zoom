@@ -3,12 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Copy, AlertTriangle } from 'lucide-react';
+import { Copy } from 'lucide-react';
 import { showSuccess } from '@/utils/toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZmZrd29la3VhZXRhaHJ3aW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzNzc5OTMsImV4cCI6MjA2OTk1Mzk5M30.2Or0n42Hc6OjdWL-oGwoQHMjPqTwg0yMGKXnEysiJP4";
-const WEBHOOK_BASE_URL = "https://tgffkwoekuaetahrwioo.supabase.co/functions/v1/media-sync";
+const WEBHOOK_URL = "https://tgffkwoekuaetahrwioo.supabase.co/functions/v1/media-sync";
 
 const WebhookInstructions = () => {
   const { t } = useTranslation();
@@ -25,23 +24,17 @@ const WebhookInstructions = () => {
         <CardDescription>{t('integrations_desc')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>{t('security_warning')}</AlertTitle>
-          <AlertDescription>{t('webhook_secret_warning')}</AlertDescription>
-        </Alert>
-
         <div>
           <h4 className="font-semibold mb-2">1. {t('webhook_url_label')}</h4>
-          <p className="text-sm text-muted-foreground mb-2">{t('webhook_url_desc_detailed')}</p>
+          <p className="text-sm text-muted-foreground mb-2">{t('webhook_url_desc_simplified')}</p>
           <div className="flex items-center gap-2">
             <Input
               id="webhook-url"
               readOnly
-              value={`${WEBHOOK_BASE_URL}?secret=VOTRE_NOUVEAU_SECRET`}
+              value={WEBHOOK_URL}
               className="font-mono text-xs"
             />
-            <Button variant="outline" size="icon" onClick={() => copyToClipboard(WEBHOOK_BASE_URL, t('url_copied_to_clipboard'))}>
+            <Button variant="outline" size="icon" onClick={() => copyToClipboard(WEBHOOK_URL, t('url_copied_to_clipboard'))}>
               <Copy className="h-4 w-4" />
             </Button>
           </div>
