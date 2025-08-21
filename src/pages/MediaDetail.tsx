@@ -7,7 +7,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv } from 'lucide-react';
+import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface MediaDetails {
@@ -41,6 +41,8 @@ interface SeasonDetails {
   episodes: Episode[];
 }
 
+type RequestStatus = 'available' | 'pending' | 'approved' | 'rejected' | null;
+
 const MediaDetailPage = () => {
   const { type, id } = useParams<{ type: 'movie' | 'tv' | 'anime'; id: string }>();
   const { t, i18n } = useTranslation();
@@ -48,7 +50,7 @@ const MediaDetailPage = () => {
   const { session } = useSession();
   const [details, setDetails] = useState<MediaDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isRequested, setIsRequested] = useState(false);
+  const [requestStatus, setRequestStatus] = useState<RequestStatus>(null);
   const [isRequesting, setIsRequesting] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState<SeasonDetails | null>(null);
   const [seasonLoading, setSeasonLoading] = useState(false);
@@ -71,18 +73,34 @@ const MediaDetailPage = () => {
   };
 
   useEffect(() => {
-    const fetchDetails = async () => {
+    const fetchDetailsAndStatus = async () => {
       if (!type || !id) return;
       setLoading(true);
       try {
         const apiMediaType = type === 'anime' ? 'tv' : type;
-        const { data, error } = await supabase.functions.invoke('get-media-details', {
+        
+        const detailsPromise = supabase.functions.invoke('get-media-details', {
           body: { mediaType: apiMediaType, mediaId: id, language: i18n.language },
         });
-        if (error) throw error;
-        setDetails(data);
-        if (apiMediaType === 'tv' && data.seasons && data.seasons.length > 0) {
-          const initialSeason = data.seasons.find((s: any) => s.season_number > 0) || data.seasons[0];
+
+        const statusPromise = session?.user ? supabase
+          .from('media_requests')
+          .select('status')
+          .eq('tmdb_id', id)
+          .eq('media_type', type)
+          .maybeSingle() : Promise.resolve({ data: null });
+
+        const [detailsResult, statusResult] = await Promise.all([detailsPromise, statusPromise]);
+
+        if (detailsResult.error) throw detailsResult.error;
+        setDetails(detailsResult.data);
+
+        if (statusResult.data) {
+          setRequestStatus(statusResult.data.status as RequestStatus);
+        }
+
+        if (apiMediaType === 'tv' && detailsResult.data.seasons && detailsResult.data.seasons.length > 0) {
+          const initialSeason = detailsResult.data.seasons.find((s: any) => s.season_number > 0) || detailsResult.data.seasons[0];
           setSelectedSeasonNumber(initialSeason.season_number);
         }
       } catch (error: any) {
@@ -92,20 +110,7 @@ const MediaDetailPage = () => {
       }
     };
 
-    const checkRequestStatus = async () => {
-      if (!session?.user || !type || !id) return;
-      const { data } = await supabase
-        .from('media_requests')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .eq('media_type', type)
-        .eq('tmdb_id', id)
-        .single();
-      if (data) setIsRequested(true);
-    };
-
-    fetchDetails();
-    checkRequestStatus();
+    fetchDetailsAndStatus();
   }, [type, id, i18n.language, session]);
 
   useEffect(() => {
@@ -134,12 +139,35 @@ const MediaDetailPage = () => {
       });
       if (error) throw error;
       showSuccess(t('request_successful'));
-      setIsRequested(true);
+      setRequestStatus('pending');
     } catch (error: any) {
       showError(`${t('error_sending_request')}: ${error.message}`);
     } finally {
       setIsRequesting(false);
     }
+  };
+
+  const renderActionButton = () => {
+    if (requestStatus === 'available') {
+      return (
+        <Button size="lg" className="bg-green-600 hover:bg-green-700">
+          <Play className="mr-2 h-4 w-4" /> {t('play')}
+        </Button>
+      );
+    }
+    if (requestStatus) {
+      return (
+        <Button size="lg" disabled>
+          <Check className="mr-2 h-4 w-4" /> {t('requested')}
+        </Button>
+      );
+    }
+    return (
+      <Button size="lg" onClick={handleRequest} disabled={isRequesting}>
+        {isRequesting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Film className="mr-2 h-4 w-4" />}
+        {t('request')}
+      </Button>
+    );
   };
 
   if (loading) {
@@ -182,10 +210,7 @@ const MediaDetailPage = () => {
             </div>
             <p className="mt-6 text-lg text-muted-foreground">{details.overview}</p>
             <div className="mt-8">
-              <Button size="lg" onClick={handleRequest} disabled={isRequested || isRequesting}>
-                {isRequesting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isRequested ? <Check className="mr-2 h-4 w-4" /> : <Film className="mr-2 h-4 w-4" />}
-                {isRequested ? t('requested') : t('request')}
-              </Button>
+              {renderActionButton()}
             </div>
           </div>
         </div>

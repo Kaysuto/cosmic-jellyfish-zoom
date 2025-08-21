@@ -4,6 +4,8 @@ import { useAvailableMedia } from '@/hooks/useAvailableMedia';
 import { Skeleton } from '@/components/ui/skeleton';
 import MediaGrid from '../components/catalog/MediaGrid';
 import MediaFilters from '../components/catalog/MediaFilters';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import NewRequestSearch from '@/components/catalog/NewRequestSearch';
 
 const CatalogPage = () => {
   const { t } = useTranslation();
@@ -18,7 +20,6 @@ const CatalogPage = () => {
         if (sortOption === 'release_date') {
           return new Date(b.release_date).getTime() - new Date(a.release_date).getTime();
         }
-        // Default sort is 'updated_at' (latest additions)
         return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
       });
   }, [media, searchTerm, sortOption]);
@@ -37,21 +38,28 @@ const CatalogPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold tracking-tight mb-2">{t('catalog')}</h1>
-      <p className="text-muted-foreground mb-8">{t('catalog_description')}</p>
-      
-      <MediaFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        sortOption={sortOption}
-        setSortOption={setSortOption}
-      />
-
-      {loading ? (
-        <LoadingSkeleton />
-      ) : (
-        <MediaGrid media={filteredAndSortedMedia} />
-      )}
+      <Tabs defaultValue="catalog">
+        <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-2 mb-8">
+          <TabsTrigger value="catalog">{t('catalog')}</TabsTrigger>
+          <TabsTrigger value="search">{t('search_and_request')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="catalog">
+          <h1 className="text-4xl font-bold tracking-tight mb-2">{t('catalog')}</h1>
+          <p className="text-muted-foreground mb-8">{t('catalog_description')}</p>
+          <MediaFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
+          />
+          {loading ? <LoadingSkeleton /> : <MediaGrid media={filteredAndSortedMedia} />}
+        </TabsContent>
+        <TabsContent value="search">
+          <h1 className="text-4xl font-bold tracking-tight mb-2">{t('search_and_request')}</h1>
+          <p className="text-muted-foreground mb-8">{t('search_and_request_desc')}</p>
+          <NewRequestSearch />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

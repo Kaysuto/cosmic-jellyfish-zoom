@@ -26,9 +26,9 @@ import UserManager from "@/components/admin/UserManager";
 import EditUserPage from "./pages/admin/EditUser";
 import LogsPage from "./pages/admin/Logs";
 import { SettingsProvider, useSettings } from "./contexts/SettingsContext";
-import RequestsPage from "./pages/Requests";
 import MediaDetailPage from "./pages/MediaDetail";
 import CatalogPage from "./pages/Catalog";
+import AdminRequestManager from "./components/admin/AdminRequestManager";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,7 +71,6 @@ const App = () => (
                     <Route path="/media/:type/:id" element={<MediaDetailPage />} />
                     <Route element={<ProtectedRoute />}>
                       <Route path="/profile" element={<Profile />} />
-                      <Route path="/requests" element={<RequestsPage />} />
                       <Route path="/catalog" element={<CatalogPage />} />
                     </Route>
                   </Route>
@@ -83,6 +82,7 @@ const App = () => (
                       <Route path="maintenance" element={<MaintenanceManager />} />
                       <Route path="users" element={<UserManager />} />
                       <Route path="users/:userId/edit" element={<EditUserPage />} />
+                      <Route path="requests" element={<AdminRequestManager />} />
                       <Route path="settings" element={<Settings />} />
                       <Route path="logs" element={<LogsPage />} />
                     </Route>

@@ -25,7 +25,7 @@ interface MediaResult {
   vote_average: number;
 }
 
-const MediaSearch = () => {
+const NewRequestSearch = () => {
   const { t, i18n } = useTranslation();
   const [query, setQuery] = useState('');
   const [mediaType, setMediaType] = useState<'movie' | 'tv' | 'anime'>('movie');
@@ -233,4 +233,4 @@ const MediaSearch = () => {
   );
 };
 
-export default MediaSearch;
+export default NewRequestSearch;

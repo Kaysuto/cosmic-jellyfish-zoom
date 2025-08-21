@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown } from "lucide-react";
+import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -48,7 +48,6 @@ const Navbar = () => {
   ];
 
   const protectedNavItems = [
-    { to: "/requests", label: t('requests') },
     { to: "/catalog", label: t('catalog') },
   ];
 

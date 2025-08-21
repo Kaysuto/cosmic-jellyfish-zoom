@@ -6,6 +6,10 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "play": "Lecture",
+      "view_details": "Voir la fiche",
+      "search_and_request": "Rechercher & Demander",
+      "search_and_request_desc": "Trouvez de nouveaux films, séries ou animés et ajoutez-les à vos demandes.",
       "anime": "Animés",
       "webhook_url_desc_simplified": "Utilisez cette URL dans les paramètres de connexion de Sonarr/Radarr.",
       "security_warning": "Avertissement de sécurité",
@@ -381,6 +385,10 @@ const resources = {
   },
   en: {
     translation: {
+      "play": "Play",
+      "view_details": "View Details",
+      "search_and_request": "Search & Request",
+      "search_and_request_desc": "Find new movies, series, or anime and add them to your requests.",
       "anime": "Anime",
       "webhook_url_desc_simplified": "Use this URL in your Sonarr/Radarr connection settings.",
       "security_warning": "Security Warning",
