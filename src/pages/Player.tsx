@@ -41,7 +41,7 @@ const PlayerPage = () => {
 
         setStreamUrl(streamData.url);
       } catch (err: any) {
-        showError(err.message || 'Échec du chargement du flux vidéo.');
+        showError(`Erreur: ${JSON.stringify(err, null, 2)}`);
         navigate(`/media/${type}/${id}`); // Retour en cas d'échec
       } finally {
         setLoading(false);
