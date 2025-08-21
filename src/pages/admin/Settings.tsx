@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shield, Settings as SettingsIcon, RefreshCw, TestTube2, Loader2 } from 'lucide-react';
+import { Shield, Settings as SettingsIcon, RefreshCw } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from '@/integrations/supabase/client';
@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useSession } from '@/contexts/AuthContext';
 import WebhookInstructions from '@/components/admin/WebhookInstructions';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
@@ -41,8 +40,6 @@ const Settings = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingSettings, setPendingSettings] = useState<z.infer<typeof generalSettingsSchema> | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<any | null>(null);
 
   const generalSettingsSchema = useMemo(() => z.object({
     site_title: z.string().min(1, { message: t('site_title_empty_error') }),
@@ -82,28 +79,6 @@ const Settings = () => {
       showError(`Erreur de synchronisation: ${error.message}`);
     } finally {
       setIsSyncing(false);
-    }
-  };
-
-  const handleTestConnection = async () => {
-    setIsTesting(true);
-    setTestResult(null);
-    const toastId = showLoading("Test de la connexion Jellyfin...");
-    try {
-      const { data, error } = await supabase.functions.invoke('test-jellyfin-connection');
-      if (error) throw error;
-      setTestResult(data);
-      if (data.success) {
-        showSuccess("Test de connexion réussi !");
-      } else {
-        showError("Le test de connexion a échoué. Voir les détails ci-dessous.");
-      }
-    } catch (error: any) {
-      setTestResult({ success: false, message: error.message });
-      showError(`Erreur lors de l'exécution du test: ${error.message}`);
-    } finally {
-      dismissToast(toastId);
-      setIsTesting(false);
     }
   };
 
@@ -243,27 +218,6 @@ const Settings = () => {
                     <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
                     {isSyncing ? "Synchronisation..." : "Lancer la synchronisation Jellyfin"}
                   </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><TestTube2 className="h-5 w-5" />Débogage de la connexion Jellyfin</CardTitle>
-                  <CardDescription>Si la synchronisation échoue, utilisez cet outil pour tester la connexion à votre serveur Jellyfin.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button onClick={handleTestConnection} disabled={isTesting}>
-                    {isTesting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Tester la connexion
-                  </Button>
-                  {testResult && (
-                    <Alert variant={testResult.success ? 'default' : 'destructive'}>
-                      <AlertTitle>{testResult.success ? 'Succès !' : 'Échec'}</AlertTitle>
-                      <AlertDescription className="whitespace-pre-wrap text-xs font-mono">
-                        {JSON.stringify(testResult, null, 2)}
-                      </AlertDescription>
-                    </Alert>
-                  )}
                 </CardContent>
               </Card>
 
