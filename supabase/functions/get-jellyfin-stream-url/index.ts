@@ -20,8 +20,35 @@ serve(async (req) => {
       throw new Error("jellyfinId is required");
     }
 
-    // 1. Get Playback Info from Jellyfin
-    const playbackInfoUrl = `${JELLYFIN_BASE_URL}/Items/${jellyfinId}/PlaybackInfo?api_key=${JELLYFIN_API_KEY}`;
+    // 1. Get Item details to check if it's a Movie or Series
+    const itemInfoUrl = `${JELLYFIN_BASE_URL}/Items/${jellyfinId}?api_key=${JELLYFIN_API_KEY}`;
+    const itemInfoRes = await fetch(itemInfoUrl);
+    if (!itemInfoRes.ok) {
+      throw new Error(`Jellyfin Item Info API error: ${itemInfoRes.status} ${itemInfoRes.statusText}`);
+    }
+    const itemInfo = await itemInfoRes.json();
+
+    let playableItemId = jellyfinId;
+
+    // 2. If it's a Series, find the first episode
+    if (itemInfo.Type === 'Series') {
+      const episodesUrl = `${JELLYFIN_BASE_URL}/Items?ParentId=${jellyfinId}&IncludeItemTypes=Episode&Recursive=true&SortBy=SortName&Limit=1&api_key=${JELLYFIN_API_KEY}`;
+      const episodesRes = await fetch(episodesUrl);
+      if (!episodesRes.ok) {
+        throw new Error(`Jellyfin Episodes API error: ${episodesRes.status} ${episodesRes.statusText}`);
+      }
+      const episodesData = await episodesRes.json();
+      
+      if (episodesData.Items && episodesData.Items.length > 0) {
+        // The first item in the sorted list is S01E01
+        playableItemId = episodesData.Items[0].Id;
+      } else {
+        throw new Error("This series has no episodes available on Jellyfin.");
+      }
+    }
+
+    // 3. Get Playback Info for the playable item (either the movie or the first episode)
+    const playbackInfoUrl = `${JELLYFIN_BASE_URL}/Items/${playableItemId}/PlaybackInfo?api_key=${JELLYFIN_API_KEY}`;
     const playbackInfoRes = await fetch(playbackInfoUrl, { method: 'POST', body: '{}', headers: {'Content-Type': 'application/json'} });
     
     if (!playbackInfoRes.ok) {
@@ -29,20 +56,13 @@ serve(async (req) => {
     }
     const playbackInfo = await playbackInfoRes.json();
 
-    // 2. Find the HLS stream source
+    // 4. Find HLS stream and construct URL
     const hlsSource = playbackInfo.MediaSources.find(s => s.SupportsStreaming && (s.Container === 'm3u8' || s.Path.includes('.m3u8')));
-
     let streamUrl;
     if (hlsSource && hlsSource.Path) {
-      // Construct the full HLS URL
-      if (hlsSource.Path.startsWith('http')) {
-         streamUrl = hlsSource.Path;
-      } else {
-         streamUrl = `${JELLYFIN_BASE_URL}${hlsSource.Path.startsWith('/') ? '' : '/'}${hlsSource.Path}`;
-      }
+      streamUrl = hlsSource.Path.startsWith('http') ? hlsSource.Path : `${JELLYFIN_BASE_URL}${hlsSource.Path.startsWith('/') ? '' : '/'}${hlsSource.Path}`;
     } else {
-      // Fallback to the direct stream URL if no HLS is found
-      streamUrl = `${JELLYFIN_BASE_URL}/Videos/${jellyfinId}/stream?api_key=${JELLYFIN_API_KEY}`;
+      streamUrl = `${JELLYFIN_BASE_URL}/Videos/${playableItemId}/stream?api_key=${JELLYFIN_API_KEY}`;
     }
 
     return new Response(JSON.stringify({ url: streamUrl }), {
