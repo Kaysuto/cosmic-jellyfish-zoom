@@ -17,8 +17,6 @@ const VideoPlayer = ({ src, title }: VideoPlayerProps) => {
       title={title}
       src={src}
       playsInline
-      autoPlay
-      aspectRatio="16/9"
     >
       <MediaOutlet />
       <MediaCommunitySkin />
