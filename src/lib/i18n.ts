@@ -6,6 +6,9 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "load_more": "Charger plus",
+      "search_results": "Résultats de recherche",
+      "available_in_catalog": "Disponible dans le catalogue",
       "play": "Lecture",
       "view_details": "Voir la fiche",
       "search_and_request": "Rechercher & Demander",
@@ -24,7 +27,7 @@ const resources = {
       "webhook_url_desc": "Utilisez cette URL dans les paramètres de connexion de Sonarr/Radarr. N'oubliez pas de remplacer VOTRE_SECRET_ICI par le secret que vous avez créé dans les paramètres de Supabase.",
       "url_copied_to_clipboard": "URL de base copiée dans le presse-papiers !",
       "catalog": "Catalogue",
-      "catalog_description": "Explorez tous les films et séries disponibles sur notre plateforme.",
+      "catalog_description": "Explorez les films et séries populaires, et recherchez de nouveaux contenus à demander.",
       "search_in_catalog": "Rechercher dans le catalogue...",
       "sort_by": "Trier par",
       "latest_additions": "Derniers ajouts",
@@ -385,6 +388,9 @@ const resources = {
   },
   en: {
     translation: {
+      "load_more": "Load more",
+      "search_results": "Search Results",
+      "available_in_catalog": "Available in Catalog",
       "play": "Play",
       "view_details": "View Details",
       "search_and_request": "Search & Request",
@@ -403,7 +409,7 @@ const resources = {
       "webhook_url_desc": "Use this URL in your Sonarr/Radarr connection settings. Remember to replace YOUR_SECRET_HERE with the secret you created in your Supabase settings.",
       "url_copied_to_clipboard": "Base URL copied to clipboard!",
       "catalog": "Catalog",
-      "catalog_description": "Explore all the movies and series available on our platform.",
+      "catalog_description": "Explore popular movies and series, and search for new content to request.",
       "search_in_catalog": "Search in catalog...",
       "sort_by": "Sort by",
       "latest_additions": "Latest additions",
