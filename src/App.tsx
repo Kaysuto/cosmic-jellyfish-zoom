@@ -30,6 +30,7 @@ import MediaDetailPage from "./pages/MediaDetail";
 import CatalogPage from "./pages/Catalog";
 import AdminRequestManager from "./components/admin/AdminRequestManager";
 import PlayerPage from "./pages/Player";
+import JellyfinSettings from "./pages/admin/JellyfinSettings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -84,6 +85,7 @@ const App = () => (
                       <Route path="users" element={<UserManager />} />
                       <Route path="users/:userId/edit" element={<EditUserPage />} />
                       <Route path="requests" element={<AdminRequestManager />} />
+                      <Route path="jellyfin" element={<JellyfinSettings />} />
                       <Route path="settings" element={<Settings />} />
                       <Route path="logs" element={<LogsPage />} />
                     </Route>

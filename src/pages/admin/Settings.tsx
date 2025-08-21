@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shield, Settings as SettingsIcon, RefreshCw } from 'lucide-react';
+import { Shield, Settings as SettingsIcon } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from '@/integrations/supabase/client';
-import { showSuccess, showError, showLoading, dismissToast } from '@/utils/toast';
+import { showSuccess, showError } from '@/utils/toast';
 import { useState, useEffect, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProfile } from '@/hooks/useProfile';
@@ -27,8 +27,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useSession } from '@/contexts/AuthContext';
-import WebhookInstructions from '@/components/admin/WebhookInstructions';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const Settings = () => {
   const { t } = useTranslation();
@@ -40,12 +38,7 @@ const Settings = () => {
   const [loadingRegistrations, setLoadingRegistrations] = useState(true);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingSettings, setPendingSettings] = useState<z.infer<typeof generalSettingsSchema> | null>(null);
-  const [isSyncing, setIsSyncing] = useState(false);
   
-  const [debugStartIndex, setDebugStartIndex] = useState(0);
-  const [debugBatchSize] = useState(50);
-  const [debugLog, setDebugLog] = useState<any[]>([]);
-
   const generalSettingsSchema = useMemo(() => z.object({
     site_title: z.string().min(1, { message: t('site_title_empty_error') }),
     default_language: z.enum(['fr', 'en']),
@@ -66,49 +59,6 @@ const Settings = () => {
       setLoadingRegistrations(false);
     }
   }, [settingsLoading, getSetting, form]);
-
-  const handleSyncJellyfin = async () => {
-    setIsSyncing(true);
-    const toastId = showLoading("Synchronisation avec Jellyfin en cours...");
-    try {
-      const { data, error } = await supabase.functions.invoke('media-sync', {
-        body: { _path: '/sync' }
-      });
-      if (error) throw error;
-      dismissToast(toastId);
-      showSuccess(`Synchronisation terminée ! ${data.upserted || 0} éléments traités.`);
-    } catch (error: any) {
-      dismissToast(toastId);
-      showError(`Erreur de synchronisation: ${error.message}`);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const handleDebugSync = async () => {
-    setIsSyncing(true);
-    const toastId = showLoading(`Test du lot commençant à ${debugStartIndex}...`);
-    try {
-      const { data, error } = await supabase.functions.invoke('media-sync', {
-        body: { startIndex: debugStartIndex, limit: debugBatchSize }
-      });
-      if (error) throw error;
-      
-      setDebugLog(prev => [data.log, ...prev]);
-      if (data.log.upsert.status === 'success' && data.log.fetch.count > 0) {
-        setDebugStartIndex(prev => prev + debugBatchSize);
-      }
-      dismissToast(toastId);
-      showSuccess("Test du lot terminé.");
-
-    } catch (error: any) {
-      setDebugLog(prev => [{ error: error.message }, ...prev]);
-      dismissToast(toastId);
-      showError(`Erreur du test: ${error.message}`);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
 
   const handleRegistrationToggle = async (checked: boolean) => {
     if (!session?.user) return;
@@ -193,52 +143,6 @@ const Settings = () => {
                   )}
                 </CardContent>
               </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Jellyfin</CardTitle>
-                  <CardDescription>Synchronisez votre bibliothèque Jellyfin avec l'application.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button onClick={handleSyncJellyfin} disabled={isSyncing}>
-                    <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                    {isSyncing ? "Synchronisation..." : "Lancer la synchronisation Jellyfin"}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Outil de débogage Jellyfin</CardTitle>
-                  <CardDescription>Exécutez la synchronisation par petits lots pour trouver le point de défaillance.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-4">
-                      <p className="text-sm">Lot de <strong>{debugBatchSize}</strong> éléments, commençant à l'index <strong>{debugStartIndex}</strong>.</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button onClick={handleDebugSync} disabled={isSyncing}>
-                      <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                      {isSyncing ? "Test en cours..." : "Lancer le test du prochain lot"}
-                    </Button>
-                    <Button variant="outline" onClick={() => { setDebugStartIndex(0); setDebugLog([]); }}>Réinitialiser</Button>
-                  </div>
-                  {debugLog.length > 0 && (
-                      <div className="space-y-2">
-                          <h4 className="font-semibold">Logs de débogage:</h4>
-                          <ScrollArea className="h-96 w-full rounded-md border p-4 bg-muted/50">
-                              {debugLog.map((log, index) => (
-                                  <div key={index} className="mb-4 p-2 border-b">
-                                      <pre className="text-xs font-mono whitespace-pre-wrap">{JSON.stringify(log, null, 2)}</pre>
-                                  </div>
-                              ))}
-                          </ScrollArea>
-                      </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <WebhookInstructions />
             </>
           )}
         </div>
