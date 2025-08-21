@@ -13,8 +13,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import MediaGrid from '@/components/catalog/MediaGrid';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import VideoPlayer from '@/components/media/VideoPlayer';
 
 interface MediaDetails {
   id: number;
@@ -66,9 +64,6 @@ const MediaDetailPage = () => {
   const [similar, setSimilar] = useState<any[]>([]);
   const [credits, setCredits] = useState<{ cast: any[], crew: any[] }>({ cast: [], crew: [] });
   const [videoPage, setVideoPage] = useState(1);
-  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
-  const [playerSrc, setPlayerSrc] = useState('');
-  const [playerTitle, setPlayerTitle] = useState('');
   const [jellyfinId, setJellyfinId] = useState<string | null>(null);
 
   const fetchSeasonDetails = async (seasonNumber: number) => {
@@ -172,29 +167,12 @@ const MediaDetailPage = () => {
     }
   };
 
-  const handlePlay = async () => {
-    if (!details) {
-      showError('No media details available to play.');
+  const handlePlay = () => {
+    if (!details || !type || !jellyfinId) {
+      showError('Ce média n\'est pas prêt pour la lecture.');
       return;
     }
-    if (!jellyfinId) {
-      showError('Aucune source de lecture trouvée pour ce média.');
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke('media-sync', {
-        body: { _path: '/stream-url', jellyfinId }
-      });
-      if (error) throw error;
-      
-      setPlayerSrc(data.url);
-      setPlayerTitle(details.title || details.name || 'Video');
-      setIsPlayerOpen(true);
-    } catch (err: any) {
-      console.error('Error fetching stream URL:', err);
-      showError(err?.message || 'Erreur lors de la récupération du flux');
-    }
+    navigate(`/player/${type}/${details.id}`);
   };
 
   const renderActionButton = () => {
@@ -390,11 +368,6 @@ const MediaDetailPage = () => {
           </Tabs>
         </div>
       </div>
-      <Dialog open={isPlayerOpen} onOpenChange={setIsPlayerOpen}>
-        <DialogContent className="max-w-5xl w-full p-0 border-0 bg-black aspect-video">
-          <VideoPlayer src={playerSrc} title={playerTitle} />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

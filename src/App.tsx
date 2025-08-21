@@ -29,6 +29,7 @@ import { SettingsProvider, useSettings } from "./contexts/SettingsContext";
 import MediaDetailPage from "./pages/MediaDetail";
 import CatalogPage from "./pages/Catalog";
 import AdminRequestManager from "./components/admin/AdminRequestManager";
+import PlayerPage from "./pages/Player";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -89,6 +90,9 @@ const App = () => (
                   </Route>
                   <Route path="/login" element={<Login />} />
                   <Route path="/update-password" element={<UpdatePassword />} />
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/player/:type/:id" element={<PlayerPage />} />
+                  </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
