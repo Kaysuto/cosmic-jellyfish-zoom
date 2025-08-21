@@ -74,7 +74,7 @@ const CatalogPage = () => {
             body: { query: debouncedSearchTerm, mediaType: 'multi', language: i18n.language },
           });
           if (error) throw error;
-          setSearchResults(data.filter((item: any) => item.media_type !== 'person'));
+          setSearchResults(data);
         } catch (error: any) {
           showError(error.message);
         } finally {
