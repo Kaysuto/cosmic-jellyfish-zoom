@@ -7,7 +7,7 @@ import { Copy } from 'lucide-react';
 import { showSuccess } from '@/utils/toast';
 
 const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZmZrd29la3VhZXRhaHJ3aW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzNzc5OTMsImV4cCI6MjA2OTk1Mzk5M30.2Or0n42Hc6OjdWL-oGwoQHMjPqTwg0yMGKXnEysiJP4";
-const WEBHOOK_URL = "https://tgffkwoekuaetahrwioo.supabase.co/functions/v1/media-sync";
+const WEBHOOK_URL = "https://tgffkwoekuaetahrwioo.supabase.co/rest/v1/webhook_events";
 
 const WebhookInstructions = () => {
   const { t } = useTranslation();
@@ -43,20 +43,36 @@ const WebhookInstructions = () => {
         <div className="border-t pt-4">
           <h4 className="font-semibold mb-2">2. {t('webhook_headers_label')}</h4>
           <p className="text-sm text-muted-foreground mb-2">{t('webhook_headers_desc')}</p>
-          <div className="space-y-2 rounded-md border p-4">
+          <div className="space-y-4 rounded-md border p-4">
             <div className="grid grid-cols-3 gap-2 items-center">
-              <Label htmlFor="header-name" className="text-xs text-muted-foreground col-span-1">Name</Label>
-              <div className="col-span-2">
-                <Input id="header-name" readOnly value="apikey" className="font-mono text-xs h-8" />
+              <Label className="text-xs text-muted-foreground col-span-1">Name</Label>
+              <Label className="text-xs text-muted-foreground col-span-2">Value</Label>
+            </div>
+            <div className="grid grid-cols-3 gap-2 items-center">
+              <div className="col-span-1">
+                <Input readOnly value="apikey" className="font-mono text-xs h-8" />
+              </div>
+              <div className="col-span-2 flex items-center gap-2">
+                <Input readOnly value={ANON_KEY} className="font-mono text-xs h-8" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => copyToClipboard(ANON_KEY, t('api_key_copied'))}>
+                  <Copy className="h-4 w-4" />
+                </Button>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2 items-center">
-              <Label htmlFor="header-value" className="text-xs text-muted-foreground col-span-1">Value</Label>
-              <div className="col-span-2 flex items-center gap-2">
-                <Input id="header-value" readOnly value={ANON_KEY} className="font-mono text-xs h-8" />
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard(ANON_KEY, t('api_key_copied'))}>
-                  <Copy className="h-4 w-4" />
-                </Button>
+              <div className="col-span-1">
+                <Input readOnly value="Content-Type" className="font-mono text-xs h-8" />
+              </div>
+              <div className="col-span-2">
+                <Input readOnly value="application/json" className="font-mono text-xs h-8" />
+              </div>
+            </div>
+             <div className="grid grid-cols-3 gap-2 items-center">
+              <div className="col-span-1">
+                <Input readOnly value="Prefer" className="font-mono text-xs h-8" />
+              </div>
+              <div className="col-span-2">
+                <Input readOnly value="return=minimal" className="font-mono text-xs h-8" />
               </div>
             </div>
           </div>
