@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import FilterSidebar from '../components/catalog/FilterSidebar';
 
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
@@ -24,34 +25,44 @@ const CatalogPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchDiscoverMedia = useCallback(async (currentPage: number) => {
+  const [genres, setGenres] = useState([]);
+  const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
+  const [sortBy, setSortBy] = useState('popularity.desc');
+
+  const fetchGenres = useCallback(async () => {
+    const apiMediaType = mediaType === 'anime' ? 'tv' : mediaType;
+    try {
+      const { data, error } = await supabase.functions.invoke('get-genres', {
+        body: { mediaType: apiMediaType, language: i18n.language },
+      });
+      if (error) throw error;
+      setGenres(data);
+    } catch (error: any) {
+      showError(error.message);
+    }
+  }, [mediaType, i18n.language]);
+
+  const fetchDiscoverMedia = useCallback(async (currentPage, shouldAppend = false) => {
     setDiscoverLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('discover-media', {
-        body: { mediaType, language: i18n.language, page: currentPage },
+        body: {
+          mediaType,
+          language: i18n.language,
+          page: currentPage,
+          sortBy,
+          genres: selectedGenres.join(','),
+        },
       });
       if (error) throw error;
-      setDiscoverMedia(prev => currentPage === 1 ? data.results : [...prev, ...data.results]);
+      setDiscoverMedia(prev => shouldAppend ? [...prev, ...data.results] : data.results);
       setTotalPages(data.total_pages);
     } catch (error: any) {
       showError(error.message);
     } finally {
       setDiscoverLoading(false);
     }
-  }, [mediaType, i18n.language]);
-
-  useEffect(() => {
-    if (!debouncedSearchTerm) {
-      fetchDiscoverMedia(page);
-    }
-  }, [page, fetchDiscoverMedia, debouncedSearchTerm]);
-
-  useEffect(() => {
-    if (!debouncedSearchTerm) {
-      setPage(1);
-      fetchDiscoverMedia(1);
-    }
-  }, [mediaType, i18n.language, debouncedSearchTerm, fetchDiscoverMedia]);
+  }, [mediaType, i18n.language, sortBy, selectedGenres]);
 
   useEffect(() => {
     if (debouncedSearchTerm) {
@@ -74,6 +85,39 @@ const CatalogPage = () => {
       setSearchResults([]);
     }
   }, [debouncedSearchTerm, i18n.language]);
+
+  useEffect(() => {
+    if (!debouncedSearchTerm) {
+      fetchDiscoverMedia(page, page > 1);
+    }
+  }, [page, debouncedSearchTerm, fetchDiscoverMedia]);
+
+  useEffect(() => {
+    if (!debouncedSearchTerm) {
+      setPage(1);
+      fetchDiscoverMedia(1, false);
+    }
+  }, [sortBy, selectedGenres, debouncedSearchTerm, fetchDiscoverMedia]);
+
+  useEffect(() => {
+    fetchGenres();
+    setSelectedGenres([]);
+    setSortBy('popularity.desc');
+    setPage(1);
+  }, [mediaType, i18n.language]);
+
+  const handleGenreToggle = (genreId: number) => {
+    setSelectedGenres(prev =>
+      prev.includes(genreId)
+        ? prev.filter(id => id !== genreId)
+        : [...prev, genreId]
+    );
+  };
+
+  const handleResetFilters = () => {
+    setSelectedGenres([]);
+    setSortBy('popularity.desc');
+  };
 
   const LoadingSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -120,13 +164,23 @@ const CatalogPage = () => {
         </>
       ) : (
         <>
-          <Tabs value={mediaType} onValueChange={(value) => setMediaType(value as any)} className="mb-8">
-            <TabsList>
-              <TabsTrigger value="movie"><Film className="mr-2 h-4 w-4" />{t('movie')}</TabsTrigger>
-              <TabsTrigger value="tv"><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</TabsTrigger>
-              <TabsTrigger value="anime"><Flame className="mr-2 h-4 w-4" />{t('anime')}</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex items-center justify-between mb-8">
+            <Tabs value={mediaType} onValueChange={(value) => setMediaType(value as any)}>
+              <TabsList>
+                <TabsTrigger value="movie"><Film className="mr-2 h-4 w-4" />{t('movie')}</TabsTrigger>
+                <TabsTrigger value="tv"><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</TabsTrigger>
+                <TabsTrigger value="anime"><Flame className="mr-2 h-4 w-4" />{t('anime')}</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <FilterSidebar
+              genres={genres}
+              selectedGenres={selectedGenres}
+              onGenreToggle={handleGenreToggle}
+              sortBy={sortBy}
+              onSortByChange={setSortBy}
+              onReset={handleResetFilters}
+            />
+          </div>
           {discoverLoading && page === 1 ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} />}
           {page < totalPages && !discoverLoading && (
             <div className="text-center mt-8">

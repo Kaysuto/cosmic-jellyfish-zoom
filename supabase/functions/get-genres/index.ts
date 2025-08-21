@@ -24,45 +24,20 @@ serve(async (req) => {
   }
 
   try {
-    const { mediaType, language, page, sortBy, genres } = await req.json();
+    const { mediaType, language } = await req.json();
     if (!mediaType) {
-      throw new Error("mediaType is required (movie, tv, or anime)");
+      throw new Error("mediaType is required (movie or tv)");
     }
 
-    let discoverUrl;
-    let type = mediaType;
-    let params = `api_key=${TMDB_API_KEY}&language=${language || 'en-US'}&page=${page || 1}&sort_by=${sortBy || 'popularity.desc'}`;
+    const url = `${TMDB_API_URL}/genre/${mediaType}/list?api_key=${TMDB_API_KEY}&language=${language || 'en-US'}`;
     
-    if (genres) {
-      params += `&with_genres=${genres}`;
-    }
-
-    if (mediaType === 'anime') {
-      type = 'tv';
-      // Pour les animés, on ajoute le genre "Animation" (16) en plus des autres genres sélectionnés
-      const animeGenres = genres ? `16,${genres}` : '16';
-      discoverUrl = `${TMDB_API_URL}/discover/tv?${params}&with_genres=${animeGenres}`;
-    } else {
-      discoverUrl = `${TMDB_API_URL}/discover/${mediaType}?${params}`;
-    }
-    
-    const response = await fetch(discoverUrl);
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`TMDB API error: ${response.statusText}`);
     }
     const data = await response.json();
 
-    const resultsWithMediaType = data.results.map(item => ({
-        ...item,
-        media_type: type
-    }));
-
-    return new Response(JSON.stringify({
-        page: data.page,
-        results: resultsWithMediaType,
-        total_pages: data.total_pages,
-        total_results: data.total_results
-    }), {
+    return new Response(JSON.stringify(data.genres), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });

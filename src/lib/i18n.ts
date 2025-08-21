@@ -6,6 +6,14 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "filter": "Filtrer",
+      "filter_and_sort": "Filtrer et trier",
+      "genres": "Genres",
+      "reset_filters": "Réinitialiser",
+      "apply_filters": "Appliquer les filtres",
+      "sort_popularity_desc": "Popularité",
+      "sort_release_date_desc": "Date de sortie",
+      "sort_rating_desc": "Note",
       "load_more": "Charger plus",
       "search_results": "Résultats de recherche",
       "available_in_catalog": "Disponible dans le catalogue",
@@ -388,6 +396,14 @@ const resources = {
   },
   en: {
     translation: {
+      "filter": "Filter",
+      "filter_and_sort": "Filter & Sort",
+      "genres": "Genres",
+      "reset_filters": "Reset",
+      "apply_filters": "Apply Filters",
+      "sort_popularity_desc": "Popularity",
+      "sort_release_date_desc": "Release Date",
+      "sort_rating_desc": "Rating",
       "load_more": "Load more",
       "search_results": "Search Results",
       "available_in_catalog": "Available in Catalog",
