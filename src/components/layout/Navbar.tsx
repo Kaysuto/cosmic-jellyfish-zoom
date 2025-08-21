@@ -49,6 +49,7 @@ const Navbar = () => {
 
   const protectedNavItems = [
     { to: "/requests", label: t('requests') },
+    { to: "/catalog", label: t('catalog') },
   ];
 
   const handleLogoutClick = () => {

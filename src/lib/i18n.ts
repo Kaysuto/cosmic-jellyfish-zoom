@@ -6,6 +6,12 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "catalog": "Catalogue",
+      "catalog_description": "Explorez tous les films et séries disponibles sur notre plateforme.",
+      "search_in_catalog": "Rechercher dans le catalogue...",
+      "sort_by": "Trier par",
+      "latest_additions": "Derniers ajouts",
+      "most_recent": "Plus récents",
       "jelly_brand": "Projet Jelly",
       "all_rights_reserved": "Tous droits réservés",
       "hero_title": "Votre univers de divertissement, à portée de main.",
@@ -362,6 +368,12 @@ const resources = {
   },
   en: {
     translation: {
+      "catalog": "Catalog",
+      "catalog_description": "Explore all the movies and series available on our platform.",
+      "search_in_catalog": "Search in catalog...",
+      "sort_by": "Sort by",
+      "latest_additions": "Latest additions",
+      "most_recent": "Most recent",
       "jelly_brand": "Jelly Project",
       "all_rights_reserved": "All rights reserved",
       "hero_title": "Your Entertainment Universe, At Your Fingertips.",

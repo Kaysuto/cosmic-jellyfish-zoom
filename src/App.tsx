@@ -28,6 +28,7 @@ import LogsPage from "./pages/admin/Logs";
 import { SettingsProvider, useSettings } from "./contexts/SettingsContext";
 import RequestsPage from "./pages/Requests";
 import MediaDetailPage from "./pages/MediaDetail";
+import CatalogPage from "./pages/Catalog";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,6 +72,7 @@ const App = () => (
                     <Route element={<ProtectedRoute />}>
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/requests" element={<RequestsPage />} />
+                      <Route path="/catalog" element={<CatalogPage />} />
                     </Route>
                   </Route>
                   <Route element={<AdminRoute />}>
