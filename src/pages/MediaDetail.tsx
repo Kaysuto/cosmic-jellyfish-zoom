@@ -69,6 +69,7 @@ const MediaDetailPage = () => {
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const [playerSrc, setPlayerSrc] = useState('');
   const [playerTitle, setPlayerTitle] = useState('');
+  const [jellyfinId, setJellyfinId] = useState<string | null>(null);
 
   const fetchSeasonDetails = async (seasonNumber: number) => {
     if (!type || !id) return;
@@ -97,26 +98,36 @@ const MediaDetailPage = () => {
         const videosPromise = supabase.functions.invoke('get-media-videos', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } });
         const similarPromise = supabase.functions.invoke('get-similar-media', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } });
         const creditsPromise = supabase.functions.invoke('get-media-credits', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } });
-        const statusPromise = session?.user ? supabase.from('media_requests').select('status').eq('tmdb_id', id).eq('media_type', type).maybeSingle() : Promise.resolve({ data: null });
-
-        const [detailsResult, videosResult, similarResult, creditsResult, statusResult] = await Promise.all([detailsPromise, videosPromise, similarPromise, creditsPromise, statusPromise]);
+        
+        const [detailsResult, videosResult, similarResult, creditsResult] = await Promise.all([detailsPromise, videosPromise, similarPromise, creditsPromise]);
 
         if (detailsResult.error) throw detailsResult.error;
-        setDetails(detailsResult.data);
+        const tmdbDetails = detailsResult.data;
+        setDetails(tmdbDetails);
+
+        // Check availability in our media table
+        const { data: mediaMatch, error: mediaError } = await supabase
+          .from('media')
+          .select('jellyfin_id, available')
+          .eq('tmdb_id', tmdbDetails.id)
+          .maybeSingle();
+
+        if (mediaError) console.error("Error checking media availability:", mediaError);
+        
+        if (mediaMatch?.available) {
+          setRequestStatus('available');
+          setJellyfinId(mediaMatch.jellyfin_id);
+        } else {
+          const { data: requestData } = session?.user ? await supabase.from('media_requests').select('status').eq('tmdb_id', id).eq('media_type', type).maybeSingle() : { data: null };
+          if (requestData) setRequestStatus(requestData.status as RequestStatus);
+        }
 
         if (videosResult.error) console.error('Error fetching videos:', videosResult.error); else setVideos(videosResult.data.results);
-        
-        if (similarResult.error) {
-          console.error('Error fetching similar media:', similarResult.error);
-        } else {
-          setSimilar(similarResult.data);
-        }
-        
+        if (similarResult.error) console.error('Error fetching similar media:', similarResult.error); else setSimilar(similarResult.data);
         if (creditsResult.error) console.error('Error fetching credits:', creditsResult.error); else setCredits(creditsResult.data);
-        if (statusResult.data) setRequestStatus(statusResult.data.status as RequestStatus);
-
-        if (apiMediaType === 'tv' && detailsResult.data.seasons?.length > 0) {
-          const initialSeason = detailsResult.data.seasons.find((s: any) => s.season_number > 0) || detailsResult.data.seasons[0];
+        
+        if (apiMediaType === 'tv' && tmdbDetails.seasons?.length > 0) {
+          const initialSeason = tmdbDetails.seasons.find((s: any) => s.season_number > 0) || tmdbDetails.seasons[0];
           setSelectedSeasonNumber(initialSeason.season_number);
         }
       } catch (error: any) {
@@ -161,12 +172,29 @@ const MediaDetailPage = () => {
     }
   };
 
-  const handlePlay = () => {
-    // This is where we would fetch the streaming URL from your media server in a real scenario.
-    // For now, I'm using a placeholder video to demonstrate the player.
-    setPlayerSrc('https://stream.mux.com/A3VXy02VoUinw01pwyomKw3G6P2O42bEV/high.mp4');
-    setPlayerTitle(details?.title || details?.name || 'Video');
-    setIsPlayerOpen(true);
+  const handlePlay = async () => {
+    if (!details) {
+      showError('No media details available to play.');
+      return;
+    }
+    if (!jellyfinId) {
+      showError('Aucune source de lecture trouvée pour ce média.');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('media-sync', {
+        body: { _path: '/stream-url', jellyfinId }
+      });
+      if (error) throw error;
+      
+      setPlayerSrc(data.url);
+      setPlayerTitle(details.title || details.name || 'Video');
+      setIsPlayerOpen(true);
+    } catch (err: any) {
+      console.error('Error fetching stream URL:', err);
+      showError(err?.message || 'Erreur lors de la récupération du flux');
+    }
   };
 
   const renderActionButton = () => {

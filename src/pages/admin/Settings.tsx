@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shield, Settings as SettingsIcon } from 'lucide-react';
+import { Shield, Settings as SettingsIcon, RefreshCw } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from '@/integrations/supabase/client';
-import { showSuccess, showError } from '@/utils/toast';
+import { showSuccess, showError, showLoading, dismissToast } from '@/utils/toast';
 import { useState, useEffect, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProfile } from '@/hooks/useProfile';
@@ -39,6 +39,7 @@ const Settings = () => {
   const [loadingRegistrations, setLoadingRegistrations] = useState(true);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingSettings, setPendingSettings] = useState<z.infer<typeof generalSettingsSchema> | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const generalSettingsSchema = useMemo(() => z.object({
     site_title: z.string().min(1, { message: t('site_title_empty_error') }),
@@ -62,6 +63,24 @@ const Settings = () => {
       });
     }
   }, [settingsLoading, getSetting, form]);
+
+  const handleSyncJellyfin = async () => {
+    setIsSyncing(true);
+    const toastId = showLoading("Synchronisation avec Jellyfin en cours...");
+    try {
+      const { data, error } = await supabase.functions.invoke('media-sync', {
+        body: { _path: '/sync' }
+      });
+      if (error) throw error;
+      dismissToast(toastId);
+      showSuccess(`Synchronisation terminée ! ${data.upserted || 0} éléments traités.`);
+    } catch (error: any) {
+      dismissToast(toastId);
+      showError(`Erreur de synchronisation: ${error.message}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const handleRegistrationToggle = async (checked: boolean) => {
     if (!session?.user) return;
@@ -186,6 +205,19 @@ const Settings = () => {
                       <Label htmlFor="allow-registrations">{t('allow_new_registrations')}</Label>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">Jellyfin</CardTitle>
+                  <CardDescription>Synchronisez votre bibliothèque Jellyfin avec l'application.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button onClick={handleSyncJellyfin} disabled={isSyncing}>
+                    <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                    {isSyncing ? "Synchronisation..." : "Lancer la synchronisation Jellyfin"}
+                  </Button>
                 </CardContent>
               </Card>
 
