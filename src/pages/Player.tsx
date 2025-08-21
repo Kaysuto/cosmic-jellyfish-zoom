@@ -32,9 +32,9 @@ const PlayerPage = () => {
         
         setTitle(mediaData.title || 'Video');
 
-        // Ensuite, on récupère l'URL de streaming depuis la fonction Edge
-        const { data: streamData, error: streamError } = await supabase.functions.invoke('media-sync', {
-          body: { _path: '/stream-url', jellyfinId: mediaData.jellyfin_id }
+        // Ensuite, on récupère l'URL de streaming HLS depuis la nouvelle fonction Edge
+        const { data: streamData, error: streamError } = await supabase.functions.invoke('get-jellyfin-stream-url', {
+          body: { jellyfinId: mediaData.jellyfin_id }
         });
 
         if (streamError) throw streamError;

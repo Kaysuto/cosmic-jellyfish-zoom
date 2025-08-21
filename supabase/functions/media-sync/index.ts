@@ -99,20 +99,7 @@ serve(async (req) => {
     const body = await req.json();
     const path = body?._path;
 
-    // --- ROUTE 1: Get Stream URL ---
-    if (path === '/stream-url') {
-      const jellyfinId = body?.jellyfinId;
-      if (!jellyfinId) {
-        throw new Error("jellyfinId is required for /stream-url");
-      }
-      const streamUrl = `${JELLYFIN_BASE_URL}/Videos/${jellyfinId}/stream?api_key=${JELLYFIN_API_KEY}`;
-      return new Response(JSON.stringify({ url: streamUrl }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    // --- ROUTE 2: Full Sync ---
+    // --- ROUTE: Full Sync ---
     if (path === '/sync') {
       let totalUpserted = 0;
       let startIndex = 0;
@@ -136,7 +123,7 @@ serve(async (req) => {
       });
     }
     
-    // --- ROUTE 3: Debug Sync (Default action) ---
+    // --- ROUTE: Debug Sync (Default action) ---
     const { startIndex = 0, limit = 50 } = body;
     const log = { request: { startIndex, limit }, fetch: {}, upsert: {} };
     let fetchedItems;
