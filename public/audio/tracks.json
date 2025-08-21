@@ -3,5 +3,15 @@
     "title": "Lofi Chill",
     "artist": "Your Artist",
     "url": "/audio/lofi.webm"
+  },
+  {
+    "title": "Ambient Flow",
+    "artist": "Your Artist",
+    "url": "/audio/ambient.webm"
+  },
+  {
+    "title": "Chillhop Dreams",
+    "artist": "Your Artist",
+    "url": "/audio/chillhop.webm"
   }
 ]
