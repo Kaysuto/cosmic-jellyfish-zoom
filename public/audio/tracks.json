@@ -13,5 +13,20 @@
     "title": "Chillhop Dreams",
     "artist": "Your Artist",
     "url": "/audio/chillhop.webm"
+  },
+  {
+    "title": "Sunset Groove",
+    "artist": "Another Artist",
+    "url": "/audio/lofi.webm"
+  },
+  {
+    "title": "Midnight Vibe",
+    "artist": "Another Artist",
+    "url": "/audio/ambient.webm"
+  },
+  {
+    "title": "Morning Coffee",
+    "artist": "Another Artist",
+    "url": "/audio/chillhop.webm"
   }
 ]

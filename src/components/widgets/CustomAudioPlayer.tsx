@@ -13,37 +13,56 @@ const CustomAudioPlayer = () => {
     isPlaying,
     currentTrackIndex,
     tracks,
-    togglePlayPause,
+    setIsPlaying,
+    setCurrentTrackIndex,
     playNext,
     playPrev,
-    playTrack,
     setTracks,
-    setAudioRef,
   } = useAudioStore();
   
   const audioRef = useRef<HTMLAudioElement>(null);
-
-  useEffect(() => {
-    setAudioRef(audioRef);
-  }, [setAudioRef]);
+  const isReady = useRef(false);
 
   useEffect(() => {
     fetch('/audio/tracks.json')
       .then(res => res.json())
-      .then(data => setTracks(data));
+      .then(data => {
+        setTracks(data);
+        isReady.current = true;
+      });
   }, [setTracks]);
 
+  const currentTrack = tracks[currentTrackIndex];
+
   useEffect(() => {
-    if (audioRef.current) {
+    if (audioRef.current && currentTrack) {
+      audioRef.current.src = currentTrack.url;
       if (isPlaying) {
-        audioRef.current.play().catch(e => console.error("Error playing audio:", e));
-      } else {
-        audioRef.current.pause();
+        audioRef.current.play().catch(e => console.error("Playback error:", e));
       }
     }
-  }, [isPlaying, currentTrackIndex]);
+  }, [currentTrack]);
 
-  const currentTrack = tracks[currentTrackIndex];
+  const handlePlayPause = () => {
+    if (!isReady.current || !audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+      }).catch(e => console.error("User interaction needed to play:", e));
+    }
+  };
+
+  const handlePlayTrack = (index: number) => {
+    setCurrentTrackIndex(index);
+    setIsPlaying(true);
+  };
+
+  const handleEnded = () => {
+    playNext();
+  };
 
   return (
     <div className="w-full">
@@ -63,7 +82,7 @@ const CustomAudioPlayer = () => {
             <Button variant="ghost" size="icon" onClick={playPrev} disabled={tracks.length === 0}>
               <SkipBack className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={togglePlayPause} disabled={tracks.length === 0}>
+            <Button variant="ghost" size="icon" onClick={handlePlayPause} disabled={tracks.length === 0}>
               {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
             </Button>
             <Button variant="ghost" size="icon" onClick={playNext} disabled={tracks.length === 0}>
@@ -77,7 +96,7 @@ const CustomAudioPlayer = () => {
               {tracks.map((track, index) => (
                 <button
                   key={index}
-                  onClick={() => playTrack(index)}
+                  onClick={() => handlePlayTrack(index)}
                   className={cn(
                     "w-full text-left p-2 rounded-md flex items-center gap-3 transition-colors hover:bg-gray-700/50",
                     currentTrackIndex === index && "bg-gray-700"
@@ -100,14 +119,13 @@ const CustomAudioPlayer = () => {
           </ScrollArea>
         </CardContent>
       </Card>
-      {currentTrack && (
-        <audio
-          ref={audioRef}
-          src={currentTrack.url}
-          onEnded={playNext}
-          preload="auto"
-        />
-      )}
+      <audio
+        ref={audioRef}
+        onEnded={handleEnded}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        preload="auto"
+      />
     </div>
   );
 };

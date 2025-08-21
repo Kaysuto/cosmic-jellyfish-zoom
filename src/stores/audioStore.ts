@@ -10,21 +10,19 @@ interface AudioState {
   isPlaying: boolean;
   currentTrackIndex: number;
   tracks: Track[];
-  audioRef: React.RefObject<HTMLAudioElement> | null;
-  togglePlayPause: () => void;
+  setIsPlaying: (playing: boolean) => void;
+  setCurrentTrackIndex: (index: number) => void;
   playNext: () => void;
   playPrev: () => void;
-  playTrack: (index: number) => void;
   setTracks: (tracks: Track[]) => void;
-  setAudioRef: (ref: React.RefObject<HTMLAudioElement>) => void;
 }
 
 export const useAudioStore = create<AudioState>((set, get) => ({
   isPlaying: false,
   currentTrackIndex: 0,
   tracks: [],
-  audioRef: null,
-  togglePlayPause: () => set((state) => ({ isPlaying: !state.isPlaying })),
+  setIsPlaying: (playing) => set({ isPlaying: playing }),
+  setCurrentTrackIndex: (index) => set({ currentTrackIndex: index }),
   playNext: () => {
     const { tracks, currentTrackIndex } = get();
     const nextIndex = (currentTrackIndex + 1) % tracks.length;
@@ -35,9 +33,5 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     const prevIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
     set({ currentTrackIndex: prevIndex, isPlaying: true });
   },
-  playTrack: (index: number) => {
-    set({ currentTrackIndex: index, isPlaying: true });
-  },
   setTracks: (tracks) => set({ tracks }),
-  setAudioRef: (ref) => set({ audioRef: ref }),
 }));
