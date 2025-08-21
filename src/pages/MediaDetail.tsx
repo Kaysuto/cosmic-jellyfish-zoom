@@ -176,7 +176,7 @@ const MediaDetailPage = () => {
   const releaseDate = details.release_date || details.first_air_date;
   const runtime = type === 'movie' ? details.runtime : details.episode_run_time?.[0];
   const apiMediaType = type === 'anime' ? 'tv' : type;
-  const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+  const youtubeVideos = videos.filter(v => v.site === 'YouTube');
   const similarWithMediaType = similar.map(item => ({ ...item, media_type: type }));
 
   return (
@@ -263,9 +263,28 @@ const MediaDetailPage = () => {
             )}
 
             <TabsContent value="videos" className="mt-6">
-              {trailer ? (
-                <div className="aspect-video"><iframe className="w-full h-full rounded-lg" src={`https://www.youtube.com/embed/${trailer.key}`} title={trailer.name} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe></div>
-              ) : <p>{t('no_trailer_available')}</p>}
+              {youtubeVideos.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {youtubeVideos.map(video => (
+                    <div key={video.id}>
+                      <div className="aspect-video mb-2">
+                        <iframe 
+                          className="w-full h-full rounded-lg" 
+                          src={`https://www.youtube.com/embed/${video.key}`} 
+                          title={video.name} 
+                          frameBorder="0" 
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                          allowFullScreen>
+                        </iframe>
+                      </div>
+                      <h4 className="font-semibold">{video.name}</h4>
+                      <p className="text-sm text-muted-foreground">{video.type}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>{t('no_trailer_available')}</p>
+              )}
             </TabsContent>
             <TabsContent value="similar" className="mt-6">
               {similarWithMediaType.length > 0 ? <MediaGrid items={similarWithMediaType} /> : <p>{t('no_similar_content')}</p>}
