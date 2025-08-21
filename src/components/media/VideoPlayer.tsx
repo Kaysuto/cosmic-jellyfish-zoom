@@ -1,7 +1,7 @@
 import 'vidstack/styles/defaults.css';
 import 'vidstack/styles/community-skin/video.css';
 
-import { MediaPlayer, MediaProvider } from '@vidstack/react';
+import { MediaPlayer, MediaOutlet } from '@vidstack/react';
 import { DefaultVideoLayout } from '@vidstack/react/layouts/default';
 import { defaultLayoutIcons } from '@vidstack/react/layouts/default/icons';
 
@@ -22,7 +22,7 @@ const VideoPlayer = ({ src, title }: VideoPlayerProps) => {
       autoPlay
       aspectRatio="16/9"
     >
-      <MediaProvider />
+      <MediaOutlet />
       <DefaultVideoLayout icons={defaultLayoutIcons} />
     </MediaPlayer>
   );
