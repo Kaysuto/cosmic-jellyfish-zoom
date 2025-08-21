@@ -27,6 +27,7 @@ import UserManager from "@/components/admin/UserManager";
 import EditUserPage from "./pages/admin/EditUser";
 import LogsPage from "./pages/admin/Logs";
 import { SettingsProvider, useSettings } from "./contexts/SettingsContext";
+import RequestsPage from "./pages/Requests";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -93,7 +94,10 @@ const App = () => (
                   <Route element={<MainLayout />}>
                     <Route path="/" element={<Index />} />
                     <Route path="/status" element={<StatusPage />} />
-                    <Route element={<ProtectedRoute />}><Route path="/profile" element={<Profile />} /></Route>
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/requests" element={<RequestsPage />} />
+                    </Route>
                   </Route>
                   <Route element={<AdminRoute />}>
                     <Route path="/admin" element={<Admin />}>

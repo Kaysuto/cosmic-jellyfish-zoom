@@ -69,6 +69,10 @@ const Navbar = () => {
     { to: "/status", label: t('status') },
   ];
 
+  const protectedNavItems = [
+    { to: "/requests", label: t('requests') },
+  ];
+
   const handleLogoutClick = () => {
     setIsLogoutDialogOpen(true);
   };
@@ -178,6 +182,11 @@ const Navbar = () => {
                   {item.label}
                 </NavLink>
               ))}
+              {session && protectedNavItems.map((item) => (
+                <NavLink key={item.to} to={item.to} className={desktopNavLinkClasses}>
+                  {item.label}
+                </NavLink>
+              ))}
               <div className="border-l h-6 mx-1"></div>
               <AuthLinks />
             </div>
@@ -211,6 +220,11 @@ const Navbar = () => {
                   <div className="flex flex-col h-full">
                     <div className="flex-grow space-y-2 pt-10">
                       {navItems.map((item) => (
+                        <NavLink key={item.to} to={item.to} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
+                          {item.label}
+                        </NavLink>
+                      ))}
+                      {session && protectedNavItems.map((item) => (
                         <NavLink key={item.to} to={item.to} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
                           {item.label}
                         </NavLink>
