@@ -11,6 +11,12 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CatalogFilters from '../components/catalog/CatalogFilters';
 
+interface Filter {
+  id: number;
+  name: string;
+  type: 'genre' | 'keyword';
+}
+
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,18 +31,18 @@ const CatalogPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [genres, setGenres] = useState([]);
-  const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
+  const [filters, setFilters] = useState<Filter[]>([]);
+  const [selectedGenreIds, setSelectedGenreIds] = useState<number[]>([]);
+  const [selectedKeywordIds, setSelectedKeywordIds] = useState<number[]>([]);
   const [sortBy, setSortBy] = useState('popularity.desc');
 
-  const fetchGenres = useCallback(async () => {
-    const apiMediaType = mediaType === 'anime' ? 'tv' : mediaType;
+  const fetchFilters = useCallback(async () => {
     try {
       const { data, error } = await supabase.functions.invoke('get-genres', {
-        body: { mediaType: apiMediaType, language: i18n.language },
+        body: { mediaType, language: i18n.language },
       });
       if (error) throw error;
-      setGenres(data);
+      setFilters(data);
     } catch (error: any) {
       showError(error.message);
     }
@@ -51,7 +57,8 @@ const CatalogPage = () => {
           language: i18n.language,
           page: currentPage,
           sortBy,
-          genres: selectedGenres.join(','),
+          genres: selectedGenreIds.join(','),
+          keywords: selectedKeywordIds.join(','),
         },
       });
       if (error) throw error;
@@ -62,7 +69,7 @@ const CatalogPage = () => {
     } finally {
       setDiscoverLoading(false);
     }
-  }, [mediaType, i18n.language, sortBy, selectedGenres]);
+  }, [mediaType, i18n.language, sortBy, selectedGenreIds, selectedKeywordIds]);
 
   useEffect(() => {
     if (debouncedSearchTerm) {
@@ -97,25 +104,27 @@ const CatalogPage = () => {
       setPage(1);
       fetchDiscoverMedia(1, false);
     }
-  }, [sortBy, selectedGenres, debouncedSearchTerm, fetchDiscoverMedia]);
+  }, [sortBy, selectedGenreIds, selectedKeywordIds, debouncedSearchTerm, fetchDiscoverMedia]);
 
   useEffect(() => {
-    fetchGenres();
-    setSelectedGenres([]);
+    fetchFilters();
+    setSelectedGenreIds([]);
+    setSelectedKeywordIds([]);
     setSortBy('popularity.desc');
     setPage(1);
   }, [mediaType, i18n.language]);
 
-  const handleGenreToggle = (genreId: number) => {
-    setSelectedGenres(prev =>
-      prev.includes(genreId)
-        ? prev.filter(id => id !== genreId)
-        : [...prev, genreId]
-    );
+  const handleFilterToggle = (id: number, type: 'genre' | 'keyword') => {
+    if (type === 'genre') {
+      setSelectedGenreIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    } else {
+      setSelectedKeywordIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    }
   };
 
   const handleResetFilters = () => {
-    setSelectedGenres([]);
+    setSelectedGenreIds([]);
+    setSelectedKeywordIds([]);
     setSortBy('popularity.desc');
   };
 
@@ -166,9 +175,10 @@ const CatalogPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           <aside className="lg:col-span-1 lg:sticky lg:top-24">
             <CatalogFilters
-              genres={genres}
-              selectedGenres={selectedGenres}
-              onGenreToggle={handleGenreToggle}
+              filters={filters}
+              selectedGenres={selectedGenreIds}
+              selectedKeywords={selectedKeywordIds}
+              onFilterToggle={handleFilterToggle}
               sortBy={sortBy}
               onSortByChange={setSortBy}
               onReset={handleResetFilters}
