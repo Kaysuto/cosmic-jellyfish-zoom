@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 interface MediaDetails {
   id: number;
@@ -201,36 +200,38 @@ const MediaDetailPage = () => {
               </Select>
             </div>
             {seasonLoading ? (
-              <div className="space-y-2">
-                {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex gap-6 p-4">
+                    <Skeleton className="h-28 w-1/3 md:w-1/4 rounded-md" />
+                    <div className="flex-grow space-y-2">
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-12 w-full" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : selectedSeason && (
-              <Accordion type="single" collapsible className="w-full">
+              <div className="space-y-4">
                 {selectedSeason.episodes.map(episode => (
-                  <AccordionItem value={`episode-${episode.id}`} key={episode.id}>
-                    <AccordionTrigger>
-                      <div className="flex items-center gap-4 text-left">
-                        <span className="text-muted-foreground font-mono text-sm">{episode.episode_number.toString().padStart(2, '0')}</span>
-                        <span className="font-semibold">{episode.name}</span>
+                  <div key={episode.id} className="flex flex-col md:flex-row gap-6 p-4 bg-muted/20 rounded-lg border border-border">
+                    <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0">
+                      <img src={episode.still_path ? `https://image.tmdb.org/t/p/w300${episode.still_path}` : '/placeholder.svg'} alt={`Still from ${episode.name}`} className="rounded-md w-full" />
+                    </div>
+                    <div className="flex-grow">
+                      <h3 className="text-xl font-semibold mb-2">
+                        {episode.episode_number}. {episode.name}
+                      </h3>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                        {episode.air_date && <span>{new Date(episode.air_date).toLocaleDateString(i18n.language)}</span>}
+                        <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-yellow-400" /> {episode.vote_average > 0 ? `${episode.vote_average.toFixed(1)} / 10` : 'N/A'}</span>
                       </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="flex flex-col md:flex-row gap-6">
-                        <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0">
-                          <img src={episode.still_path ? `https://image.tmdb.org/t/p/w300${episode.still_path}` : '/placeholder.svg'} alt={`Still from ${episode.name}`} className="rounded-md w-full" />
-                        </div>
-                        <div className="flex-grow">
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                            {episode.air_date && <span>{new Date(episode.air_date).toLocaleDateString(i18n.language)}</span>}
-                            <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-yellow-400" /> {episode.vote_average.toFixed(1)} / 10</span>
-                          </div>
-                          <p className="text-muted-foreground">{episode.overview || "No description available."}</p>
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
+                      <p className="text-muted-foreground text-sm">{episode.overview || "No description available."}</p>
+                    </div>
+                  </div>
                 ))}
-              </Accordion>
+              </div>
             )}
           </div>
         )}
