@@ -40,30 +40,14 @@ serve(async (req) => {
       const episodesData = await episodesRes.json();
       
       if (episodesData.Items && episodesData.Items.length > 0) {
-        // The first item in the sorted list is S01E01
         playableItemId = episodesData.Items[0].Id;
       } else {
         throw new Error("This series has no episodes available on Jellyfin.");
       }
     }
 
-    // 3. Get Playback Info for the playable item (either the movie or the first episode)
-    const playbackInfoUrl = `${JELLYFIN_BASE_URL}/Items/${playableItemId}/PlaybackInfo?api_key=${JELLYFIN_API_KEY}`;
-    const playbackInfoRes = await fetch(playbackInfoUrl, { method: 'POST', body: '{}', headers: {'Content-Type': 'application/json'} });
-    
-    if (!playbackInfoRes.ok) {
-      throw new Error(`Jellyfin PlaybackInfo API error: ${playbackInfoRes.status} ${playbackInfoRes.statusText}`);
-    }
-    const playbackInfo = await playbackInfoRes.json();
-
-    // 4. Find HLS stream and construct URL
-    const hlsSource = playbackInfo.MediaSources.find(s => s.SupportsStreaming && (s.Container === 'm3u8' || s.Path.includes('.m3u8')));
-    let streamUrl;
-    if (hlsSource && hlsSource.Path) {
-      streamUrl = hlsSource.Path.startsWith('http') ? hlsSource.Path : `${JELLYFIN_BASE_URL}${hlsSource.Path.startsWith('/') ? '' : '/'}${hlsSource.Path}`;
-    } else {
-      streamUrl = `${JELLYFIN_BASE_URL}/Videos/${playableItemId}/stream?api_key=${JELLYFIN_API_KEY}`;
-    }
+    // 3. Directly construct the stream URL without calling PlaybackInfo
+    const streamUrl = `${JELLYFIN_BASE_URL}/Videos/${playableItemId}/stream?api_key=${JELLYFIN_API_KEY}`;
 
     return new Response(JSON.stringify({ url: streamUrl }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
