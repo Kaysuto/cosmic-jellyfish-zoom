@@ -139,8 +139,8 @@ const Navbar = () => {
       <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 bg-background/60 backdrop-blur-lg border-b">
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2 text-xl font-bold">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">Jelly</span>
+            <Link to="/" className="flex items-center gap-2">
+              <img src="/logo.png" alt="Jelly Logo" className="h-8 w-auto" />
             </Link>
             <div className="hidden md:flex items-center gap-2">
               {navItems.map((item) => (
