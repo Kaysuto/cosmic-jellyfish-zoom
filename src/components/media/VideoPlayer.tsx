@@ -1,7 +1,4 @@
-import 'vidstack/styles/defaults.css';
-import 'vidstack/styles/community-skin/video.css';
-
-import { MediaPlayer, MediaOutlet, MediaCommunitySkin } from '@vidstack/react';
+import ReactPlayer from 'react-player/lazy';
 
 interface VideoPlayerProps {
   src: string;
@@ -12,15 +9,24 @@ const VideoPlayer = ({ src, title }: VideoPlayerProps) => {
   if (!src) return null;
 
   return (
-    <MediaPlayer
-      className="w-full h-full"
-      title={title}
-      src={src}
-      playsInline
-    >
-      <MediaOutlet />
-      <MediaCommunitySkin />
-    </MediaPlayer>
+    <div className='player-wrapper w-full h-full bg-black'>
+      <ReactPlayer
+        className='react-player'
+        url={src}
+        width='100%'
+        height='100%'
+        playing={true}
+        controls={true}
+        config={{
+          file: {
+            attributes: {
+              title: title,
+            },
+            forceHLS: true,
+          },
+        }}
+      />
+    </div>
   );
 };
 
