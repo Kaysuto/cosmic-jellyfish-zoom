@@ -30,6 +30,7 @@ import MediaDetailPage from "./pages/MediaDetail";
 import CatalogPage from "./pages/Catalog";
 import AdminRequestManager from "./components/admin/AdminRequestManager";
 import PlayerPage from "./pages/Player";
+import TestPlayer from "./pages/TestPlayer";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,6 +71,7 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/status" element={<StatusPage />} />
                     <Route path="/media/:type/:id" element={<MediaDetailPage />} />
+                    <Route path="/test-player" element={<TestPlayer />} />
                     <Route element={<ProtectedRoute />}>
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/catalog" element={<CatalogPage />} />
