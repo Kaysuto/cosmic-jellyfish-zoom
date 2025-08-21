@@ -42,27 +42,28 @@ const CatalogPage = () => {
     }
   }, [mediaType, i18n.language]);
 
-  const fetchDiscoverMedia = useCallback(async (currentPage, shouldAppend = false) => {
+  const fetchDiscoverMedia = useCallback(async () => {
+    if (debouncedSearchTerm) return;
     setDiscoverLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('discover-media', {
         body: {
           mediaType,
           language: i18n.language,
-          page: currentPage,
+          page,
           sortBy,
           genres: selectedGenres.join(','),
         },
       });
       if (error) throw error;
-      setDiscoverMedia(prev => shouldAppend ? [...prev, ...data.results] : data.results);
-      setTotalPages(data.total_pages);
+      setDiscoverMedia(data.results);
+      setTotalPages(Math.min(data.total_pages, 500)); // TMDB API has a 500 page limit
     } catch (error: any) {
       showError(error.message);
     } finally {
       setDiscoverLoading(false);
     }
-  }, [mediaType, i18n.language, sortBy, selectedGenres]);
+  }, [debouncedSearchTerm, mediaType, i18n.language, page, sortBy, selectedGenres]);
 
   useEffect(() => {
     if (debouncedSearchTerm) {
@@ -87,36 +88,38 @@ const CatalogPage = () => {
   }, [debouncedSearchTerm, i18n.language]);
 
   useEffect(() => {
-    if (!debouncedSearchTerm) {
-      fetchDiscoverMedia(page, page > 1);
-    }
-  }, [page, debouncedSearchTerm, fetchDiscoverMedia]);
-
-  useEffect(() => {
-    if (!debouncedSearchTerm) {
-      setPage(1);
-      fetchDiscoverMedia(1, false);
-    }
-  }, [sortBy, selectedGenres, debouncedSearchTerm, fetchDiscoverMedia]);
+    fetchDiscoverMedia();
+  }, [fetchDiscoverMedia]);
 
   useEffect(() => {
     fetchGenres();
+  }, [fetchGenres]);
+
+  const handleMediaTypeChange = (value: 'movie' | 'tv' | 'anime') => {
+    setMediaType(value);
     setSelectedGenres([]);
     setSortBy('popularity.desc');
     setPage(1);
-  }, [mediaType, i18n.language]);
+  };
 
   const handleGenreToggle = (genreId: number) => {
+    setPage(1);
     setSelectedGenres(prev =>
       prev.includes(genreId)
         ? prev.filter(id => id !== genreId)
         : [...prev, genreId]
     );
   };
+  
+  const handleSortByChange = (value: string) => {
+    setSortBy(value);
+    setPage(1);
+  };
 
   const handleResetFilters = () => {
     setSelectedGenres([]);
     setSortBy('popularity.desc');
+    setPage(1);
   };
 
   const LoadingSkeleton = () => (
@@ -130,6 +133,33 @@ const CatalogPage = () => {
       ))}
     </div>
   );
+
+  const PaginationControls = () => {
+    if (totalPages <= 1) return null;
+    return (
+      <div className="flex items-center justify-center space-x-2 mt-8">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setPage(p => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          {t('previous')}
+        </Button>
+        <span className="text-sm text-muted-foreground">
+          {t('page_x_of_y', { x: page, y: totalPages })}
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+          disabled={page >= totalPages}
+        >
+          {t('next')}
+        </Button>
+      </div>
+    );
+  };
 
   const isSearching = debouncedSearchTerm.length > 0;
 
@@ -170,24 +200,20 @@ const CatalogPage = () => {
               selectedGenres={selectedGenres}
               onGenreToggle={handleGenreToggle}
               sortBy={sortBy}
-              onSortByChange={setSortBy}
+              onSortByChange={handleSortByChange}
               onReset={handleResetFilters}
             />
           </aside>
           <div className="lg:col-span-3">
-            <Tabs value={mediaType} onValueChange={(value) => setMediaType(value as any)} className="mb-8">
+            <Tabs value={mediaType} onValueChange={handleMediaTypeChange} className="mb-8">
               <TabsList>
                 <TabsTrigger value="movie"><Film className="mr-2 h-4 w-4" />{t('movie')}</TabsTrigger>
                 <TabsTrigger value="tv"><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</TabsTrigger>
                 <TabsTrigger value="anime"><Flame className="mr-2 h-4 w-4" />{t('anime')}</TabsTrigger>
               </TabsList>
             </Tabs>
-            {discoverLoading && page === 1 ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} />}
-            {page < totalPages && !discoverLoading && (
-              <div className="text-center mt-8">
-                <Button onClick={() => setPage(p => p + 1)}>{t('load_more')}</Button>
-              </div>
-            )}
+            {discoverLoading ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} />}
+            {!discoverLoading && <PaginationControls />}
           </div>
         </div>
       )}
