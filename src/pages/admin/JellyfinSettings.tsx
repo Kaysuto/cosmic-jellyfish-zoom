@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Server, CheckCircle, XCircle, Zap, Copy, TestTube2 } from 'lucide-react';
+import { RefreshCw, Server, CheckCircle, XCircle, Zap, Copy, TestTube2, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError, showLoading, dismissToast } from '@/utils/toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -119,6 +119,12 @@ const JellyfinSettings = () => {
                     <p><strong>Serveur :</strong> {connStatus.data.serverName}</p>
                     <p><strong>Version :</strong> {connStatus.data.version}</p>
                     <p><strong>OS :</strong> {connStatus.data.operatingSystem}</p>
+                  </div>
+                )}
+                {connStatus.success && connStatus.data?.baseUrl && !connStatus.data.baseUrl.startsWith('https://') && (
+                  <div className="mt-2 text-amber-400 border-t border-amber-500/20 pt-2 font-semibold flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    Attention : Votre connexion utilise HTTP. Pour que la lecture vidéo fonctionne, votre serveur Jellyfin doit être accessible en HTTPS.
                   </div>
                 )}
               </AlertDescription>

@@ -39,6 +39,7 @@ serve(async (_req) => {
           serverName: data.ServerName,
           version: data.Version,
           operatingSystem: data.OperatingSystem,
+          baseUrl: JELLYFIN_BASE_URL,
         },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
