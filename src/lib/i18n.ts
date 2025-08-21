@@ -6,6 +6,9 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "webhook_headers_label": "En-têtes personnalisés",
+      "webhook_headers_desc": "Ajoutez cet en-tête dans les paramètres de votre webhook pour l'authentification.",
+      "api_key_copied": "Clé API copiée !",
       "integrations": "Intégrations",
       "integrations_desc": "Connectez des services externes pour automatiser les tâches.",
       "webhook_url_label": "URL du Webhook Sonarr/Radarr",
@@ -373,6 +376,9 @@ const resources = {
   },
   en: {
     translation: {
+      "webhook_headers_label": "Custom Headers",
+      "webhook_headers_desc": "Add this header in your webhook settings for authentication.",
+      "api_key_copied": "API Key copied!",
       "integrations": "Integrations",
       "integrations_desc": "Connect external services to automate tasks.",
       "webhook_url_label": "Sonarr/Radarr Webhook URL",
