@@ -4,23 +4,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-interface Filter {
+interface Genre {
   id: number;
   name: string;
-  type: 'genre' | 'keyword';
 }
 
 interface CatalogFiltersProps {
-  filters: Filter[];
+  genres: Genre[];
   selectedGenres: number[];
-  selectedKeywords: number[];
-  onFilterToggle: (id: number, type: 'genre' | 'keyword') => void;
+  onGenreToggle: (genreId: number) => void;
   sortBy: string;
   onSortByChange: (value: string) => void;
   onReset: () => void;
 }
 
-const CatalogFilters = ({ filters, selectedGenres, selectedKeywords, onFilterToggle, sortBy, onSortByChange, onReset }: CatalogFiltersProps) => {
+const CatalogFilters = ({ genres, selectedGenres, onGenreToggle, sortBy, onSortByChange, onReset }: CatalogFiltersProps) => {
   const { t } = useTranslation();
   const sortOptions = [
     { value: 'popularity.desc', label: t('sort_popularity_desc') },
@@ -48,19 +46,16 @@ const CatalogFilters = ({ filters, selectedGenres, selectedKeywords, onFilterTog
           <h4 className="font-semibold mb-3 text-base">{t('genres')}</h4>
           <ScrollArea className="h-64">
             <div className="flex flex-wrap gap-2">
-              {filters.map(filter => {
-                const isSelected = filter.type === 'genre' ? selectedGenres.includes(filter.id) : selectedKeywords.includes(filter.id);
-                return (
-                  <Badge
-                    key={`${filter.type}-${filter.id}`}
-                    variant={isSelected ? 'default' : 'secondary'}
-                    onClick={() => onFilterToggle(filter.id, filter.type)}
-                    className="cursor-pointer text-sm px-3 py-1"
-                  >
-                    {filter.name}
-                  </Badge>
-                )
-              })}
+              {genres.map(genre => (
+                <Badge
+                  key={genre.id}
+                  variant={selectedGenres.includes(genre.id) ? 'default' : 'secondary'}
+                  onClick={() => onGenreToggle(genre.id)}
+                  className="cursor-pointer text-sm px-3 py-1"
+                >
+                  {genre.name}
+                </Badge>
+              ))}
             </div>
           </ScrollArea>
         </div>
