@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Server, CheckCircle, XCircle, Zap, Copy } from 'lucide-react';
+import { RefreshCw, Server, CheckCircle, XCircle, Zap, Copy, TestTube2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError, showLoading, dismissToast } from '@/utils/toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -100,13 +100,13 @@ const JellyfinSettings = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Server className="h-5 w-5" />Connexion au serveur</CardTitle>
-          <CardDescription>Testez la connexion à votre instance Jellyfin pour vous assurer que les paramètres sont corrects.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><TestTube2 className="h-5 w-5" />Diagnostic de Connexion</CardTitle>
+          <CardDescription>Ce test permet de vérifier si le serveur de l'application peut communiquer avec votre serveur Jellyfin.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button onClick={handleTestConnection} disabled={isTestingConn}>
             <Zap className={`mr-2 h-4 w-4 ${isTestingConn ? 'animate-ping' : ''}`} />
-            {isTestingConn ? "Test en cours..." : "Tester la connexion"}
+            {isTestingConn ? "Test en cours..." : "Lancer le test de diagnostic"}
           </Button>
           {connStatus && (
             <Alert variant={connStatus.success ? 'default' : 'destructive'}>
