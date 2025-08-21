@@ -1,28 +1,45 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAvailableMedia } from '@/hooks/useAvailableMedia';
 import { Skeleton } from '@/components/ui/skeleton';
 import MediaGrid from '../components/catalog/MediaGrid';
-import MediaFilters from '../components/catalog/MediaFilters';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import NewRequestSearch from '@/components/catalog/NewRequestSearch';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Search, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { showError } from '@/utils/toast';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const CatalogPage = () => {
-  const { t } = useTranslation();
-  const { media, loading } = useAvailableMedia();
+  const { t, i18n } = useTranslation();
+  const { media: availableMedia, loading: catalogLoading } = useAvailableMedia();
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortOption, setSortOption] = useState('updated_at');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
-  const filteredAndSortedMedia = useMemo(() => {
-    return media
-      .filter(item => item.title.toLowerCase().includes(searchTerm.toLowerCase()))
-      .sort((a, b) => {
-        if (sortOption === 'release_date') {
-          return new Date(b.release_date).getTime() - new Date(a.release_date).getTime();
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      const handleSearch = async () => {
+        setSearchLoading(true);
+        try {
+          const { data, error } = await supabase.functions.invoke('search-media', {
+            body: { query: debouncedSearchTerm, mediaType: 'multi', language: i18n.language },
+          });
+          if (error) throw error;
+          setSearchResults(data.filter((item: any) => item.media_type !== 'person'));
+        } catch (error: any) {
+          showError(error.message);
+        } finally {
+          setSearchLoading(false);
         }
-        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
-      });
-  }, [media, searchTerm, sortOption]);
+      };
+      handleSearch();
+    } else {
+      setSearchResults([]);
+    }
+  }, [debouncedSearchTerm, i18n.language]);
 
   const LoadingSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -36,30 +53,43 @@ const CatalogPage = () => {
     </div>
   );
 
+  const isSearching = debouncedSearchTerm.length > 0;
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <Tabs defaultValue="catalog">
-        <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-2 mb-8">
-          <TabsTrigger value="catalog">{t('catalog')}</TabsTrigger>
-          <TabsTrigger value="search">{t('search_and_request')}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="catalog">
-          <h1 className="text-4xl font-bold tracking-tight mb-2">{t('catalog')}</h1>
-          <p className="text-muted-foreground mb-8">{t('catalog_description')}</p>
-          <MediaFilters
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            sortOption={sortOption}
-            setSortOption={setSortOption}
-          />
-          {loading ? <LoadingSkeleton /> : <MediaGrid media={filteredAndSortedMedia} />}
-        </TabsContent>
-        <TabsContent value="search">
-          <h1 className="text-4xl font-bold tracking-tight mb-2">{t('search_and_request')}</h1>
-          <p className="text-muted-foreground mb-8">{t('search_and_request_desc')}</p>
-          <NewRequestSearch />
-        </TabsContent>
-      </Tabs>
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold tracking-tight mb-2">{t('catalog')}</h1>
+        <p className="text-muted-foreground">{t('catalog_description')}</p>
+      </div>
+      
+      <div className="relative mb-8">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder={t('search_for_media')}
+          className="pl-10"
+        />
+        {searchLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />}
+      </div>
+
+      {isSearching ? (
+        <>
+          <h2 className="text-2xl font-bold mb-4">{t('search_results')}</h2>
+          {searchLoading && searchResults.length === 0 ? (
+            <LoadingSkeleton />
+          ) : searchResults.length > 0 ? (
+            <MediaGrid items={searchResults} viewType="search" />
+          ) : (
+            <p className="text-center text-muted-foreground py-8">{t('no_results_found')}</p>
+          )}
+        </>
+      ) : (
+        <>
+          <h2 className="text-2xl font-bold mb-4">{t('available_in_catalog')}</h2>
+          {catalogLoading ? <LoadingSkeleton /> : <MediaGrid items={availableMedia} viewType="catalog" />}
+        </>
+      )}
     </div>
   );
 };

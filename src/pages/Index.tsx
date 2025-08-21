@@ -38,7 +38,7 @@ const Index = () => {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link to="/requests">
+            <Link to="/catalog">
               <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-gray-600 hover:bg-gray-800/50 hover:text-white font-semibold shadow-lg transform hover:scale-105 transition-transform duration-300">
                 {t('cta_requests')}
               </Button>
