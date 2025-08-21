@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { showError } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Tv, Film, Loader2, Flame } from 'lucide-react';
+import { Search, Tv, Film, Loader2, Flame, Star, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSession } from '@/contexts/AuthContext';
 
 interface MediaResult {
   id: number;
@@ -21,6 +22,7 @@ interface MediaResult {
   first_air_date?: string;
   media_type: 'movie' | 'tv';
   genre_ids?: number[];
+  vote_average: number;
 }
 
 const MediaSearch = () => {
@@ -31,6 +33,9 @@ const MediaSearch = () => {
   const [featured, setFeatured] = useState<MediaResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasSearched, setHasSearched] = useState(false);
+  const { session } = useSession();
+  const [requestedIds, setRequestedIds] = useState<Set<number>>(new Set());
+  const [requestingId, setRequestingId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -49,6 +54,26 @@ const MediaSearch = () => {
     };
     fetchFeatured();
   }, [i18n.language]);
+
+  useEffect(() => {
+    const fetchRequestStatus = async () => {
+      if (!session?.user) {
+        setRequestedIds(new Set());
+        return;
+      }
+      const { data, error } = await supabase
+        .from('media_requests')
+        .select('tmdb_id')
+        .eq('user_id', session.user.id);
+      
+      if (error) {
+        console.error("Error fetching request statuses:", error);
+      } else {
+        setRequestedIds(new Set(data.map(req => req.tmdb_id)));
+      }
+    };
+    fetchRequestStatus();
+  }, [session]);
 
   const handleSearch = async (e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
@@ -78,6 +103,35 @@ const MediaSearch = () => {
     }
   };
 
+  const handleRequest = async (e: React.MouseEvent, media: MediaResult) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!session?.user) {
+      showError(t("You must be logged in to make a request."));
+      return;
+    }
+    setRequestingId(media.id);
+    try {
+      const { error } = await supabase.from('media_requests').insert({
+        user_id: session.user.id,
+        media_type: mediaType === 'anime' ? 'anime' : media.media_type,
+        tmdb_id: media.id,
+        title: media.title || media.name || 'Unknown Title',
+        poster_path: media.poster_path,
+        overview: media.overview,
+        release_date: media.release_date || media.first_air_date,
+      });
+      if (error) throw error;
+      showSuccess(t('request_successful'));
+      setRequestedIds(prev => new Set(prev).add(media.id));
+    } catch (error: any) {
+      showError(`${t('error_sending_request')}: ${error.message}`);
+    } finally {
+      setRequestingId(null);
+    }
+  };
+
   const mediaToDisplay = useMemo(() => {
     if (hasSearched) {
       return results;
@@ -87,8 +141,6 @@ const MediaSearch = () => {
     }
     return featured.filter(item => item.media_type === mediaType);
   }, [hasSearched, results, featured, mediaType]);
-    
-  const displayMediaType = hasSearched ? mediaType : (mediaType === 'anime' ? 'anime' : undefined);
 
   return (
     <div className="space-y-6">
@@ -115,7 +167,7 @@ const MediaSearch = () => {
 
       {loading && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {[...Array(10)].map((_, i) => <Skeleton key={i} className="h-[350px] w-full" />)}
+          {[...Array(10)].map((_, i) => <Skeleton key={i} className="h-[420px] w-full" />)}
         </div>
       )}
 
@@ -133,8 +185,8 @@ const MediaSearch = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Link to={`/media/${mediaType === 'anime' ? 'anime' : media.media_type}/${media.id}`}>
-                    <Card className="overflow-hidden flex flex-col h-full transition-transform hover:scale-105 hover:shadow-lg">
+                  <Card className="overflow-hidden flex flex-col h-full transition-shadow hover:shadow-lg">
+                    <Link to={`/media/${mediaType === 'anime' ? 'anime' : media.media_type}/${media.id}`} className="block">
                       <div className="aspect-[2/3] bg-muted">
                         {media.poster_path ? (
                           <img src={`https://image.tmdb.org/t/p/w500${media.poster_path}`} alt={media.title || media.name} className="w-full h-full object-cover" />
@@ -144,16 +196,29 @@ const MediaSearch = () => {
                           </div>
                         )}
                       </div>
-                      <CardContent className="p-3 flex-grow flex flex-col justify-between">
-                        <div>
-                          <h3 className="font-semibold line-clamp-2 text-sm">{media.title || media.name}</h3>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(media.release_date || media.first_air_date || '').getFullYear() || ''}
-                          </p>
+                    </Link>
+                    <CardContent className="p-3 flex-grow flex flex-col justify-between">
+                      <div>
+                        <h3 className="font-semibold line-clamp-2 text-sm">{media.title || media.name}</h3>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
+                          <span>{new Date(media.release_date || media.first_air_date || '').getFullYear() || ''}</span>
+                          <span className="flex items-center gap-1"><Star className="h-3 w-3 text-yellow-400" /> {media.vote_average.toFixed(1)}</span>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
+                      </div>
+                      <Button 
+                        className="w-full mt-3" 
+                        size="sm"
+                        onClick={(e) => handleRequest(e, media)}
+                        disabled={requestedIds.has(media.id) || requestingId === media.id}
+                      >
+                        {requestingId === media.id 
+                          ? <Loader2 className="h-4 w-4 animate-spin" /> 
+                          : requestedIds.has(media.id) 
+                            ? <><Check className="mr-2 h-4 w-4" />{t('requested')}</> 
+                            : t('request')}
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </motion.div>
               ))}
             </AnimatePresence>
