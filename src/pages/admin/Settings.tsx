@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shield, Settings as SettingsIcon, Link as LinkIcon, Copy } from 'lucide-react';
+import { Shield, Settings as SettingsIcon } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from '@/integrations/supabase/client';
@@ -27,8 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useSession } from '@/contexts/AuthContext';
-
-const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZmZrd29la3VhZXRhaHJ3aW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzNzc5OTMsImV4cCI6MjA2OTk1Mzk5M30.2Or0n42Hc6OjdWL-oGwoQHMjPqTwg0yMGKXnEysiJP4";
+import WebhookInstructions from '@/components/admin/WebhookInstructions';
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
@@ -40,13 +39,6 @@ const Settings = () => {
   const [loadingRegistrations, setLoadingRegistrations] = useState(true);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingSettings, setPendingSettings] = useState<z.infer<typeof generalSettingsSchema> | null>(null);
-
-  const webhookUrl = `https://tgffkwoekuaetahrwioo.supabase.co/functions/v1/media-sync?secret=VOTRE_SECRET_ICI`;
-
-  const copyToClipboard = (text: string, successMessage: string) => {
-    navigator.clipboard.writeText(text);
-    showSuccess(successMessage);
-  };
 
   const generalSettingsSchema = useMemo(() => z.object({
     site_title: z.string().min(1, { message: t('site_title_empty_error') }),
@@ -197,43 +189,7 @@ const Settings = () => {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><LinkIcon className="h-5 w-5" />{t('integrations')}</CardTitle>
-                  <CardDescription>{t('integrations_desc')}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <Label htmlFor="webhook-url">{t('webhook_url_label')}</Label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Input id="webhook-url" readOnly value={webhookUrl} className="font-mono text-xs" />
-                      <Button variant="outline" size="icon" onClick={() => copyToClipboard(webhookUrl, t('url_copied_to_clipboard'))}>
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">{t('webhook_url_desc')}</p>
-                  </div>
-                  <div className="border-t pt-4">
-                    <Label>{t('webhook_headers_label')}</Label>
-                    <p className="text-xs text-muted-foreground mb-2">{t('webhook_headers_desc')}</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="col-span-1">
-                        <Label className="text-xs text-muted-foreground">Name</Label>
-                        <Input readOnly value="apikey" className="font-mono text-xs" />
-                      </div>
-                      <div className="col-span-2">
-                        <Label className="text-xs text-muted-foreground">Value</Label>
-                        <div className="flex items-center gap-2">
-                          <Input readOnly value={ANON_KEY} className="font-mono text-xs" />
-                          <Button variant="outline" size="icon" onClick={() => copyToClipboard(ANON_KEY, t('api_key_copied'))}>
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <WebhookInstructions />
             </>
           )}
         </div>
