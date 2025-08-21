@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useSession } from '@/contexts/AuthContext';
 import WebhookInstructions from '@/components/admin/WebhookInstructions';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
@@ -41,7 +40,6 @@ const Settings = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingSettings, setPendingSettings] = useState<z.infer<typeof generalSettingsSchema> | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState<any | null>(null);
 
   const generalSettingsSchema = useMemo(() => z.object({
     site_title: z.string().min(1, { message: t('site_title_empty_error') }),
@@ -68,20 +66,17 @@ const Settings = () => {
 
   const handleSyncJellyfin = async () => {
     setIsSyncing(true);
-    setSyncResult(null);
-    const toastId = showLoading("Lancement du test de synchronisation...");
+    const toastId = showLoading("Synchronisation avec Jellyfin en cours...");
     try {
-      const { data, error } = await supabase.functions.invoke('media-sync');
+      const { data, error } = await supabase.functions.invoke('media-sync', {
+        body: { _path: '/sync' }
+      });
       if (error) throw error;
-      
-      setSyncResult({ success: true, data: data });
       dismissToast(toastId);
-      showSuccess("Test de synchronisation terminé. Voir les détails ci-dessous.");
-
+      showSuccess(`Synchronisation terminée ! ${data.upserted || 0} éléments traités.`);
     } catch (error: any) {
-      setSyncResult({ success: false, error: error.message });
       dismissToast(toastId);
-      showError(`Erreur du test de synchronisation: ${error.message}`);
+      showError(`Erreur de synchronisation: ${error.message}`);
     } finally {
       setIsSyncing(false);
     }
@@ -218,19 +213,11 @@ const Settings = () => {
                   <CardTitle className="flex items-center gap-2">Jellyfin</CardTitle>
                   <CardDescription>Synchronisez votre bibliothèque Jellyfin avec l'application.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent>
                   <Button onClick={handleSyncJellyfin} disabled={isSyncing}>
                     <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                    {isSyncing ? "Test en cours..." : "Lancer le test de synchronisation"}
+                    {isSyncing ? "Synchronisation..." : "Lancer la synchronisation Jellyfin"}
                   </Button>
-                  {syncResult && (
-                    <Alert variant={syncResult.success ? 'default' : 'destructive'}>
-                      <AlertTitle>{syncResult.success ? 'Données reçues' : 'Échec du test'}</AlertTitle>
-                      <AlertDescription className="whitespace-pre-wrap text-xs font-mono max-h-96 overflow-auto">
-                        {JSON.stringify(syncResult.data || syncResult.error, null, 2)}
-                      </AlertDescription>
-                    </Alert>
-                  )}
                 </CardContent>
               </Card>
 
