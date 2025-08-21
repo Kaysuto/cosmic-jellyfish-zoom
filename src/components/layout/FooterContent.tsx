@@ -22,7 +22,7 @@ export const FooterContent = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="text-center md:text-left">
-          <h3 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500">Jelly</h3>
+          <img src="/logo.png" alt="Jelly Logo" className="h-8 w-auto mb-2 mx-auto md:mx-0" />
           <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} {t('jelly_brand')}. {t('all_rights_reserved')}</p>
         </div>
         <div className="flex items-center gap-4">

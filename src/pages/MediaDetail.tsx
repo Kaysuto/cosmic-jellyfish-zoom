@@ -217,7 +217,13 @@ const MediaDetailPage = () => {
                 {selectedSeason.episodes.map(episode => (
                   <div key={episode.id} className="flex flex-col md:flex-row gap-6 p-4 bg-muted/20 rounded-lg border border-border">
                     <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0">
-                      <img src={episode.still_path ? `https://image.tmdb.org/t/p/w300${episode.still_path}` : '/placeholder.svg'} alt={`Still from ${episode.name}`} className="rounded-md w-full" />
+                      {episode.still_path ? (
+                        <img src={`https://image.tmdb.org/t/p/w300${episode.still_path}`} alt={`Still from ${episode.name}`} className="rounded-md w-full" />
+                      ) : (
+                        <div className="w-full aspect-video flex items-center justify-center bg-muted text-muted-foreground rounded-md">
+                          <Tv className="h-12 w-12" />
+                        </div>
+                      )}
                     </div>
                     <div className="flex-grow">
                       <h3 className="text-xl font-semibold mb-2">
