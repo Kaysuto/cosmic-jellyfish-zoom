@@ -37,16 +37,22 @@ serve(async (req) => {
       throw new Error('Jellyfin settings are not configured.');
     }
 
-    const streamUrl = `${settings.url}/Videos/${itemId}/stream?api_key=${settings.api_key}&Container=mp4`;
+    // Construct URL without API key in query params
+    const streamUrl = `${settings.url}/Videos/${itemId}/stream?Container=mp4`;
 
-    // Proxy the request, including the Range header for seeking
+    // Prepare headers for the request to Jellyfin
+    const jellyfinHeaders = new Headers();
+    
+    // Use X-Emby-Token for authentication
+    jellyfinHeaders.set('X-Emby-Token', settings.api_key);
+
+    // Proxy the Range header for seeking
     const range = req.headers.get('range');
-    const headers = new Headers();
     if (range) {
-      headers.set('range', range);
+      jellyfinHeaders.set('range', range);
     }
 
-    const jellyfinResponse = await fetch(streamUrl, { headers });
+    const jellyfinResponse = await fetch(streamUrl, { headers: jellyfinHeaders });
 
     if (!jellyfinResponse.ok) {
       const errorBody = await jellyfinResponse.text();
