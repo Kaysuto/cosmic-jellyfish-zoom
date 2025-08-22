@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useSession } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
+import JellyfinSettings from '@/components/admin/JellyfinSettings';
 
 const Settings = () => {
   const { t } = useTranslation();
@@ -137,6 +138,8 @@ const Settings = () => {
                   )}
                 </CardContent>
               </Card>
+
+              <JellyfinSettings />
 
               <Card>
                 <CardHeader>
