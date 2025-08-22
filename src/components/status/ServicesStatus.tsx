@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -6,9 +5,8 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  TooltipProvider,
 } from "@/components/ui/tooltip";
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 type Service = {
   id: string;
@@ -43,79 +41,47 @@ const statusIndicatorConfig = {
 
 const ServicesStatus = ({ services }: ServicesStatusProps) => {
   const { t } = useTranslation();
-  const [currentPage, setCurrentPage] = useState(1);
-  const SERVICES_PER_PAGE = 3;
-
-  const totalPages = Math.ceil(services.length / SERVICES_PER_PAGE);
-  const startIndex = (currentPage - 1) * SERVICES_PER_PAGE;
-  const currentServices = services.slice(startIndex, startIndex + SERVICES_PER_PAGE);
 
   return (
-    <Card className="flex flex-col h-full">
-      <CardHeader>
-        <CardTitle>{t('services_status')}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-grow flex flex-col justify-between">
-        <div className="space-y-4">
-          {currentServices.map((service) => {
-            const statusConfig = statusIndicatorConfig[service.status];
-            return (
-              <div key={service.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-muted/50 rounded-md gap-2">
-                <div className="flex items-center">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className={cn("h-3 w-3 rounded-full mr-3 shrink-0 cursor-pointer", statusConfig.color)}></span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{t(statusConfig.textKey)}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <span className="font-medium text-foreground">{t(service.name.toLowerCase().replace(/ /g, '_'))}</span>
+    <TooltipProvider>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {services.map((service) => {
+          const statusConfig = statusIndicatorConfig[service.status];
+          return (
+            <Card key={service.id} className="bg-card hover:bg-muted/50 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-base font-medium">{t(service.name.toLowerCase().replace(/ /g, '_'))}</CardTitle>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={cn("h-3 w-3 rounded-full cursor-pointer", statusConfig.color)}></span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t(statusConfig.textKey)}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-sm text-muted-foreground">{t('uptime')} (90j)</span>
+                  <span className="text-lg font-bold text-foreground">{service.uptime_percentage.toFixed(2)}%</span>
                 </div>
-                <div className="flex items-center gap-4 pl-6 sm:pl-0">
-                  {service.status !== 'downtime' && service.status !== 'maintenance' && (
-                    <span className="text-sm text-muted-foreground">{service.uptime_percentage.toFixed(2)}%</span>
-                  )}
-                  
-                  {service.status === 'operational' && service.last_response_time_ms !== null ? (
-                    <span className="text-sm text-green-400">{service.last_response_time_ms} ms</span>
-                  ) : (
-                    <span className="text-sm font-semibold text-foreground">{t(statusConfig.textKey)}</span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </CardContent>
-      {services.length > SERVICES_PER_PAGE && (
-        <div className="flex-shrink-0 flex items-center justify-between w-full gap-2 text-white p-4 border-t border-gray-700/50">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="bg-gray-700/50 border-gray-600 hover:bg-gray-600/50 disabled:opacity-50"
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            {t('previous')}
-          </Button>
-          <span className="text-sm text-gray-400 font-mono">
-            {t('page')} {currentPage} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="bg-gray-700/50 border-gray-600 hover:bg-gray-600/50 disabled:opacity-50"
-          >
-            {t('next')}
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      )}
-    </Card>
+                {service.status === 'operational' && service.last_response_time_ms !== null ? (
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-sm text-muted-foreground">Ping</span>
+                    <span className="text-lg font-bold text-green-400">{service.last_response_time_ms} ms</span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-sm text-muted-foreground">Statut</span>
+                    <span className="text-lg font-bold text-foreground">{t(statusConfig.textKey)}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </TooltipProvider>
   );
 };
 

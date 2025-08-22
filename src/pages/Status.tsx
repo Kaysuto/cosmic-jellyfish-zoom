@@ -57,14 +57,12 @@ const StatusPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Skeleton className="h-24 w-full mb-8" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-8">
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-96 w-full" />
-          </div>
-          <Skeleton className="h-full w-full min-h-[400px]" />
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-64 w-full" />
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <Skeleton className="h-96 w-full lg:col-span-3" />
+          <Skeleton className="h-96 w-full lg:col-span-2" />
         </div>
       </div>
     );
@@ -83,9 +81,13 @@ const StatusPage = () => {
         <ScheduledMaintenances maintenances={maintenances} />
       </div>
 
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 flex-grow">
-        <div className="flex flex-col gap-8">
-          <ServicesStatus services={services} />
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">{t('services_status')}</h2>
+        <ServicesStatus services={services} />
+      </div>
+
+      <div className="mt-12 grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+        <div className="lg:col-span-3">
           <UptimeHistory 
             services={services}
             selectedServiceId={selectedServiceId}
@@ -93,7 +95,9 @@ const StatusPage = () => {
           />
         </div>
         
-        <IncidentHistory incidents={incidents} />
+        <div className="lg:col-span-2">
+          <IncidentHistory incidents={incidents} />
+        </div>
       </div>
     </motion.div>
   );
