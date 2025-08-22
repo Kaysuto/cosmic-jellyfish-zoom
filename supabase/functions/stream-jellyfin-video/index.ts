@@ -10,6 +10,26 @@ const corsHeaders = {
   'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges',
 }
 
+// Helper to get a session-based access token
+async function getJellyfinSession(baseUrl, apiKey) {
+    const response = await fetch(`${baseUrl}/Users/AuthenticateByKey`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Emby-Authorization': `MediaBrowser ApiKey="${apiKey}"`,
+        },
+        body: JSON.stringify({ ApiKey: apiKey }),
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.text();
+        console.error("Jellyfin AuthenticateByKey failed:", { status: response.status, body: errorBody });
+        throw new Error(`Jellyfin authentication failed: ${response.statusText}`);
+    }
+
+    return await response.json();
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -37,17 +57,28 @@ serve(async (req) => {
       throw new Error('Jellyfin settings are not configured.');
     }
 
-    // Construct URL with api_key and Static=true for stateless authentication
-    const streamUrl = `${settings.url}/Videos/${itemId}/stream?api_key=${settings.api_key}&Static=true&Container=mp4`;
-
-    // Proxy the request, including the Range header for seeking
-    const range = req.headers.get('range');
-    const headers = new Headers();
-    if (range) {
-      headers.set('range', range);
+    // 1. Authenticate to get a session token
+    const session = await getJellyfinSession(settings.url, settings.api_key);
+    const accessToken = session.AccessToken;
+    if (!accessToken) {
+        throw new Error("Could not retrieve AccessToken from Jellyfin.");
     }
 
-    const jellyfinResponse = await fetch(streamUrl, { headers });
+    // 2. Construct stream URL and headers for the authenticated request
+    const streamUrl = `${settings.url}/Videos/${itemId}/stream?Container=mp4`;
+    const jellyfinHeaders = new Headers();
+    
+    // Use the full X-Emby-Authorization header with the session token
+    jellyfinHeaders.set('X-Emby-Authorization', `MediaBrowser Client="SupabaseProxy", Device="Proxy", DeviceId="supabase-proxy-streamer", Version="1.0", Token="${accessToken}"`);
+
+    // Proxy the Range header for seeking
+    const range = req.headers.get('range');
+    if (range) {
+      jellyfinHeaders.set('range', range);
+    }
+
+    // 3. Fetch the stream
+    const jellyfinResponse = await fetch(streamUrl, { headers: jellyfinHeaders });
 
     if (!jellyfinResponse.ok) {
       const errorBody = await jellyfinResponse.text();
@@ -55,10 +86,10 @@ serve(async (req) => {
         url: streamUrl,
         body: errorBody,
       });
-      throw new Error(`Jellyfin server error: ${jellyfinResponse.status} ${jellyfinResponse.statusText}. This could be due to an invalid API key or network issue.`);
+      throw new Error(`Jellyfin server error: ${jellyfinResponse.status} ${jellyfinResponse.statusText}.`);
     }
 
-    // Create a new response that streams the body from Jellyfin
+    // 4. Proxy the response back to the client
     const responseHeaders = new Headers(corsHeaders);
     responseHeaders.set('Content-Type', jellyfinResponse.headers.get('Content-Type') || 'video/mp4');
     responseHeaders.set('Content-Length', jellyfinResponse.headers.get('Content-Length') || '0');
