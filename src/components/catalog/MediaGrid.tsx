@@ -69,7 +69,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, 
 
                     {/* Center icons: semi-transparent by default, full on hover */}
                     <div className="absolute inset-0 flex items-center justify-center gap-3 pointer-events-none">
-                      <div className="flex items-center gap-3 opacity-20 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-200">
+                      <div className="flex items-center gap-3 opacity-20 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 group-hover:scale-110 transition-all duration-300">
                         {/* Info: navigates to details */}
                         <Button
                           asChild
