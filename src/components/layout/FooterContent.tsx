@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Heart } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,13 +59,6 @@ export const FooterContent = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-      </div>
-      <div className="text-center text-sm text-muted-foreground mt-6 pt-6 border-t border-gray-800">
-        <div className="flex items-center justify-center gap-1">
-          <span>{t('made_with_love')}</span>
-          <Heart className="h-4 w-4 text-red-500 fill-current" />
-          <span>{t('by_the_community')}</span>
         </div>
       </div>
     </div>
