@@ -6,6 +6,9 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "movies": "Films",
+      "tv_shows": "Séries",
+      "animes": "Animés",
       "keywords": "Mots-clés",
       "keyword_isekai": "Isekai",
       "keyword_shonen": "Shonen",
@@ -79,7 +82,7 @@ const resources = {
       "view_details": "Voir la fiche",
       "search_and_request": "Rechercher & Demander",
       "search_and_request_desc": "Trouvez de nouveaux films, séries ou animés et ajoutez-les à vos demandes.",
-      "anime": "Animés",
+      "anime": "Animé",
       "webhook_url_desc_simplified": "Utilisez cette URL dans les paramètres de connexion de Sonarr/Radarr.",
       "security_warning": "Avertissement de sécurité",
       "webhook_secret_warning": "Votre secret de webhook est sensible. Ne le partagez jamais publiquement. Si vous pensez qu'il a été compromis, changez-le immédiatement dans les paramètres de votre projet Supabase.",
@@ -449,6 +452,9 @@ const resources = {
   },
   en: {
     translation: {
+      "movies": "Movies",
+      "tv_shows": "TV Shows",
+      "animes": "Anime",
       "keywords": "Keywords",
       "keyword_isekai": "Isekai",
       "keyword_shonen": "Shonen",
