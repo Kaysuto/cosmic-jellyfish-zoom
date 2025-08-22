@@ -3,8 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Copy } from 'lucide-react';
+import { Copy, AlertTriangle } from 'lucide-react';
 import { showSuccess } from '@/utils/toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZmZrd29la3VhZXRhaHJ3aW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzNzc5OTMsImV4cCI6MjA2OTk1Mzk5M30.2Or0n42Hc6OjdWL-oGwoQHMjPqTwg0yMGKXnEysiJP4";
 const WEBHOOK_URL = "https://tgffkwoekuaetahrwioo.supabase.co/rest/v1/rpc/handle_webhook";
@@ -40,9 +41,16 @@ const WebhookInstructions = () => {
           </div>
         </div>
 
-        <div className="border-t pt-4">
-          <h4 className="font-semibold mb-2">2. {t('webhook_headers_label')}</h4>
-          <p className="text-sm text-muted-foreground mb-2">{t('webhook_headers_desc')}</p>
+        <div className="border-t pt-4 space-y-4">
+          <h4 className="font-semibold">2. {t('webhook_headers_label')}</h4>
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Étape Cruciale</AlertTitle>
+            <AlertDescription>
+              L'ajout des en-têtes personnalisés est **obligatoire**. Sans eux, le webhook ne fonctionnera pas et vous obtiendrez une erreur de clé API.
+            </AlertDescription>
+          </Alert>
+          <p className="text-sm text-muted-foreground">{t('webhook_headers_desc')}</p>
           <div className="space-y-4 rounded-md border p-4">
             <div className="grid grid-cols-3 gap-2 items-center">
               <Label className="text-xs text-muted-foreground col-span-1">Name</Label>
