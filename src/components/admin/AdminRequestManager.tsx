@@ -39,27 +39,68 @@ const AdminRequestManager = () => {
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
   useEffect(() => {
-    const fetchRequests = async () => {
+    const fetchRequestsAndProfiles = async () => {
       setLoading(true);
-      let query = supabase
-        .from('media_requests')
-        .select('*, profiles!left(*)');
 
+      // 1. Fetch requests
+      let requestQuery = supabase.from('media_requests').select('*');
       if (filterStatus !== 'all') {
-        query = query.eq('status', filterStatus);
+        requestQuery = requestQuery.eq('status', filterStatus);
       }
-      
-      const { data, error } = await query.order('requested_at', { ascending: false });
+      const { data: requestData, error: requestError } = await requestQuery.order('requested_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching requests:', error);
-      } else {
-        setRequests(data as MediaRequest[]);
+      if (requestError) {
+        console.error('Error fetching requests:', requestError);
+        showError('Error fetching requests: ' + requestError.message);
+        setRequests([]);
+        setLoading(false);
+        return;
       }
+
+      if (!requestData || requestData.length === 0) {
+        setRequests([]);
+        setLoading(false);
+        return;
+      }
+
+      // 2. Get unique user IDs
+      const userIds = [...new Set(requestData.map(req => req.user_id).filter(id => id))];
+
+      if (userIds.length === 0) {
+        setRequests(requestData.map(r => ({ ...r, profiles: null })));
+        setLoading(false);
+        return;
+      }
+
+      // 3. Fetch profiles for those IDs
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', userIds);
+
+      if (profileError) {
+        console.error('Error fetching profiles:', profileError);
+        showError('Error fetching user profiles: ' + profileError.message);
+        // Still display requests, just without user info
+        setRequests(requestData.map(r => ({ ...r, profiles: null })));
+        setLoading(false);
+        return;
+      }
+
+      // 4. Create a map for easy lookup
+      const profileMap = new Map(profileData.map(p => [p.id, p]));
+
+      // 5. Combine the data
+      const combinedData = requestData.map(req => ({
+        ...req,
+        profiles: profileMap.get(req.user_id) || null,
+      }));
+
+      setRequests(combinedData as MediaRequest[]);
       setLoading(false);
     };
 
-    fetchRequests();
+    fetchRequestsAndProfiles();
   }, [filterStatus]);
 
   const handleStatusChange = async (requestId: string, newStatus: MediaRequest['status']) => {
