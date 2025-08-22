@@ -43,7 +43,7 @@ const AdminRequestManager = () => {
       setLoading(true);
       let query = supabase
         .from('media_requests')
-        .select('*, profiles(*)');
+        .select('*, profiles!left(*)');
 
       if (filterStatus !== 'all') {
         query = query.eq('status', filterStatus);
