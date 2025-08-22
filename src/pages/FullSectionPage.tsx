@@ -5,8 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsUpDown } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import MediaGrid, { MediaItem } from '@/components/catalog/MediaGrid';
 import RequestModal from '@/components/catalog/RequestModal';
 import { useSession } from '@/contexts/AuthContext';
@@ -27,6 +27,12 @@ const FullSectionPage = () => {
   
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
+
+  const sortOptions = {
+    'popularity.desc': t('sort_popularity_desc'),
+    'release_date.desc': t('sort_release_date_desc'),
+    'vote_average.desc': t('sort_vote_average_desc'),
+  };
 
   const fetchMedia = useCallback(async () => {
     if (!mediaType) return;
@@ -97,16 +103,21 @@ const FullSectionPage = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-4xl font-bold tracking-tight">{pageTitle}</h1>
         <div className="w-full sm:w-auto">
-          <Select value={sortBy} onValueChange={handleSortByChange}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder={t('sort_by')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="popularity.desc">{t('sort_popularity_desc')}</SelectItem>
-              <SelectItem value="release_date.desc">{t('sort_release_date_desc')}</SelectItem>
-              <SelectItem value="vote_average.desc">{t('sort_vote_average_desc')}</SelectItem>
-            </SelectContent>
-          </Select>
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full sm:w-[200px] justify-between">
+                {sortOptions[sortBy as keyof typeof sortOptions]}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[200px]">
+              {Object.entries(sortOptions).map(([value, label]) => (
+                <DropdownMenuItem key={value} onSelect={() => handleSortByChange(value)}>
+                  {label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

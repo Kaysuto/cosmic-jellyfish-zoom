@@ -12,6 +12,8 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent } from '@/components/ui/card';
 import RequestModal from '@/components/catalog/RequestModal';
 import { useSession } from '@/contexts/AuthContext';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import MediaCard from '@/components/catalog/MediaCard';
 
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
@@ -57,13 +59,13 @@ const CatalogPage = () => {
       ]);
 
       if (movieRes.error) throw movieRes.error;
-      setMovies(movieRes.data.results.slice(0, 10));
+      setMovies(movieRes.data.results);
 
       if (tvRes.error) throw tvRes.error;
-      setTvShows(tvRes.data.results.slice(0, 10));
+      setTvShows(tvRes.data.results);
 
       if (animeRes.error) throw animeRes.error;
-      setAnimes(animeRes.data.results.slice(0, 10));
+      setAnimes(animeRes.data.results);
 
     } catch (error: any) {
       showError(error.message);
@@ -101,12 +103,10 @@ const CatalogPage = () => {
   }, [debouncedSearchTerm, i18n.language]);
 
   const LoadingSkeleton = () => (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-      {[...Array(10)].map((_, i) => (
-        <div key={i} className="space-y-2">
+    <div className="flex space-x-4">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="w-[16.66%] flex-shrink-0">
           <Skeleton className="aspect-[2/3] w-full rounded-lg" />
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
         </div>
       ))}
     </div>
@@ -118,6 +118,30 @@ const CatalogPage = () => {
     setSelectedItemForRequest(item);
     setRequestModalOpen(true);
   };
+
+  const renderSection = (titleKey: string, items: MediaItem[], linkTo: string) => (
+    <section>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-3xl font-bold">{t(titleKey)}</h2>
+        <Button asChild variant="ghost">
+          <Link to={linkTo}>{t('view_all')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+        </Button>
+      </div>
+      {sectionsLoading ? <LoadingSkeleton /> : (
+        <Carousel opts={{ align: "start", dragFree: true }}>
+          <CarouselContent className="-ml-4">
+            {items.map((item) => (
+              <CarouselItem key={item.id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6">
+                <MediaCard item={item} onRequest={openRequestModal} showRequestButton={!!session} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="hidden sm:flex" />
+          <CarouselNext className="hidden sm:flex" />
+        </Carousel>
+      )}
+    </section>
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -148,33 +172,9 @@ const CatalogPage = () => {
           </>
         ) : (
           <div className="space-y-12">
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-3xl font-bold">{t('movies')}</h2>
-                <Button asChild variant="ghost">
-                  <Link to="/catalog/movie">{t('view_all')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                </Button>
-              </div>
-              {sectionsLoading ? <LoadingSkeleton /> : <MediaGrid items={movies} onRequest={openRequestModal} showRequestButton={!!session} />}
-            </section>
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-3xl font-bold">{t('tv_shows')}</h2>
-                <Button asChild variant="ghost">
-                  <Link to="/catalog/tv">{t('view_all')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                </Button>
-              </div>
-              {sectionsLoading ? <LoadingSkeleton /> : <MediaGrid items={tvShows} onRequest={openRequestModal} showRequestButton={!!session} />}
-            </section>
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-3xl font-bold">{t('animes')}</h2>
-                <Button asChild variant="ghost">
-                  <Link to="/catalog/anime">{t('view_all')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                </Button>
-              </div>
-              {sectionsLoading ? <LoadingSkeleton /> : <MediaGrid items={animes} onRequest={openRequestModal} showRequestButton={!!session} />}
-            </section>
+            {renderSection('movies', movies, '/catalog/movie')}
+            {renderSection('tv_shows', tvShows, '/catalog/tv')}
+            {renderSection('animes', animes, '/catalog/anime')}
           </div>
         )}
       </main>
