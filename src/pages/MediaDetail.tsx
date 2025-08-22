@@ -278,23 +278,25 @@ const MediaDetailPage = () => {
                   </Select>
                 </div>
                 {seasonLoading ? (
-                  <div className="space-y-4">
-                    {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
                   </div>
                 ) : selectedSeason && (
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {selectedSeason.episodes.map(episode => (
-                      <div key={episode.id} className="flex gap-4 bg-muted/20 p-4 rounded-lg border border-border">
-                        <div className="w-48 flex-shrink-0">
-                          {episode.still_path ? <img src={`https://image.tmdb.org/t/p/w500${episode.still_path}`} alt={`Still from ${episode.name}`} className="w-full h-auto object-cover aspect-video rounded" /> : <div className="w-full aspect-video flex items-center justify-center bg-muted text-muted-foreground rounded"><Tv className="h-8 w-8" /></div>}
+                      <div key={episode.id} className="bg-muted/20 rounded-lg overflow-hidden border border-border transition-transform hover:scale-105">
+                        <div className="aspect-video bg-muted">
+                          {episode.still_path ? (
+                            <img src={`https://image.tmdb.org/t/p/w500${episode.still_path}`} alt={episode.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                              <Tv className="h-8 w-8" />
+                            </div>
+                          )}
                         </div>
-                        <div className="flex-grow">
-                          <h3 className="font-semibold">{episode.episode_number}. {episode.name}</h3>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                            {episode.runtime ? <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {t('minutes', { count: episode.runtime })}</span> : <span />}
-                            {episode.air_date && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(episode.air_date).toLocaleDateString(i18n.language)}</span>}
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{episode.overview || t('no_description_available')}</p>
+                        <div className="p-3">
+                          <p className="text-xs text-muted-foreground">Épisode {episode.episode_number}</p>
+                          <h4 className="font-semibold text-sm truncate">{episode.name}</h4>
                         </div>
                       </div>
                     ))}
