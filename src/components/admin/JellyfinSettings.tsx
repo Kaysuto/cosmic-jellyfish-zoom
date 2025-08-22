@@ -4,13 +4,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
-import { showSuccess, showError } from '@/utils/toast';
+import { showSuccess, showError, showLoading, dismissToast } from '@/utils/toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Film } from 'lucide-react';
+import { Film, RefreshCw, Loader2 } from 'lucide-react';
 
 const jellyfinSettingsSchema = z.object({
   url: z.string().url({ message: "Veuillez entrer une URL valide." }),
@@ -20,6 +20,7 @@ const jellyfinSettingsSchema = z.object({
 const JellyfinSettings = () => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const form = useForm<z.infer<typeof jellyfinSettingsSchema>>({
     resolver: zodResolver(jellyfinSettingsSchema),
@@ -60,6 +61,26 @@ const JellyfinSettings = () => {
       showError(t('error_saving_settings'));
     } else {
       showSuccess(t('settings_saved_successfully'));
+    }
+  };
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    const toastId = showLoading('Démarrage de la synchronisation Jellyfin...');
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-jellyfin');
+      if (error) throw error;
+      
+      dismissToast(toastId);
+      showSuccess(`Synchronisation terminée ! ${data.itemsUpserted} éléments traités.`);
+      console.log('Sync result:', data);
+
+    } catch (error: any) {
+      dismissToast(toastId);
+      showError(`Erreur de synchronisation: ${error.message}`);
+      console.error(error);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -117,9 +138,19 @@ const JellyfinSettings = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? t('saving') : t('save_jellyfin_settings')}
-            </Button>
+            <div className="flex items-center gap-2 pt-2">
+              <Button type="submit" disabled={form.formState.isSubmitting || isSyncing}>
+                {form.formState.isSubmitting ? t('saving') : t('save_jellyfin_settings')}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleSync} disabled={isSyncing || form.formState.isSubmitting}>
+                {isSyncing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                )}
+                Synchroniser
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>

@@ -134,32 +134,61 @@ serve(async (req) => {
     );
     const excludedCount = allLibraryItems.length - filteredItems.length;
 
-    const catalogItems = filteredItems
-      .map(item => {
-        const releaseDate = item.PremiereDate ? new Date(item.PremiereDate).toISOString().split('T')[0] : null;
-        return {
+    const TMDB_API_KEY = Deno.env.get('TMDB_API_KEY');
+    if (!TMDB_API_KEY) {
+      throw new Error('TMDB_API_KEY is not set in environment variables.');
+    }
+    const TMDB_API_URL = 'https://api.themoviedb.org/3';
+
+    const enrichedItems = [];
+    for (const item of filteredItems) {
+      if (!item.ProviderIds?.Tmdb) {
+        console.log(`Skipping item without TMDB ID: ${item.Name}`);
+        continue;
+      }
+
+      const mediaType = item.Type === 'Series' ? 'tv' : 'movie';
+      const tmdbId = item.ProviderIds.Tmdb;
+
+      try {
+        const tmdbUrl = `${TMDB_API_URL}/${mediaType}/${tmdbId}?api_key=${TMDB_API_KEY}&language=fr-FR`;
+        const tmdbResponse = await fetch(tmdbUrl);
+        if (!tmdbResponse.ok) {
+          console.error(`Failed to fetch TMDB data for ${item.Name} (ID: ${tmdbId}). Status: ${tmdbResponse.status}`);
+          continue;
+        }
+        const tmdbData = await tmdbResponse.json();
+
+        enrichedItems.push({
           jellyfin_id: item.Id,
-          media_type: item.Type === 'Series' ? 'tv' : 'movie',
-          title: item.Name,
-          release_date: releaseDate,
-          tmdb_id: item.ProviderIds?.Tmdb ? parseInt(item.ProviderIds.Tmdb, 10) : null,
+          media_type: mediaType,
+          title: tmdbData.title || tmdbData.name,
+          overview: tmdbData.overview,
+          poster_path: tmdbData.poster_path,
+          backdrop_path: tmdbData.backdrop_path,
+          release_date: tmdbData.release_date || tmdbData.first_air_date,
+          tmdb_id: tmdbId,
           tvdb_id: item.ProviderIds?.Tvdb ? parseInt(item.ProviderIds.Tvdb, 10) : null,
-        };
-      })
-      .filter(item => item.jellyfin_id && item.title);
+          genres: tmdbData.genres,
+          vote_average: tmdbData.vote_average,
+        });
+      } catch (e) {
+        console.error(`Error processing TMDB data for ${item.Name}: ${e.message}`);
+      }
+    }
 
-    console.log(`Prepared ${catalogItems.length} items for database upsert.`);
+    console.log(`Prepared ${enrichedItems.length} items for database upsert.`);
 
-    if (catalogItems.length > 0) {
+    if (enrichedItems.length > 0) {
       const { error: upsertError } = await supabaseAdmin
         .from('catalog_items')
-        .upsert(catalogItems, { onConflict: 'jellyfin_id' });
+        .upsert(enrichedItems, { onConflict: 'jellyfin_id' });
 
       if (upsertError) {
         console.error('Supabase upsert error:', upsertError);
         throw new Error(`Failed to save items to catalog: ${upsertError.message}`);
       }
-      console.log(`Successfully upserted ${catalogItems.length} items.`);
+      console.log(`Successfully upserted ${enrichedItems.length} items.`);
     }
 
     const response = {
@@ -167,7 +196,7 @@ serve(async (req) => {
       totalItemsFetched: allLibraryItems.length,
       itemsExcluded: excludedCount,
       itemsProcessed: filteredItems.length,
-      itemsUpserted: catalogItems.length,
+      itemsUpserted: enrichedItems.length,
     };
 
     return new Response(JSON.stringify(response), {
