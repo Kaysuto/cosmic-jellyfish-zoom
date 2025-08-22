@@ -12,9 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import MediaGrid from '@/components/catalog/MediaGrid';
+import MediaGrid, { MediaItem } from '@/components/catalog/MediaGrid';
 import { motion } from 'framer-motion';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import RequestModal from '@/components/catalog/RequestModal';
 
 interface MediaDetails {
   id: number;
@@ -59,7 +60,6 @@ const MediaDetailPage = () => {
   const [details, setDetails] = useState<MediaDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [requestStatus, setRequestStatus] = useState<RequestStatus>(null);
-  const [isRequesting, setIsRequesting] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState<SeasonDetails | null>(null);
   const [seasonLoading, setSeasonLoading] = useState(false);
   const [selectedSeasonNumber, setSelectedSeasonNumber] = useState<number | null>(null);
@@ -68,6 +68,8 @@ const MediaDetailPage = () => {
   const [credits, setCredits] = useState<{ cast: any[], crew: any[] }>({ cast: [], crew: [] });
   const [videoPage, setVideoPage] = useState(1);
   const [jellyfinId, setJellyfinId] = useState<string | null>(null);
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
 
   const fromSearch = searchParams.get('fromSearch');
 
@@ -85,6 +87,12 @@ const MediaDetailPage = () => {
     } finally {
       setSeasonLoading(false);
     }
+  };
+
+  const fetchRequestStatus = async () => {
+    if (!session?.user || !id || !type) return;
+    const { data: requestData } = await supabase.from('media_requests').select('status').eq('tmdb_id', id).eq('media_type', type).maybeSingle();
+    if (requestData) setRequestStatus(requestData.status as RequestStatus);
   };
 
   useEffect(() => {
@@ -105,21 +113,7 @@ const MediaDetailPage = () => {
         const tmdbDetails = detailsResult.data;
         setDetails(tmdbDetails);
 
-        const { data: mediaMatch, error: mediaError } = await supabase
-          .from('media')
-          .select('jellyfin_id, available')
-          .eq('tmdb_id', tmdbDetails.id)
-          .maybeSingle();
-
-        if (mediaError) console.error("Error checking media availability:", mediaError);
-        
-        if (mediaMatch?.available) {
-          setRequestStatus('available');
-          setJellyfinId(mediaMatch.jellyfin_id);
-        } else {
-          const { data: requestData } = session?.user ? await supabase.from('media_requests').select('status').eq('tmdb_id', id).eq('media_type', type).maybeSingle() : { data: null };
-          if (requestData) setRequestStatus(requestData.status as RequestStatus);
-        }
+        fetchRequestStatus();
 
         if (videosResult.error) console.error('Error fetching videos:', videosResult.error); else setVideos(videosResult.data.results);
         if (similarResult.error) console.error('Error fetching similar media:', similarResult.error); else setSimilar(similarResult.data);
@@ -145,30 +139,17 @@ const MediaDetailPage = () => {
     }
   }, [selectedSeasonNumber, type, id, i18n.language]);
 
-  const handleRequest = async () => {
-    if (!session?.user || !details || !type) {
-      showError("You must be logged in to make a request.");
-      return;
-    }
-    setIsRequesting(true);
-    try {
-      const { error } = await supabase.from('media_requests').insert({
-        user_id: session.user.id,
-        media_type: type,
-        tmdb_id: details.id,
-        title: details.title || details.name || 'Unknown Title',
-        poster_path: details.poster_path,
-        overview: details.overview,
-        release_date: details.release_date || details.first_air_date,
-      });
-      if (error) throw error;
-      showSuccess(t('request_successful'));
-      setRequestStatus('pending');
-    } catch (error: any) {
-      showError(`${t('error_sending_request')}: ${error.message}`);
-    } finally {
-      setIsRequesting(false);
-    }
+  const handleRequest = () => {
+    if (!details || !type) return;
+    const itemToRequest: MediaItem = {
+      id: details.id,
+      title: details.title,
+      name: details.name,
+      poster_path: details.poster_path,
+      media_type: type,
+    };
+    setSelectedItemForRequest(itemToRequest);
+    setRequestModalOpen(true);
   };
 
   const handlePlay = () => {
@@ -195,8 +176,8 @@ const MediaDetailPage = () => {
       return <Button size="lg" disabled><Check className="mr-2 h-4 w-4" /> {t('requested')}</Button>;
     }
     return (
-      <Button size="lg" onClick={handleRequest} disabled={isRequesting}>
-        {isRequesting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Film className="mr-2 h-4 w-4" />}
+      <Button size="lg" onClick={handleRequest}>
+        <Film className="mr-2 h-4 w-4" />
         {t('request')}
       </Button>
     );
@@ -416,6 +397,7 @@ const MediaDetailPage = () => {
           </div>
         </div>
       </div>
+      <RequestModal open={requestModalOpen} onOpenChange={setRequestModalOpen} item={selectedItemForRequest} onSuccess={fetchRequestStatus} />
     </>
   );
 };
