@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,7 +8,7 @@ import { fr, enUS } from 'date-fns/locale';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Check, X, Download, Hourglass } from 'lucide-react';
+import { MoreHorizontal, Check, X, Download, Hourglass, MailQuestion } from 'lucide-react';
 import { showError, showSuccess } from '@/utils/toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getGravatarURL } from '@/lib/gravatar';
@@ -107,55 +107,69 @@ const AdminRequestManager = () => {
           </SelectContent>
         </Select>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t('title')}</TableHead>
-            <TableHead>{t('requester')}</TableHead>
-            <TableHead>{t('date')}</TableHead>
-            <TableHead>{t('status')}</TableHead>
-            <TableHead className="text-right">{t('actions')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {requests.map(req => (
-            <TableRow key={req.id}>
-              <TableCell className="font-medium">{req.title}</TableCell>
-              <TableCell>
-                {req.profiles ? (
-                  <Link to={`/users/${req.user_id}`} className="flex items-center gap-2 hover:underline">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={req.profiles.avatar_url || getGravatarURL(req.profiles.email)} />
-                      <AvatarFallback>{req.profiles.first_name?.[0] || 'U'}</AvatarFallback>
-                    </Avatar>
-                    <span>{req.profiles.first_name} {req.profiles.last_name}</span>
-                  </Link>
-                ) : (
-                  <span>{t('unknown_user')}</span>
-                )}
-              </TableCell>
-              <TableCell>{format(new Date(req.requested_at), 'd MMM yyyy', { locale: currentLocale })}</TableCell>
-              <TableCell>
-                <Badge variant="outline" className={statusConfig[req.status]?.className}>
-                  {statusConfig[req.status]?.text}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-right">
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleStatusChange(req.id, 'approved')}><Check className="mr-2 h-4 w-4 text-blue-500" />{t('status_approved')}</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleStatusChange(req.id, 'available')}><Download className="mr-2 h-4 w-4 text-green-500" />{t('status_available')}</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleStatusChange(req.id, 'rejected')}><X className="mr-2 h-4 w-4 text-red-500" />{t('status_rejected')}</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleStatusChange(req.id, 'pending')}><Hourglass className="mr-2 h-4 w-4 text-gray-500" />{t('status_pending')}</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+      {requests.length > 0 ? (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t('title')}</TableHead>
+              <TableHead>{t('requester')}</TableHead>
+              <TableHead>{t('date')}</TableHead>
+              <TableHead>{t('status')}</TableHead>
+              <TableHead className="text-right">{t('actions')}</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      {requests.length === 0 && <p className="text-center text-muted-foreground py-8">{t('no_requests_in_this_category')}</p>}
+          </TableHeader>
+          <TableBody>
+            {requests.map(req => (
+              <TableRow key={req.id}>
+                <TableCell className="font-medium">{req.title}</TableCell>
+                <TableCell>
+                  {req.profiles ? (
+                    <Link to={`/users/${req.user_id}`} className="flex items-center gap-2 hover:underline">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={req.profiles.avatar_url || getGravatarURL(req.profiles.email)} />
+                        <AvatarFallback>{req.profiles.first_name?.[0] || 'U'}</AvatarFallback>
+                      </Avatar>
+                      <span>{req.profiles.first_name} {req.profiles.last_name}</span>
+                    </Link>
+                  ) : (
+                    <span>{t('unknown_user')}</span>
+                  )}
+                </TableCell>
+                <TableCell>{format(new Date(req.requested_at), 'd MMM yyyy', { locale: currentLocale })}</TableCell>
+                <TableCell>
+                  <Badge variant="outline" className={statusConfig[req.status]?.className}>
+                    {statusConfig[req.status]?.text}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu modal={false}>
+                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleStatusChange(req.id, 'approved')}><Check className="mr-2 h-4 w-4 text-blue-500" />{t('status_approved')}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleStatusChange(req.id, 'available')}><Download className="mr-2 h-4 w-4 text-green-500" />{t('status_available')}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleStatusChange(req.id, 'rejected')}><X className="mr-2 h-4 w-4 text-red-500" />{t('status_rejected')}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleStatusChange(req.id, 'pending')}><Hourglass className="mr-2 h-4 w-4 text-gray-500" />{t('status_pending')}</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      ) : (
+        <div className="text-center py-16 border-t">
+          <MailQuestion className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-4 text-lg font-semibold">{t('no_requests_to_display')}</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {t('no_requests_for_status')}
+          </p>
+          <div className="mt-6">
+            <Button asChild>
+              <Link to="/catalog">{t('make_test_request')}</Link>
+            </Button>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };

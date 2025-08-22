@@ -6,6 +6,9 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "no_requests_to_display": "Aucune demande à afficher",
+      "no_requests_for_status": "Il n'y a actuellement aucune demande avec le statut sélectionné.",
+      "make_test_request": "Faire une demande de test",
       "my_requests": "Mes Demandes",
       "my_requests_description": "Suivez le statut de toutes vos demandes de médias.",
       "cancel_request": "Annuler la demande",
@@ -469,6 +472,9 @@ const resources = {
   },
   en: {
     translation: {
+      "no_requests_to_display": "No Requests to Display",
+      "no_requests_for_status": "There are currently no requests with the selected status.",
+      "make_test_request": "Make a Test Request",
       "my_requests": "My Requests",
       "my_requests_description": "Track the status of all your media requests.",
       "cancel_request": "Cancel Request",
