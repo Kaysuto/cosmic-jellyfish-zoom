@@ -70,10 +70,10 @@ class JellyfinClient {
     console.log(`Fetching items for view ${viewId}...`);
     let allItems: any[] = [];
     let startIndex = 0;
-    const limit = 200; // Number of items to fetch per request
+    const limit = 200;
 
     while (true) {
-      const url = `${this.baseUrl}/Users/${this.userId}/Items?ParentId=${viewId}&Recursive=true&IncludeItemTypes=Movie,Series&fields=ProviderIds&StartIndex=${startIndex}&Limit=${limit}`;
+      const url = `${this.baseUrl}/Users/${this.userId}/Items?ParentId=${viewId}&Recursive=true&IncludeItemTypes=Movie,Series&fields=ProviderIds,PremiereDate&StartIndex=${startIndex}&Limit=${limit}`;
       const response = await fetch(url, {
         headers: await this.getAuthHeaders(),
       });
@@ -84,16 +84,12 @@ class JellyfinClient {
       }
 
       const data = await response.json();
-      if (data.Items.length === 0) {
-        break; // No more items
-      }
+      if (data.Items.length === 0) break;
 
       allItems = allItems.concat(data.Items);
       startIndex += data.Items.length;
 
-      if (startIndex >= data.TotalRecordCount) {
-        break;
-      }
+      if (startIndex >= data.TotalRecordCount) break;
     }
     console.log(`Fetched ${allItems.length} total items for view ${viewId}.`);
     return allItems;
@@ -132,30 +128,46 @@ serve(async (req) => {
       allLibraryItems = allLibraryItems.concat(items);
     }
 
-    console.log(`Total items fetched from all libraries: ${allLibraryItems.length}`);
-
-    // Filter out any series with "Kaï" in the name
     const excludedName = "kaï";
     const filteredItems = allLibraryItems.filter(item => 
       !(item.Name && item.Name.toLowerCase().includes(excludedName))
     );
-
     const excludedCount = allLibraryItems.length - filteredItems.length;
-    console.log(`Excluded ${excludedCount} items containing '${excludedName}'.`);
-    console.log(`Items to be processed: ${filteredItems.length}`);
 
-    // For now, we just log the first few items to see the structure
-    console.log('Sample of items to be processed:', filteredItems.slice(0, 3));
+    const catalogItems = filteredItems
+      .map(item => {
+        const releaseDate = item.PremiereDate ? new Date(item.PremiereDate).toISOString().split('T')[0] : null;
+        return {
+          jellyfin_id: item.Id,
+          media_type: item.Type === 'Series' ? 'tv' : 'movie',
+          title: item.Name,
+          release_date: releaseDate,
+          tmdb_id: item.ProviderIds?.Tmdb ? parseInt(item.ProviderIds.Tmdb, 10) : null,
+          tvdb_id: item.ProviderIds?.Tvdb ? parseInt(item.ProviderIds.Tvdb, 10) : null,
+        };
+      })
+      .filter(item => item.jellyfin_id && item.title);
 
-    // TODO:
-    // 1. Process each item to get TMDB/TVDB IDs
-    // 2. Upsert items into the `catalog_items` table in Supabase
+    console.log(`Prepared ${catalogItems.length} items for database upsert.`);
+
+    if (catalogItems.length > 0) {
+      const { error: upsertError } = await supabaseAdmin
+        .from('catalog_items')
+        .upsert(catalogItems, { onConflict: 'jellyfin_id' });
+
+      if (upsertError) {
+        console.error('Supabase upsert error:', upsertError);
+        throw new Error(`Failed to save items to catalog: ${upsertError.message}`);
+      }
+      console.log(`Successfully upserted ${catalogItems.length} items.`);
+    }
 
     const response = {
-      message: "Jellyfin sync step 2 complete. Fetched and filtered library items.",
+      message: "Jellyfin sync complete. Library items have been saved to the catalog.",
       totalItemsFetched: allLibraryItems.length,
       itemsExcluded: excludedCount,
-      itemsToProcess: filteredItems.length,
+      itemsProcessed: filteredItems.length,
+      itemsUpserted: catalogItems.length,
     };
 
     return new Response(JSON.stringify(response), {
