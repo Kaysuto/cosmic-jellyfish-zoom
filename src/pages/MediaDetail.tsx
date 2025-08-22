@@ -7,15 +7,13 @@ import { showError, showSuccess } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight, Gift } from 'lucide-react';
+import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import MediaGrid from '@/components/catalog/MediaGrid';
 import { motion } from 'framer-motion';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface MediaDetails {
   id: number;
@@ -70,28 +68,7 @@ const MediaDetailPage = () => {
   const [videoPage, setVideoPage] = useState(1);
   const [jellyfinId, setJellyfinId] = useState<string | null>(null);
 
-  const [actorDetails, setActorDetails] = useState<any | null>(null);
-  const [isActorDetailOpen, setIsActorDetailOpen] = useState(false);
-  const [actorDetailLoading, setActorDetailLoading] = useState(false);
-
   const fromSearch = searchParams.get('fromSearch');
-
-  const handleActorClick = async (actor: any) => {
-    setIsActorDetailOpen(true);
-    setActorDetailLoading(true);
-    setActorDetails(null);
-    try {
-      const { data, error } = await supabase.functions.invoke('get-person-details', {
-        body: { personId: actor.id, language: i18n.language },
-      });
-      if (error) throw error;
-      setActorDetails(data);
-    } catch (error: any) {
-      showError(error.message);
-    } finally {
-      setActorDetailLoading(false);
-    }
-  };
 
   const fetchSeasonDetails = async (seasonNumber: number) => {
     if (!type || !id) return;
@@ -418,7 +395,7 @@ const MediaDetailPage = () => {
                 {credits.cast.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {credits.cast.slice(0, 18).map((person) => (
-                      <button key={person.id} onClick={() => handleActorClick(person)} className="text-left">
+                      <Link to={`/person/${person.id}`} key={person.id} className="text-left">
                         <Card className="text-center overflow-hidden bg-muted/20 border-border h-full transition-transform hover:scale-105">
                           {person.profile_path ? <img src={`https://image.tmdb.org/t/p/w185${person.profile_path}`} alt={person.name} className="w-full h-auto object-cover aspect-[2/3]" /> : <div className="w-full aspect-[2/3] flex items-center justify-center bg-muted text-muted-foreground"><User className="h-12 w-12" /></div>}
                           <CardContent className="p-2">
@@ -426,7 +403,7 @@ const MediaDetailPage = () => {
                             <p className="text-xs text-muted-foreground truncate">{person.character}</p>
                           </CardContent>
                         </Card>
-                      </button>
+                      </Link>
                     ))}
                   </div>
                 ) : <p>{t('no_cast_info')}</p>}
@@ -435,41 +412,6 @@ const MediaDetailPage = () => {
           </div>
         </div>
       </div>
-      <Dialog open={isActorDetailOpen} onOpenChange={setIsActorDetailOpen}>
-        <DialogContent className="sm:max-w-3xl h-[90vh]">
-          {actorDetailLoading ? (
-            <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
-          ) : actorDetails ? (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-3xl">{actorDetails.name}</DialogTitle>
-                <DialogDescription>
-                  {actorDetails.birthday && (
-                    <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Gift className="h-4 w-4" />
-                      {t('born_on', { date: new Date(actorDetails.birthday).toLocaleDateString(i18n.language) })}
-                      {actorDetails.place_of_birth && ` ${t('in')} ${actorDetails.place_of_birth}`}
-                    </span>
-                  )}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid md:grid-cols-3 gap-6 py-4 h-full overflow-hidden">
-                <div className="md:col-span-1">
-                  <img src={`https://image.tmdb.org/t/p/w500${actorDetails.profile_path}`} alt={actorDetails.name} className="rounded-lg w-full" />
-                </div>
-                <div className="md:col-span-2 h-full flex flex-col">
-                  <h4 className="font-semibold text-lg mb-2">{t('biography')}</h4>
-                  <ScrollArea className="flex-grow pr-4 -mr-4">
-                    <p className="text-muted-foreground whitespace-pre-wrap">
-                      {actorDetails.biography || t('no_biography_available')}
-                    </p>
-                  </ScrollArea>
-                </div>
-              </div>
-            </>
-          ) : null}
-        </DialogContent>
-      </Dialog>
     </>
   );
 };

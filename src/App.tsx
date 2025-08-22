@@ -27,6 +27,7 @@ import EditUserPage from "./pages/admin/EditUser";
 import LogsPage from "./pages/admin/Logs";
 import { SettingsProvider, useSettings } from "./contexts/SettingsContext";
 import MediaDetailPage from "./pages/MediaDetail";
+import PersonDetailPage from "./pages/PersonDetail";
 import CatalogPage from "./pages/Catalog";
 import AdminRequestManager from "./components/admin/AdminRequestManager";
 import DmcaPage from "./pages/Dmca";
@@ -77,6 +78,7 @@ const App = () => (
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/privacy" element={<PrivacyPage />} />
                     <Route path="/media/:type/:id" element={<MediaDetailPage />} />
+                    <Route path="/person/:id" element={<PersonDetailPage />} />
                     <Route path="/catalog" element={<CatalogPage />} />
                     <Route element={<ProtectedRoute />}>
                       <Route path="/profile" element={<Profile />} />

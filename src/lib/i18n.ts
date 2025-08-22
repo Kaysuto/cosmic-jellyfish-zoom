@@ -6,6 +6,14 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "filmography": "Filmographie",
+      "role_job": "Rôle / Poste",
+      "year": "Année",
+      "acting": "Acteur/Actrice",
+      "directing": "Réalisation",
+      "writing": "Écriture",
+      "production": "Production",
+      "crew": "Équipe technique",
       "biography": "Biographie",
       "born_on": "Né(e) le {{date}}",
       "in": "à",
@@ -423,6 +431,14 @@ const resources = {
   },
   en: {
     translation: {
+      "filmography": "Filmography",
+      "role_job": "Role / Job",
+      "year": "Year",
+      "acting": "Acting",
+      "directing": "Directing",
+      "writing": "Writing",
+      "production": "Production",
+      "crew": "Crew",
       "biography": "Biography",
       "born_on": "Born on {{date}}",
       "in": "in",
