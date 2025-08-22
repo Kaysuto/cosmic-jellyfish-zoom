@@ -6,6 +6,15 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "keywords": "Mots-clés",
+      "keyword_isekai": "Isekai",
+      "keyword_shonen": "Shonen",
+      "keyword_magic": "Magie",
+      "keyword_supernatural": "Surnaturel",
+      "keyword_mecha": "Mecha",
+      "keyword_slice_of_life": "Slice of Life",
+      "keyword_shojo": "Shojo",
+      "keyword_seinen": "Seinen",
       "sort_by": "Trier par",
       "sort_popularity_desc": "Popularité",
       "sort_release_date_desc": "Date de sortie",
@@ -440,6 +449,15 @@ const resources = {
   },
   en: {
     translation: {
+      "keywords": "Keywords",
+      "keyword_isekai": "Isekai",
+      "keyword_shonen": "Shonen",
+      "keyword_magic": "Magic",
+      "keyword_supernatural": "Supernatural",
+      "keyword_mecha": "Mecha",
+      "keyword_slice_of_life": "Slice of Life",
+      "keyword_shojo": "Shojo",
+      "keyword_seinen": "Seinen",
       "sort_by": "Sort by",
       "sort_popularity_desc": "Popularity",
       "sort_release_date_desc": "Release Date",

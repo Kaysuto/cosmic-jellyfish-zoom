@@ -6,11 +6,11 @@ import { Separator } from "@/components/ui/separator";
 import { Film, Tv, Flame, X } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface Genre { id: number; name: string; }
 interface Studio { id: number; name: string; }
 interface Network { id: number; name: string; }
+interface Keyword { id: number; name: string; }
 
 interface CatalogFiltersProps {
   genres: Genre[];
@@ -27,6 +27,9 @@ interface CatalogFiltersProps {
   onNetworkToggle: (networkId: number) => void;
   sortBy: string;
   onSortByChange: (value: string) => void;
+  animeKeywords: Keyword[];
+  selectedKeywords: number[];
+  onKeywordToggle: (keywordId: number) => void;
 }
 
 const CatalogFilters = ({ 
@@ -35,7 +38,8 @@ const CatalogFilters = ({
   mediaType, onMediaTypeChange,
   studios, selectedStudios, onStudioToggle,
   networks, selectedNetworks, onNetworkToggle,
-  sortBy, onSortByChange
+  sortBy, onSortByChange,
+  animeKeywords, selectedKeywords, onKeywordToggle
 }: CatalogFiltersProps) => {
   const { t } = useTranslation();
 
@@ -54,24 +58,11 @@ const CatalogFilters = ({
       <CardContent className="space-y-4">
         <div>
           <h4 className="font-semibold text-sm mb-2">{t('media_type')}</h4>
-          <ToggleGroup
-            type="single"
-            value={mediaType}
-            onValueChange={(value: 'movie' | 'tv' | 'anime') => {
-              if (value) onMediaTypeChange(value);
-            }}
-            className="grid grid-cols-3 gap-2"
-          >
-            <ToggleGroupItem value="movie" aria-label={t('movie')}>
-              <Film className="mr-2 h-4 w-4" />{t('movie')}
-            </ToggleGroupItem>
-            <ToggleGroupItem value="tv" aria-label={t('tv_show')}>
-              <Tv className="mr-2 h-4 w-4" />{t('tv_show')}
-            </ToggleGroupItem>
-            <ToggleGroupItem value="anime" aria-label={t('anime')}>
-              <Flame className="mr-2 h-4 w-4" />{t('anime')}
-            </ToggleGroupItem>
-          </ToggleGroup>
+          <div className="grid grid-cols-3 gap-2">
+            <Button variant={mediaType === 'movie' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('movie')}><Film className="mr-2 h-4 w-4" />{t('movie')}</Button>
+            <Button variant={mediaType === 'tv' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('tv')}><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</Button>
+            <Button variant={mediaType === 'anime' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('anime')}><Flame className="mr-2 h-4 w-4" />{t('anime')}</Button>
+          </div>
         </div>
         <Separator />
         <div>
@@ -109,6 +100,28 @@ const CatalogFilters = ({
               </ScrollArea>
             </AccordionContent>
           </AccordionItem>
+          {mediaType === 'anime' && (
+            <AccordionItem value="keywords">
+              <AccordionTrigger>{t('keywords')}</AccordionTrigger>
+              <AccordionContent>
+                <ScrollArea className="h-48">
+                  <div className="space-y-1 pr-4">
+                    {animeKeywords.map(keyword => (
+                      <Button
+                        key={keyword.id}
+                        variant={selectedKeywords.includes(keyword.id) ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => onKeywordToggle(keyword.id)}
+                      >
+                        {t(keyword.name)}
+                      </Button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </AccordionContent>
+            </AccordionItem>
+          )}
           {mediaType === 'movie' && (
             <AccordionItem value="studios">
               <AccordionTrigger>{t('studios')}</AccordionTrigger>

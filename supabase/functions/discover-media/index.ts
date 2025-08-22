@@ -24,7 +24,7 @@ serve(async (req) => {
   }
 
   try {
-    const { mediaType, language, page, sortBy, genres, studios, networks } = await req.json();
+    const { mediaType, language, page, sortBy, genres, studios, networks, keywords } = await req.json();
     if (!mediaType) {
       throw new Error("mediaType is required (movie, tv, or anime)");
     }
@@ -36,6 +36,9 @@ serve(async (req) => {
     if (genres) {
       params += `&with_genres=${genres}`;
     }
+    if (keywords) {
+      params += `&with_keywords=${keywords}`;
+    }
 
     if (studios && mediaType === 'movie') {
       params += `&with_companies=${studios}`;
@@ -46,9 +49,9 @@ serve(async (req) => {
 
     if (mediaType === 'anime') {
       type = 'tv';
-      // Pour les animés, on ajoute le genre "Animation" (16) en plus des autres genres sélectionnés
+      // Pour les animés, on ajoute le genre "Animation" (16) et le pays d'origine Japon (JP)
       const animeGenres = genres ? `16,${genres}` : '16';
-      discoverUrl = `${TMDB_API_URL}/discover/tv?${params}&with_genres=${animeGenres}`;
+      discoverUrl = `${TMDB_API_URL}/discover/tv?${params}&with_genres=${animeGenres}&with_origin_country=JP`;
     } else {
       discoverUrl = `${TMDB_API_URL}/discover/${mediaType}?${params}`;
     }

@@ -38,6 +38,17 @@ const popularNetworks = [
   { id: 2, name: 'ABC' },
 ];
 
+const animeKeywords = [
+  { id: 210024, name: 'keyword_isekai' },
+  { id: 2095, name: 'keyword_shonen' },
+  { id: 9715, name: 'keyword_magic' },
+  { id: 10769, name: 'keyword_supernatural' },
+  { id: 1991, name: 'keyword_mecha' },
+  { id: 227853, name: 'keyword_slice_of_life' },
+  { id: 287639, name: 'keyword_shojo' },
+  { id: 2653, name: 'keyword_seinen' },
+];
+
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
   const { session } = useSession();
@@ -60,6 +71,7 @@ const CatalogPage = () => {
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [selectedStudios, setSelectedStudios] = useState<number[]>([]);
   const [selectedNetworks, setSelectedNetworks] = useState<number[]>([]);
+  const [selectedKeywords, setSelectedKeywords] = useState<number[]>([]);
 
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
@@ -99,6 +111,7 @@ const CatalogPage = () => {
           genres: selectedGenres.join(','),
           studios: selectedStudios.join(','),
           networks: selectedNetworks.join(','),
+          keywords: selectedKeywords.join(','),
         },
       });
       if (error) throw error;
@@ -112,7 +125,7 @@ const CatalogPage = () => {
     } finally {
       setDiscoverLoading(false);
     }
-  }, [debouncedSearchTerm, mediaType, i18n.language, page, selectedGenres, selectedStudios, selectedNetworks, sortBy]);
+  }, [debouncedSearchTerm, mediaType, i18n.language, page, selectedGenres, selectedStudios, selectedNetworks, sortBy, selectedKeywords]);
 
   useEffect(() => {
     if (debouncedSearchTerm) {
@@ -154,6 +167,7 @@ const CatalogPage = () => {
     setSelectedGenres([]);
     setSelectedStudios([]);
     setSelectedNetworks([]);
+    setSelectedKeywords([]);
     resetAndFetch();
   };
 
@@ -183,11 +197,21 @@ const CatalogPage = () => {
     );
     resetAndFetch();
   };
+
+  const handleKeywordToggle = (keywordId: number) => {
+    setSelectedKeywords(prev =>
+      prev.includes(keywordId)
+        ? prev.filter(id => id !== keywordId)
+        : [...prev, keywordId]
+    );
+    resetAndFetch();
+  };
   
   const handleResetFilters = () => {
     setSelectedGenres([]);
     setSelectedStudios([]);
     setSelectedNetworks([]);
+    setSelectedKeywords([]);
     setSortBy('popularity.desc');
     resetAndFetch();
   };
@@ -197,16 +221,18 @@ const CatalogPage = () => {
     resetAndFetch();
   };
 
-  const handleFilterToggle = (type: 'genre' | 'studio' | 'network', id: number) => {
+  const handleFilterToggle = (type: 'genre' | 'studio' | 'network' | 'keyword', id: number) => {
     if (type === 'genre') handleGenreToggle(id);
     if (type === 'studio') handleStudioToggle(id);
     if (type === 'network') handleNetworkToggle(id);
+    if (type === 'keyword') handleKeywordToggle(id);
   };
 
   const activeFilters = [
     ...selectedGenres.map(id => ({ id, name: genres.find(g => g.id === id)?.name, type: 'genre' as const })),
     ...selectedStudios.map(id => ({ id, name: popularStudios.find(s => s.id === id)?.name, type: 'studio' as const })),
-    ...selectedNetworks.map(id => ({ id, name: popularNetworks.find(n => n.id === id)?.name, type: 'network' as const }))
+    ...selectedNetworks.map(id => ({ id, name: popularNetworks.find(n => n.id === id)?.name, type: 'network' as const })),
+    ...selectedKeywords.map(id => ({ id, name: t(animeKeywords.find(k => k.id === id)?.name || ''), type: 'keyword' as const }))
   ].filter(f => f.name);
 
   const LoadingSkeleton = () => (
@@ -273,6 +299,9 @@ const CatalogPage = () => {
                   onNetworkToggle={handleNetworkToggle}
                   sortBy={sortBy}
                   onSortByChange={handleSortByChange}
+                  animeKeywords={animeKeywords}
+                  selectedKeywords={selectedKeywords}
+                  onKeywordToggle={handleKeywordToggle}
                 />
               </div>
             </SheetContent>
@@ -309,6 +338,9 @@ const CatalogPage = () => {
             onNetworkToggle={handleNetworkToggle}
             sortBy={sortBy}
             onSortByChange={handleSortByChange}
+            animeKeywords={animeKeywords}
+            selectedKeywords={selectedKeywords}
+            onKeywordToggle={handleKeywordToggle}
           />
         </aside>
 
