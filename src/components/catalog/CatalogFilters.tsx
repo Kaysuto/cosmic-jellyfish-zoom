@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Film, Tv, Flame } from 'lucide-react';
 
 interface Genre {
   id: number;
@@ -15,9 +16,11 @@ interface CatalogFiltersProps {
   selectedGenres: number[];
   onGenreToggle: (genreId: number) => void;
   onReset: () => void;
+  mediaType: 'movie' | 'tv' | 'anime';
+  onMediaTypeChange: (type: 'movie' | 'tv' | 'anime') => void;
 }
 
-const CatalogFilters = ({ genres, selectedGenres, onGenreToggle, onReset }: CatalogFiltersProps) => {
+const CatalogFilters = ({ genres, selectedGenres, onGenreToggle, onReset, mediaType, onMediaTypeChange }: CatalogFiltersProps) => {
   const { t } = useTranslation();
 
   return (
@@ -28,6 +31,17 @@ const CatalogFilters = ({ genres, selectedGenres, onGenreToggle, onReset }: Cata
       </CardHeader>
 
       <CardContent className="space-y-4">
+        <div>
+          <h4 className="font-medium mb-2">{t('media_type')}</h4>
+          <div className="grid grid-cols-3 gap-2">
+            <Button variant={mediaType === 'movie' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('movie')}><Film className="mr-2 h-4 w-4" />{t('movie')}</Button>
+            <Button variant={mediaType === 'tv' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('tv')}><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</Button>
+            <Button variant={mediaType === 'anime' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('anime')}><Flame className="mr-2 h-4 w-4" />{t('anime')}</Button>
+          </div>
+        </div>
+
+        <Separator />
+        
         <div>
           <div className="flex items-center justify-between mb-2">
             <h4 className="font-medium">{t('genres')}</h4>

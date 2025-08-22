@@ -6,6 +6,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "media_type": "Type de média",
       "login_to_request": "Se connecter pour demander",
       "about_us": "À propos de nous",
       "privacy_policy": "Sécurité & Confidentialité",
@@ -421,6 +422,7 @@ const resources = {
   },
   en: {
     translation: {
+      "media_type": "Media Type",
       "login_to_request": "Login to Request",
       "about_us": "About Us",
       "privacy_policy": "Security & Privacy",

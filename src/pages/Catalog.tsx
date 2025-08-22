@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import MediaGrid, { MediaItem } from '../components/catalog/MediaGrid';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Loader2, Film, Tv, Flame, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Loader2, X, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -170,18 +170,25 @@ const CatalogPage = () => {
         <div className="flex items-center gap-2">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" className="sm:hidden">Filtres</Button>
+              <Button variant="outline" className="lg:hidden">
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
+                {t('filter')}
+              </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[320px]">
-              <SheetHeader><SheetTitle>Filtres</SheetTitle><SheetDescription>Affinez votre recherche</SheetDescription></SheetHeader>
-              <div className="py-4"><CatalogFilters genres={genres} selectedGenres={selectedGenres} onGenreToggle={handleGenreToggle} onReset={handleResetFilters} /></div>
+              <SheetHeader><SheetTitle>{t('filter')}</SheetTitle><SheetDescription>Affinez votre recherche</SheetDescription></SheetHeader>
+              <div className="py-4">
+                <CatalogFilters 
+                  genres={genres} 
+                  selectedGenres={selectedGenres} 
+                  onGenreToggle={handleGenreToggle} 
+                  onReset={handleResetFilters}
+                  mediaType={mediaType}
+                  onMediaTypeChange={handleMediaTypeChange}
+                />
+              </div>
             </SheetContent>
           </Sheet>
-          <div className="hidden sm:flex items-center gap-2">
-            <Button variant={mediaType === 'movie' ? 'secondary' : 'ghost'} onClick={() => handleMediaTypeChange('movie')}><Film className="mr-2 h-4 w-4" />{t('movie')}</Button>
-            <Button variant={mediaType === 'tv' ? 'secondary' : 'ghost'} onClick={() => handleMediaTypeChange('tv')}><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</Button>
-            <Button variant={mediaType === 'anime' ? 'secondary' : 'ghost'} onClick={() => handleMediaTypeChange('anime')}><Flame className="mr-2 h-4 w-4" />{t('anime')}</Button>
-          </div>
         </div>
       </div>
 
@@ -199,7 +206,14 @@ const CatalogPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         <aside className="hidden lg:block lg:col-span-1">
-          <CatalogFilters genres={genres} selectedGenres={selectedGenres} onGenreToggle={handleGenreToggle} onReset={handleResetFilters} />
+          <CatalogFilters 
+            genres={genres} 
+            selectedGenres={selectedGenres} 
+            onGenreToggle={handleGenreToggle} 
+            onReset={handleResetFilters}
+            mediaType={mediaType}
+            onMediaTypeChange={handleMediaTypeChange}
+          />
         </aside>
 
         <main className="lg:col-span-3">
