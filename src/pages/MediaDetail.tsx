@@ -167,17 +167,20 @@ const MediaDetailPage = () => {
     }
   };
 
+  // Player functionality removed: Jellyfin playback disabled in UI
   const handlePlay = () => {
-    if (!details || !type || !jellyfinId) {
-      showError('Ce média n\'est pas prêt pour la lecture.');
-      return;
-    }
-    navigate(`/player/${type}/${details.id}`);
+    // Previously navigated to a local player route. That functionality is removed.
+    showError("La lecture Jellyfin a été désactivée dans cette instance.");
   };
 
   const renderActionButton = () => {
     if (requestStatus === 'available') {
-      return <Button size="lg" className="bg-green-600 hover:bg-green-700" onClick={handlePlay}><Play className="mr-2 h-4 w-4" /> {t('play')}</Button>;
+      // Show disabled play button to indicate playback is not available in-app
+      return (
+        <Button size="lg" disabled className="bg-gray-700 text-gray-300 cursor-not-allowed">
+          <Play className="mr-2 h-4 w-4" /> {t('play')} (désactivé)
+        </Button>
+      );
     }
     if (requestStatus) {
       return <Button size="lg" disabled><Check className="mr-2 h-4 w-4" /> {t('requested')}</Button>;
