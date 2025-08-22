@@ -140,7 +140,7 @@ const JellyfinSettings = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Configuration CORS</CardTitle>
+          <CardTitle>Configuration CORS (Crucial pour la lecture)</CardTitle>
           <CardDescription>
             Pour que la lecture vidéo fonctionne, vous devez autoriser cette application dans les paramètres CORS de votre serveur Jellyfin.
           </CardDescription>
@@ -154,7 +154,7 @@ const JellyfinSettings = () => {
               <Copy className="h-4 w-4" />
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Si vous utilisez un nom de domaine personnalisé, ajoutez-le également. Vous pouvez ajouter plusieurs domaines en les séparant par une virgule.</p>
+          <p className="text-xs text-muted-foreground">Si vous utilisez un nom de domaine personnalisé pour accéder à cette application, ajoutez-le également. Vous pouvez ajouter plusieurs domaines en les séparant par une virgule.</p>
           <p className="text-sm">3. Enregistrez les modifications en bas de la page de votre tableau de bord Jellyfin.</p>
         </CardContent>
       </Card>
