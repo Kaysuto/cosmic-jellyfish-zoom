@@ -20,8 +20,8 @@ interface MediaDetails {
   title?: string;
   name?: string;
   overview: string;
-  poster_path: string;
-  backdrop_path: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
   release_date?: string;
   first_air_date?: string;
   vote_average: number;
@@ -228,7 +228,11 @@ const MediaDetailPage = () => {
   return (
     <div className="relative -mt-16">
       <div className="absolute inset-0 h-[60vh] overflow-hidden">
-        <img src={`https://image.tmdb.org/t/p/original${details.backdrop_path}`} alt="" className="w-full h-full object-cover object-center" />
+        {details.backdrop_path ? (
+          <img src={`https://image.tmdb.org/t/p/original${details.backdrop_path}`} alt="" className="w-full h-full object-cover object-center" />
+        ) : (
+          <div className="w-full h-full bg-muted" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
       </div>
       <div className="relative container mx-auto px-4 pt-[40vh] pb-16">
@@ -239,7 +243,13 @@ const MediaDetailPage = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
           >
-            <img src={`https://image.tmdb.org/t/p/w500${details.poster_path}`} alt={title} className="w-full rounded-lg shadow-2xl" />
+            {details.poster_path ? (
+              <img src={`https://image.tmdb.org/t/p/w500${details.poster_path}`} alt={title} className="w-full rounded-lg shadow-2xl" />
+            ) : (
+              <div className="w-full aspect-[2/3] bg-muted rounded-lg shadow-2xl flex items-center justify-center text-muted-foreground">
+                <Film className="h-24 w-24" />
+              </div>
+            )}
           </motion.div>
           <motion.div 
             className="mt-8 md:mt-0 flex-grow"
