@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import CommunitySection from '@/components/widgets/CommunitySection';
+import FeaturedMedia from '@/components/home/FeaturedMedia';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -37,10 +38,20 @@ const Index = () => {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
+            <Link to="/catalog">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-gray-600 hover:bg-gray-800/50 hover:text-white font-semibold shadow-lg transform hover:scale-105 transition-transform duration-300">
+                {t('cta_requests')}
+              </Button>
+            </Link>
           </div>
         </motion.div>
       </div>
       
+      {/* Section Médias en vedette */}
+      <div className="relative z-10 w-full py-16 bg-gray-900/50">
+        <FeaturedMedia />
+      </div>
+
       {/* Section Communauté */}
       <div className="relative z-10 w-full py-16">
         <CommunitySection />
