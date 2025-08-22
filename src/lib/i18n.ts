@@ -6,6 +6,11 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "ninety_day_uptime": "Disponibilité 90j",
+      "past_incidents": "Incidents passés",
+      "no_past_incidents": "Aucun incident passé à afficher.",
+      "from": "Du",
+      "to": "au",
       "back_to_catalog": "Retour au catalogue",
       "media_type": "Type de média",
       "login_to_request": "Se connecter pour demander",
@@ -423,6 +428,11 @@ const resources = {
   },
   en: {
     translation: {
+      "ninety_day_uptime": "90-day uptime",
+      "past_incidents": "Past Incidents",
+      "no_past_incidents": "No past incidents to display.",
+      "from": "From",
+      "to": "to",
       "back_to_catalog": "Back to Catalog",
       "media_type": "Media Type",
       "login_to_request": "Login to Request",

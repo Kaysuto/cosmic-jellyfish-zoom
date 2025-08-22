@@ -11,9 +11,9 @@ import { useMaintenances } from '@/hooks/useMaintenances';
 import OverallStatus from '@/components/status/OverallStatus';
 import ServicesStatus from '@/components/status/ServicesStatus';
 import IncidentHistory from '@/components/status/IncidentHistory';
-import UptimeHistory from '@/components/status/UptimeHistory';
 import ScheduledMaintenances from '@/components/status/ScheduledMaintenances';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const StatusPage = () => {
   const { t, i18n } = useTranslation();
@@ -22,19 +22,9 @@ const StatusPage = () => {
   const { maintenances, loading: maintenancesLoading } = useMaintenances();
   
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
 
   const loading = servicesLoading || incidentsLoading || maintenancesLoading;
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
-
-  useEffect(() => {
-    if (services && services.length > 0 && !selectedServiceId) {
-      const initialService = services.find(s => s.url) || services[0];
-      if (initialService) {
-        setSelectedServiceId(initialService.id);
-      }
-    }
-  }, [services, selectedServiceId]);
 
   useEffect(() => {
     if (services && services.length > 0) {
@@ -55,14 +45,16 @@ const StatusPage = () => {
     return 'all_systems_operational';
   }, [services]);
 
+  const resolvedIncidents = useMemo(() => {
+    return incidents.filter(i => i.status === 'resolved');
+  }, [incidents]);
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 space-y-8">
         <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-64 w-full" />
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <Skeleton className="h-96 w-full lg:col-span-3" />
-          <Skeleton className="h-96 w-full lg:col-span-2" />
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
         </div>
       </div>
     );
@@ -78,27 +70,23 @@ const StatusPage = () => {
       <OverallStatus status={overallStatus} lastUpdatedText={lastUpdated ? `${t('live_status_last_updated')} ${formatDistanceToNow(lastUpdated, { addSuffix: true, locale: currentLocale })}` : ''} />
       
       <div className="mt-8">
-        <ScheduledMaintenances maintenances={maintenances} />
+        <ServicesStatus services={services} incidents={incidents} maintenances={maintenances} />
       </div>
 
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">{t('services_status')}</h2>
-        <ServicesStatus services={services} />
-      </div>
-
-      <div className="mt-12 grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-        <div className="lg:col-span-3">
-          <UptimeHistory 
-            services={services}
-            selectedServiceId={selectedServiceId}
-            onServiceChange={setSelectedServiceId}
-          />
+      {resolvedIncidents.length > 0 && (
+        <div className="mt-12">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="past-incidents">
+              <AccordionTrigger className="text-2xl font-bold hover:no-underline">
+                {t('past_incidents')}
+              </AccordionTrigger>
+              <AccordionContent>
+                <IncidentHistory incidents={resolvedIncidents} />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
-        
-        <div className="lg:col-span-2">
-          <IncidentHistory incidents={incidents} />
-        </div>
-      </div>
+      )}
     </motion.div>
   );
 };
