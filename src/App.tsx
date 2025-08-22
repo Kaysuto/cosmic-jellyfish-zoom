@@ -30,6 +30,8 @@ import MediaDetailPage from "./pages/MediaDetail";
 import CatalogPage from "./pages/Catalog";
 import AdminRequestManager from "./components/admin/AdminRequestManager";
 import DmcaPage from "./pages/Dmca";
+import AboutPage from "./pages/About";
+import PrivacyPage from "./pages/Privacy";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,6 +72,8 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/status" element={<StatusPage />} />
                     <Route path="/dmca" element={<DmcaPage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/privacy" element={<PrivacyPage />} />
                     <Route path="/media/:type/:id" element={<MediaDetailPage />} />
                     <Route element={<ProtectedRoute />}>
                       <Route path="/profile" element={<Profile />} />

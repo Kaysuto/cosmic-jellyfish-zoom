@@ -6,6 +6,8 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "about_us": "À propos de nous",
+      "privacy_policy": "Sécurité & Confidentialité",
       "jellyfin_settings": "Paramètres Jellyfin",
       "jellyfin_settings_desc": "Configurez l'URL et la clé API de votre serveur Jellyfin.",
       "jellyfin_url": "URL de Jellyfin",
@@ -418,6 +420,8 @@ const resources = {
   },
   en: {
     translation: {
+      "about_us": "About Us",
+      "privacy_policy": "Security & Privacy",
       "jellyfin_settings": "Jellyfin Settings",
       "jellyfin_settings_desc": "Configure your Jellyfin server URL and API key.",
       "jellyfin_url": "Jellyfin URL",

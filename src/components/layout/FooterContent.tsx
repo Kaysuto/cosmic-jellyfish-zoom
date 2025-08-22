@@ -25,9 +25,11 @@ export const FooterContent = () => {
           <img src="/logo.png" alt="Jelly Logo" className="h-8 w-auto mb-2 mx-auto md:mx-0" />
           <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} {t('jelly_brand')}. {t('all_rights_reserved')}</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap justify-center">
           <Link to="/status" className="text-sm text-muted-foreground hover:text-white transition-colors">{t('status')}</Link>
           <Link to="/catalog" className="text-sm text-muted-foreground hover:text-white transition-colors">{t('catalog')}</Link>
+          <Link to="/about" className="text-sm text-muted-foreground hover:text-white transition-colors">{t('about_us')}</Link>
+          <Link to="/privacy" className="text-sm text-muted-foreground hover:text-white transition-colors">{t('privacy_policy')}</Link>
           <Link to="/dmca" className="text-sm text-muted-foreground hover:text-white transition-colors">DMCA</Link>
         </div>
         <div className="flex items-center gap-4">
