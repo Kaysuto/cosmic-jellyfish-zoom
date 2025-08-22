@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Film, Tv, User } from 'lucide-react';
+import { ArrowLeft, Calendar, Film, Tv, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -38,6 +38,8 @@ const PersonDetailPage = () => {
   const [person, setPerson] = useState<PersonDetails | null>(null);
   const [credits, setCredits] = useState<Credit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 18;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -78,6 +80,12 @@ const PersonDetailPage = () => {
     };
     fetchDetails();
   }, [id, i18n.language]);
+
+  const totalPages = Math.ceil(credits.length / ITEMS_PER_PAGE);
+  const currentCredits = credits.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   if (loading) {
     return (
@@ -149,7 +157,7 @@ const PersonDetailPage = () => {
           <div>
             <h3 className="text-3xl font-bold mb-4">{t('filmography')}</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {credits.map(credit => {
+              {currentCredits.map(credit => {
                 const year = credit.release_date ? new Date(credit.release_date).getFullYear() : (credit.first_air_date ? new Date(credit.first_air_date).getFullYear() : 'N/A');
                 const title = credit.title || credit.name;
                 return (
@@ -174,6 +182,31 @@ const PersonDetailPage = () => {
                 );
               })}
             </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 mt-8">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  {t('previous')}
+                </Button>
+                <span className="text-sm text-muted-foreground font-mono">
+                  {t('page_x_of_y', { x: currentPage, y: totalPages })}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  {t('next')}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
