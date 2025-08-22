@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts';
+import { BarChart, Bar, ResponsiveContainer, Tooltip, Cell } from 'recharts';
 import { useUptimeHistory } from '@/hooks/useUptimeHistory';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +13,9 @@ const ServiceUptimeSparkline = ({ serviceId }: ServiceUptimeSparklineProps) => {
   const { uptimeData, loading } = useUptimeHistory(serviceId, 'month'); // Fetch 90 days of data
 
   const chartData = useMemo(() => {
-    return uptimeData.map(item => ({
+    // We want to show the last 90 days, so we'll take the tail of the data.
+    const last90DaysData = uptimeData.slice(-90);
+    return last90DaysData.map(item => ({
       date: item.date,
       uptime: item.uptime_percentage,
     }));
@@ -23,19 +25,20 @@ const ServiceUptimeSparkline = ({ serviceId }: ServiceUptimeSparklineProps) => {
     return <Skeleton className="h-8 w-24" />;
   }
 
-  const lastUptime = chartData.length > 0 ? chartData[chartData.length - 1].uptime : 100;
-  const strokeColor = lastUptime < 99.9 ? 'hsl(var(--destructive))' : 'hsl(var(--primary))';
+  const getColor = (uptime: number) => {
+    if (uptime === 100) {
+      return 'hsl(142.1 76.2% 41.2%)'; // green-600
+    }
+    if (uptime >= 99.9) {
+      return 'hsl(47.9 95.8% 53.1%)'; // yellow-500
+    }
+    return 'hsl(0 84.2% 60.2%)'; // red-500
+  };
 
   return (
     <div className="h-8 w-24">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chartData}>
-          <defs>
-            <linearGradient id={`sparklineGradient-${serviceId}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={strokeColor} stopOpacity={0.4}/>
-              <stop offset="95%" stopColor={strokeColor} stopOpacity={0}/>
-            </linearGradient>
-          </defs>
+        <BarChart data={chartData} barGap={1}>
           <Tooltip
             contentStyle={{
               backgroundColor: 'hsl(var(--background))',
@@ -45,16 +48,14 @@ const ServiceUptimeSparkline = ({ serviceId }: ServiceUptimeSparklineProps) => {
             }}
             labelFormatter={() => ''}
             formatter={(value: number) => [`${value.toFixed(2)}%`, t('uptime_legend')]}
+            cursor={{ fill: 'transparent' }}
           />
-          <Area
-            type="monotone"
-            dataKey="uptime"
-            stroke={strokeColor}
-            strokeWidth={2}
-            fillOpacity={1}
-            fill={`url(#sparklineGradient-${serviceId})`}
-          />
-        </AreaChart>
+          <Bar dataKey="uptime">
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={getColor(entry.uptime)} />
+            ))}
+          </Bar>
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );
