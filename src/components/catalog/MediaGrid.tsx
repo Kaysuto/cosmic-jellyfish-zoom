@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Film, Eye, Star, Plus } from 'lucide-react';
+import { Film, Star, Info, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface MediaItem {
@@ -44,7 +44,7 @@ const MediaGrid = ({ items, showRequestButton = true }: MediaGridProps) => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25, delay: index * 0.02 }}
           >
-            <Card className="group overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-shadow bg-gradient-to-br from-card to-popover">
+            <Card className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-shadow bg-gradient-to-br from-card to-popover">
               <div className="relative">
                 <Link to={`/media/${item.media_type}/${item.id}`} className="block">
                   <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden">
@@ -62,10 +62,41 @@ const MediaGrid = ({ items, showRequestButton = true }: MediaGridProps) => {
                       </div>
                     )}
 
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {/* Overlay gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent pointer-events-none" />
 
-                    {/* Top-right badge */}
+                    {/* Center icons: semi-transparent by default, full on hover */}
+                    <div className="absolute inset-0 flex items-center justify-center gap-3 pointer-events-none">
+                      <div className="flex items-center gap-3 opacity-20 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-200">
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="icon"
+                          className="bg-black/30 hover:bg-black/50 text-white rounded-full pointer-events-auto"
+                          aria-label={`${t('view_details')} ${title}`}
+                        >
+                          <Link to={`/media/${item.media_type}/${item.id}`}>
+                            <Info className="h-4 w-4" />
+                          </Link>
+                        </Button>
+
+                        {showRequestButton ? (
+                          <Button
+                            asChild
+                            variant="ghost"
+                            size="icon"
+                            className="bg-black/30 hover:bg-black/50 text-white rounded-full pointer-events-auto"
+                            aria-label={`${t('request')} ${title}`}
+                          >
+                            <Link to={`/media/${item.media_type}/${item.id}?action=request`}>
+                              <Plus className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    {/* Top-right rating badge */}
                     <div className="absolute top-2 right-2 z-10">
                       {rating !== null && (
                         <div className="inline-flex items-center gap-1 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-md">
@@ -87,27 +118,8 @@ const MediaGrid = ({ items, showRequestButton = true }: MediaGridProps) => {
                   </div>
                 </div>
 
-                <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <Button asChild variant="outline" className="w-full justify-center">
-                    <Link to={`/media/${item.media_type}/${item.id}`} aria-label={`${t('view_details')} ${title}`}>
-                      <Eye className="mr-2 h-4 w-4" />
-                      <span className="hidden sm:inline">{t('view_details')}</span>
-                      <span className="sm:hidden">Voir</span>
-                    </Link>
-                  </Button>
-
-                  {showRequestButton ? (
-                    <Button asChild className="w-full justify-center">
-                      <Link to={`/media/${item.media_type}/${item.id}?action=request`} aria-label={`${t('request')} ${title}`}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        <span className="hidden sm:inline">{t('request')}</span>
-                        <span className="sm:hidden">Demander</span>
-                      </Link>
-                    </Button>
-                  ) : (
-                    <div />
-                  )}
-                </div>
+                {/* Keep space for actions on small screens if desired (but icons overlay handle primary actions) */}
+                <div className="mt-1 h-8" aria-hidden />
               </CardContent>
             </Card>
           </motion.div>
