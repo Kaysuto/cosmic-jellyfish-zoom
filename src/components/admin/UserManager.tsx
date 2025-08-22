@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import UserForm, { UserFormValues } from './UserForm';
+import { motion } from 'framer-motion';
 
 type SortByType = 'updated_at' | 'email' | 'first_name' | 'role' | 'mfa';
 
@@ -204,7 +205,11 @@ const UserManager = () => {
   }
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    >
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t('manage_users')}</CardTitle>
@@ -365,7 +370,7 @@ const UserManager = () => {
           <AlertDialogFooter><AlertDialogCancel onClick={() => setUserToEditMfa(null)}>{t('cancel')}</AlertDialogCancel><AlertDialogAction onClick={handleDisableMfa} className={buttonVariants({ variant: "destructive" })}>{t('disable_mfa')}</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </motion.div>
   );
 };
 

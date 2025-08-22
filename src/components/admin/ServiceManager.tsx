@@ -15,6 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/contexts/AuthContext';
+import { motion } from 'framer-motion';
 
 const ServiceManager = () => {
   const { t } = useTranslation();
@@ -154,7 +155,11 @@ const ServiceManager = () => {
   }
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    >
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t('manage_services')}</CardTitle>
@@ -264,7 +269,7 @@ const ServiceManager = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </motion.div>
   );
 };
 

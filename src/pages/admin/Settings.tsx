@@ -27,6 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useSession } from '@/contexts/AuthContext';
+import { motion } from 'framer-motion';
 
 const Settings = () => {
   const { t } = useTranslation();
@@ -105,7 +106,12 @@ const Settings = () => {
 
   return (
     <>
-      <div className="container mx-auto px-4 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+        className="container mx-auto px-4 py-8"
+      >
         <div className="max-w-2xl mx-auto space-y-8">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">{t('settings')}</h1>
@@ -146,7 +152,7 @@ const Settings = () => {
             </>
           )}
         </div>
-      </div>
+      </motion.div>
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>{t('confirm_global_changes_title')}</AlertDialogTitle><AlertDialogDescription>{t('confirm_global_changes_desc')}</AlertDialogDescription></AlertDialogHeader>

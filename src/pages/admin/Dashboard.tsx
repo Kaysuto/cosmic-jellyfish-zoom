@@ -1,77 +1,74 @@
 import { useIncidents } from '@/hooks/useIncidents';
 import { useServices } from '@/hooks/useServices';
-import IncidentHistoryChart from '@/components/admin/charts/IncidentHistoryChart';
-import IncidentStatusChart from '@/components/admin/charts/IncidentStatusChart';
+import { useUsers } from '@/hooks/useUsers';
+import { supabase } from '@/integrations/supabase/client';
 import StatCard from '@/components/admin/StatCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from 'react-i18next';
-import { differenceInHours } from 'date-fns';
-import { Activity, BarChart, ShieldCheck, Timer } from 'lucide-react';
+import { Activity, ShieldAlert, UserPlus, MailQuestion } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import RecentIncidents from '@/components/admin/RecentIncidents';
+import ServicesOverview from '@/components/admin/ServicesOverview';
+import QuickActions from '@/components/admin/QuickActions';
+import WebhookInstructions from '@/components/admin/WebhookInstructions';
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
   const { incidents, loading: incidentsLoading } = useIncidents();
   const { services, loading: servicesLoading } = useServices();
+  const { users, loading: usersLoading } = useUsers();
+  const [pendingRequests, setPendingRequests] = useState(0);
+  const [requestsLoading, setRequestsLoading] = useState(true);
 
-  const totalServices = services.length;
-  const operationalServices = services.filter(s => s.status === 'operational').length;
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      setRequestsLoading(true);
+      const { count, error } = await supabase
+        .from('media_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      
+      if (error) {
+        console.error("Error fetching pending requests count:", error);
+      } else {
+        setPendingRequests(count || 0);
+      }
+      setRequestsLoading(false);
+    };
+    fetchPendingRequests();
+  }, []);
+
+  const servicesWithIssues = services.filter(s => s.status === 'downtime' || s.status === 'degraded').length;
   const activeIncidents = incidents.filter(i => i.status !== 'resolved').length;
 
-  const avgResolutionTime = () => {
-    const resolvedIncidents = incidents.filter(i => i.status === 'resolved' && i.resolved_at);
-    if (resolvedIncidents.length === 0) return `N/A`;
-    
-    const totalDuration = resolvedIncidents.reduce((acc, i) => {
-      if (i.resolved_at) {
-        const duration = differenceInHours(new Date(i.resolved_at), new Date(i.created_at));
-        return acc + duration;
-      }
-      return acc;
-    }, 0);
-
-    const avgHours = totalDuration / resolvedIncidents.length;
-    return `${avgHours.toFixed(1)}h`;
-  };
-
-  const loading = incidentsLoading || servicesLoading;
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Skeleton className="h-[108px]" />
-          <Skeleton className="h-[108px]" />
-          <Skeleton className="h-[108px]" />
-          <Skeleton className="h-[108px]" />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
-          <Skeleton className="h-[380px] w-full lg:col-span-4" />
-          <Skeleton className="h-[380px] w-full lg:col-span-3" />
-        </div>
-      </div>
-    );
-  }
+  const loading = incidentsLoading || servicesLoading || usersLoading || requestsLoading;
 
   return (
-    <div 
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
       className="space-y-6"
     >
-       <h1 className="text-3xl font-bold">{t('admin_dashboard')}</h1>
+      <h1 className="text-3xl font-bold">{t('admin_dashboard')}</h1>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title={t('total_services')} value={totalServices.toString()} icon={BarChart} />
-        <StatCard title={t('operational_services')} value={`${operationalServices}`} icon={ShieldCheck} />
-        <StatCard title={t('active_incidents')} value={activeIncidents.toString()} icon={Activity} />
-        <StatCard title={t('avg_resolution_time')} value={avgResolutionTime()} icon={Timer} />
+        {loading ? <Skeleton className="h-[108px]" /> : <StatCard title="Incidents Actifs" value={activeIncidents.toString()} icon={Activity} />}
+        {loading ? <Skeleton className="h-[108px]" /> : <StatCard title="Services avec Problèmes" value={servicesWithIssues.toString()} icon={ShieldAlert} />}
+        {loading ? <Skeleton className="h-[108px]" /> : <StatCard title="Demandes en Attente" value={pendingRequests.toString()} icon={MailQuestion} />}
+        {loading ? <Skeleton className="h-[108px]" /> : <StatCard title="Utilisateurs" value={users.length.toString()} icon={UserPlus} />}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
-        <div className="lg:col-span-4">
-          <IncidentHistoryChart incidents={incidents} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <RecentIncidents />
+          <ServicesOverview />
         </div>
-        <div className="lg:col-span-3">
-          <IncidentStatusChart incidents={incidents} />
+        <div className="lg:col-span-1 space-y-6">
+          <QuickActions />
+          <WebhookInstructions />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

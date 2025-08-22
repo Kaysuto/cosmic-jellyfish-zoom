@@ -13,6 +13,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getGravatarURL } from '@/lib/gravatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { motion } from 'framer-motion';
 
 interface MediaRequest {
   id: string;
@@ -86,7 +87,11 @@ const AdminRequestManager = () => {
   }
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    >
       <div className="flex justify-end mb-4">
         <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value as any)}>
           <SelectTrigger className="w-[180px]">
@@ -150,7 +155,7 @@ const AdminRequestManager = () => {
         </TableBody>
       </Table>
       {requests.length === 0 && <p className="text-center text-muted-foreground py-8">{t('no_requests_in_this_category')}</p>}
-    </div>
+    </motion.div>
   );
 };
 
