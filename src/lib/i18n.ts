@@ -6,6 +6,11 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "schedule": "Planning",
+      "today": "Aujourd'hui",
+      "previous_week": "Semaine précédente",
+      "next_week": "Semaine suivante",
+      "no_releases_on_this_day": "Aucune sortie ce jour-là.",
       "popular_movies": "Films Populaires",
       "popular_tv_shows": "Séries Populaires",
       "popular_animes": "Animés Populaires",
@@ -456,6 +461,11 @@ const resources = {
   },
   en: {
     translation: {
+      "schedule": "Schedule",
+      "today": "Today",
+      "previous_week": "Previous Week",
+      "next_week": "Next Week",
+      "no_releases_on_this_day": "No releases on this day.",
       "popular_movies": "Popular Movies",
       "popular_tv_shows": "Popular TV Shows",
       "popular_animes": "Popular Anime",

@@ -46,6 +46,7 @@ const Navbar = () => {
   const navItems = [
     { to: "/", label: t('home') },
     { to: "/catalog", label: t('catalog') },
+    { to: "/schedule", label: t('schedule') },
   ];
 
   const handleLogoutClick = () => {

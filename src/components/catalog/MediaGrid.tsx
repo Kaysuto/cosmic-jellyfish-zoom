@@ -11,6 +11,7 @@ export interface MediaItem {
   first_air_date?: string;
   media_type: 'movie' | 'tv' | 'anime';
   vote_average?: number;
+  networks?: { name: string }[];
 }
 
 interface MediaGridProps {

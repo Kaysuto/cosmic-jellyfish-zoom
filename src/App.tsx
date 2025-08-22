@@ -34,6 +34,7 @@ import AdminRequestManager from "./components/admin/AdminRequestManager";
 import DmcaPage from "./pages/Dmca";
 import AboutPage from "./pages/About";
 import PrivacyPage from "./pages/Privacy";
+import SchedulePage from "./pages/Schedule";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -78,6 +79,7 @@ const App = () => (
                     <Route path="/dmca" element={<DmcaPage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/privacy" element={<PrivacyPage />} />
+                    <Route path="/schedule" element={<SchedulePage />} />
                     <Route path="/media/:type/:id" element={<MediaDetailPage />} />
                     <Route path="/person/:id" element={<PersonDetailPage />} />
                     <Route path="/catalog" element={<CatalogPage />} />
