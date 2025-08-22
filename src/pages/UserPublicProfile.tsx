@@ -9,15 +9,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
-import { Film, Tv } from 'lucide-react';
+import { Film, Tv, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useSession } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const UserPublicProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const { t, i18n } = useTranslation();
   const { user, loading: userLoading } = useUserById(userId);
   const { requests, loading: requestsLoading } = useRequestsByUserId(userId);
+  const { session } = useSession();
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
+  const isOwner = session?.user?.id === userId;
 
   const statusConfig = {
     pending: { text: t('status_pending'), className: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
@@ -63,6 +67,14 @@ const UserPublicProfile = () => {
         <div>
           <h1 className="text-4xl font-bold">{user.first_name} {user.last_name}</h1>
           <p className="text-muted-foreground">{t('member_since')} {format(new Date(user.updated_at), 'MMMM yyyy', { locale: currentLocale })}</p>
+          {isOwner && (
+            <Button asChild variant="outline" size="sm" className="mt-4">
+              <Link to={`/users/${userId}/settings`}>
+                <Settings className="mr-2 h-4 w-4" />
+                {t('edit_profile')}
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "edit_profile": "Modifier le profil",
       "user_not_found": "Utilisateur non trouvé.",
       "media_requests": "Demandes de médias",
       "schedule": "Planning",
@@ -462,6 +463,7 @@ const resources = {
   },
   en: {
     translation: {
+      "edit_profile": "Edit Profile",
       "user_not_found": "User not found.",
       "media_requests": "Media Requests",
       "schedule": "Schedule",

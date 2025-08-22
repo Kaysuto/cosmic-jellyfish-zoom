@@ -110,7 +110,7 @@ const Navbar = () => {
           </DropdownMenuItem>
         )}
         <DropdownMenuItem asChild>
-          <Link to="/profile" className="cursor-pointer">
+          <Link to={`/users/${profile?.id}/settings`} className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
             <span>Profil</span>
           </Link>
@@ -214,7 +214,7 @@ const Navbar = () => {
                               <NavLink to="/admin/settings" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><Settings className="mr-3 h-5 w-5" />{t('settings')}</NavLink>
                             </>
                           )}
-                          <NavLink to="/profile" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
+                          <NavLink to={`/users/${profile.id}/settings`} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
                           <div className="px-4 pt-2">
                             <Button onClick={handleLogoutClick} variant="destructive" className="w-full justify-start">
                               <LogOut className="mr-3 h-5 w-5" />

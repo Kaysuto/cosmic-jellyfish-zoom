@@ -36,6 +36,7 @@ import AboutPage from "./pages/About";
 import PrivacyPage from "./pages/Privacy";
 import SchedulePage from "./pages/Schedule";
 import UserPublicProfile from './pages/UserPublicProfile';
+import ProfileOwnerRoute from './components/auth/ProfileOwnerRoute';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -86,8 +87,8 @@ const App = () => (
                     <Route path="/catalog" element={<CatalogPage />} />
                     <Route path="/catalog/:mediaType" element={<FullSectionPage />} />
                     <Route path="/users/:userId" element={<UserPublicProfile />} />
-                    <Route element={<ProtectedRoute />}>
-                      <Route path="/profile" element={<Profile />} />
+                    <Route element={<ProfileOwnerRoute />}>
+                      <Route path="/users/:userId/settings" element={<Profile />} />
                     </Route>
                   </Route>
                   <Route element={<AdminRoute />}>
