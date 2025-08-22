@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
-import { Film, Eye, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Film, Eye, Star, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface MediaItem {
@@ -45,69 +45,67 @@ const MediaGrid = ({ items, showRequestButton = true }: MediaGridProps) => {
             transition={{ duration: 0.25, delay: index * 0.02 }}
           >
             <Card className="group overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-shadow bg-gradient-to-br from-card to-popover">
-              <Link to={`/media/${item.media_type}/${item.id}`} className="block relative">
-                <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden">
-                  {item.poster_path ? (
-                    <img
-                      src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
-                      alt={title}
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                      <Film className="h-12 w-12" />
-                    </div>
-                  )}
-
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                  {/* Top-right badge */}
-                  <div className="absolute top-2 right-2 z-10">
-                    {rating !== null && (
-                      <div className="inline-flex items-center gap-1 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-md">
-                        <Star className="h-3 w-3 text-yellow-400" />
-                        <span>{rating.toFixed(1)}</span>
+              <div className="relative">
+                <Link to={`/media/${item.media_type}/${item.id}`} className="block">
+                  <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden">
+                    {item.poster_path ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
+                        alt={title}
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                        <Film className="h-12 w-12" />
                       </div>
                     )}
-                  </div>
-                </div>
-              </Link>
 
-              <CardContent className="p-3 flex flex-col gap-2">
-                <div className="flex items-start justify-between">
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-foreground line-clamp-2">{title}</h3>
-                    <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                      <span>{year}</span>
-                      <span className="uppercase tracking-wider text-[10px]">{t(item.media_type)}</span>
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    {/* Top-right badge */}
+                    <div className="absolute top-2 right-2 z-10">
+                      {rating !== null && (
+                        <div className="inline-flex items-center gap-1 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-md">
+                          <Star className="h-3 w-3 text-yellow-400" />
+                          <span>{rating.toFixed(1)}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
+                </Link>
+              </div>
+
+              <CardContent className="p-3 flex flex-col gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-foreground line-clamp-2">{title}</h3>
+                  <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                    <span>{year}</span>
+                    <span className="uppercase tracking-wider text-[10px]">{t(item.media_type)}</span>
+                  </div>
                 </div>
 
-                <div className="mt-3 flex items-center gap-2">
-                  <Link to={`/media/${item.media_type}/${item.id}`} className="flex-grow">
-                    <Button size="sm" className="w-full justify-center" variant="ghost">
+                <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Button asChild variant="outline" className="w-full justify-center">
+                    <Link to={`/media/${item.media_type}/${item.id}`} aria-label={`${t('view_details')} ${title}`}>
                       <Eye className="mr-2 h-4 w-4" />
-                      {t('view_details')}
-                    </Button>
-                  </Link>
+                      <span className="hidden sm:inline">{t('view_details')}</span>
+                      <span className="sm:hidden">Voir</span>
+                    </Link>
+                  </Button>
 
-                  {showRequestButton && (
-                    <button
-                      aria-label="request"
-                      className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground hover:opacity-90 transition"
-                      onClick={(e) => {
-                        // Prevent Link navigation if inside a Link
-                        e.stopPropagation();
-                        // fallback: link to details where request action exists
-                        // (actual request handling is on the detail page)
-                        // We rely on the Link above for navigation.
-                      }}
-                    >
-                      <span className="sr-only">{t('request')}</span>
-                      {t('request')}
-                    </button>
+                  {showRequestButton ? (
+                    <Button asChild className="w-full justify-center">
+                      <Link to={`/media/${item.media_type}/${item.id}?action=request`} aria-label={`${t('request')} ${title}`}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        <span className="hidden sm:inline">{t('request')}</span>
+                        <span className="sm:hidden">Demander</span>
+                      </Link>
+                    </Button>
+                  ) : (
+                    <div />
                   )}
                 </div>
               </CardContent>
