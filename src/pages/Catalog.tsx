@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
 import MediaGrid, { MediaItem } from '../components/catalog/MediaGrid';
@@ -12,56 +12,51 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent } from '@/components/ui/card';
 import RequestModal from '@/components/catalog/RequestModal';
 import { useSession } from '@/contexts/AuthContext';
+import MediaSection from '@/components/catalog/MediaSection';
 
 const CatalogPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { session } = useSession();
   const [searchParams, setSearchParams] = useSearchParams();
   
   const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
   const debouncedSearchTerm = useDebounce(searchTerm, 450);
   
-  const [media, setMedia] = useState<MediaItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
 
-  const fetchCatalogItems = useCallback(async () => {
+  const fetchSearchResults = useCallback(async () => {
+    if (!debouncedSearchTerm) {
+      setSearchResults([]);
+      return;
+    }
     setLoading(true);
-    let query = supabase.from('catalog_items').select('*');
-
-    if (debouncedSearchTerm) {
-      query = query.ilike('title', `%${debouncedSearchTerm}%`);
-    }
-
-    query = query.order('release_date', { ascending: false, nullsFirst: false }).limit(100);
-
-    const { data, error } = await query;
-
-    if (error) {
+    try {
+      const { data, error } = await supabase.functions.invoke('search-media', {
+        body: { query: debouncedSearchTerm, language: i18n.language },
+      });
+      if (error) throw error;
+      setSearchResults(data);
+    } catch (error: any) {
       showError(error.message);
-      setMedia([]);
-    } else {
-      const formattedData = data.map(item => ({
-        ...item,
-        id: item.tmdb_id,
-        name: item.title,
-      })) as MediaItem[];
-      setMedia(formattedData);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, i18n.language]);
 
   useEffect(() => {
     if (debouncedSearchTerm) {
       setSearchParams({ q: debouncedSearchTerm });
+      fetchSearchResults();
     } else {
       searchParams.delete('q');
       setSearchParams(searchParams);
+      setSearchResults([]);
     }
-    fetchCatalogItems();
-  }, [debouncedSearchTerm, fetchCatalogItems, setSearchParams]);
+  }, [debouncedSearchTerm, fetchSearchResults, setSearchParams, searchParams]);
 
   const LoadingSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -92,7 +87,7 @@ const CatalogPage = () => {
         <Input
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder={t('search_in_catalog')}
+          placeholder={t('search_and_request')}
           className="pl-10"
         />
         {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />}
@@ -104,7 +99,21 @@ const CatalogPage = () => {
       </div>
 
       <main>
-        {loading ? <LoadingSkeleton /> : media.length > 0 ? <MediaGrid items={media} onRequest={openRequestModal} showRequestButton={!!session} searchTerm={debouncedSearchTerm} /> : <Card><CardContent><p className="text-center text-muted-foreground py-8">{t('no_results_found')}</p></CardContent></Card>}
+        {debouncedSearchTerm ? (
+          loading ? <LoadingSkeleton /> : (
+            searchResults.length > 0 ? (
+              <MediaGrid items={searchResults} onRequest={openRequestModal} showRequestButton={!!session} searchTerm={debouncedSearchTerm} />
+            ) : (
+              <Card><CardContent><p className="text-center text-muted-foreground py-8">{t('no_results_found')}</p></CardContent></Card>
+            )
+          )
+        ) : (
+          <div className="space-y-12">
+            <MediaSection title={t('popular_movies')} mediaType="movie" />
+            <MediaSection title={t('popular_tv_shows')} mediaType="tv" />
+            <MediaSection title={t('popular_animes')} mediaType="anime" />
+          </div>
+        )}
       </main>
 
       <RequestModal open={requestModalOpen} onOpenChange={setRequestModalOpen} item={selectedItemForRequest} onSuccess={() => {}} />
