@@ -6,6 +6,10 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "popular_movies": "Films Populaires",
+      "popular_tv_shows": "Séries Populaires",
+      "popular_animes": "Animés Populaires",
+      "view_all": "Voir tout",
       "movies": "Films",
       "tv_shows": "Séries",
       "animes": "Animés",
@@ -452,6 +456,10 @@ const resources = {
   },
   en: {
     translation: {
+      "popular_movies": "Popular Movies",
+      "popular_tv_shows": "Popular TV Shows",
+      "popular_animes": "Popular Anime",
+      "view_all": "View all",
       "movies": "Movies",
       "tv_shows": "TV Shows",
       "animes": "Anime",

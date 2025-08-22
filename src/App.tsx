@@ -29,6 +29,7 @@ import { SettingsProvider, useSettings } from "./contexts/SettingsContext";
 import MediaDetailPage from "./pages/MediaDetail";
 import PersonDetailPage from "./pages/PersonDetail";
 import CatalogPage from "./pages/Catalog";
+import FullSectionPage from "./pages/FullSectionPage";
 import AdminRequestManager from "./components/admin/AdminRequestManager";
 import DmcaPage from "./pages/Dmca";
 import AboutPage from "./pages/About";
@@ -80,6 +81,7 @@ const App = () => (
                     <Route path="/media/:type/:id" element={<MediaDetailPage />} />
                     <Route path="/person/:id" element={<PersonDetailPage />} />
                     <Route path="/catalog" element={<CatalogPage />} />
+                    <Route path="/catalog/:mediaType" element={<FullSectionPage />} />
                     <Route element={<ProtectedRoute />}>
                       <Route path="/profile" element={<Profile />} />
                     </Route>

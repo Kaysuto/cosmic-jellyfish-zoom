@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
 import MediaGrid, { MediaItem } from '../components/catalog/MediaGrid';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Loader2, X } from 'lucide-react';
+import { Search, Loader2, X, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -149,15 +149,30 @@ const CatalogPage = () => {
         ) : (
           <div className="space-y-12">
             <section>
-              <h2 className="text-3xl font-bold mb-4">{t('movies')}</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-3xl font-bold">{t('movies')}</h2>
+                <Button asChild variant="ghost">
+                  <Link to="/catalog/movie">{t('view_all')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              </div>
               {sectionsLoading ? <LoadingSkeleton /> : <MediaGrid items={movies} onRequest={openRequestModal} showRequestButton={!!session} />}
             </section>
             <section>
-              <h2 className="text-3xl font-bold mb-4">{t('tv_shows')}</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-3xl font-bold">{t('tv_shows')}</h2>
+                <Button asChild variant="ghost">
+                  <Link to="/catalog/tv">{t('view_all')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              </div>
               {sectionsLoading ? <LoadingSkeleton /> : <MediaGrid items={tvShows} onRequest={openRequestModal} showRequestButton={!!session} />}
             </section>
             <section>
-              <h2 className="text-3xl font-bold mb-4">{t('animes')}</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-3xl font-bold">{t('animes')}</h2>
+                <Button asChild variant="ghost">
+                  <Link to="/catalog/anime">{t('view_all')} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              </div>
               {sectionsLoading ? <LoadingSkeleton /> : <MediaGrid items={animes} onRequest={openRequestModal} showRequestButton={!!session} />}
             </section>
           </div>
