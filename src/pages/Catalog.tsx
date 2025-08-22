@@ -4,28 +4,30 @@ import { Skeleton } from '@/components/ui/skeleton';
 import MediaGrid from '../components/catalog/MediaGrid';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Loader2, Film, Tv, Flame } from 'lucide-react';
+import { Search, Loader2, Film, Tv, Flame, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CatalogFilters from '../components/catalog/CatalogFilters';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/ui/sheet';
+import { Card, CardContent } from '@/components/ui/card';
 
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedSearchTerm = useDebounce(searchTerm, 450);
   
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
-  const [discoverMedia, setDiscoverMedia] = useState([]);
+  const [discoverMedia, setDiscoverMedia] = useState<any[]>([]);
   const [discoverLoading, setDiscoverLoading] = useState(true);
   const [mediaType, setMediaType] = useState<'movie' | 'tv' | 'anime'>('movie');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [genres, setGenres] = useState([]);
+  const [genres, setGenres] = useState<any[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [sortBy, setSortBy] = useState('popularity.desc');
 
@@ -57,7 +59,7 @@ const CatalogPage = () => {
       });
       if (error) throw error;
       setDiscoverMedia(data.results);
-      setTotalPages(Math.min(data.total_pages, 500)); // TMDB API has a 500 page limit
+      setTotalPages(Math.min(data.total_pages ?? 1, 500)); // TMDB API has a 500 page limit
     } catch (error: any) {
       showError(error.message);
     } finally {
@@ -123,10 +125,10 @@ const CatalogPage = () => {
   };
 
   const LoadingSkeleton = () => (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
       {[...Array(12)].map((_, i) => (
         <div key={i} className="space-y-2">
-          <Skeleton className="h-[300px] w-full" />
+          <Skeleton className="h-[240px] w-full rounded-lg" />
           <Skeleton className="h-4 w-3/4" />
           <Skeleton className="h-4 w-1/2" />
         </div>
@@ -134,89 +136,115 @@ const CatalogPage = () => {
     </div>
   );
 
-  const PaginationControls = () => {
-    if (totalPages <= 1) return null;
-    return (
-      <div className="flex items-center justify-center space-x-2 mt-8">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setPage(p => Math.max(1, p - 1))}
-          disabled={page === 1}
-        >
-          {t('previous')}
-        </Button>
-        <span className="text-sm text-muted-foreground">
-          {t('page_x_of_y', { x: page, y: totalPages })}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-          disabled={page >= totalPages}
-        >
-          {t('next')}
-        </Button>
-      </div>
-    );
-  };
-
   const isSearching = debouncedSearchTerm.length > 0;
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-4xl font-bold tracking-tight mb-2">{t('catalog')}</h1>
         <p className="text-muted-foreground">{t('catalog_description')}</p>
       </div>
-      
-      <div className="relative mb-8">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder={t('search_for_media')}
-          className="pl-10"
-        />
-        {searchLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />}
-      </div>
 
-      {isSearching ? (
-        <>
-          <h2 className="text-2xl font-bold mb-4">{t('search_results')}</h2>
-          {searchLoading && searchResults.length === 0 ? (
-            <LoadingSkeleton />
-          ) : searchResults.length > 0 ? (
-            <MediaGrid items={searchResults} />
-          ) : (
-            <p className="text-center text-muted-foreground py-8">{t('no_results_found')}</p>
-          )}
-        </>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-          <aside className="lg:col-span-1 lg:sticky lg:top-24">
-            <CatalogFilters
-              genres={genres}
-              selectedGenres={selectedGenres}
-              onGenreToggle={handleGenreToggle}
-              sortBy={sortBy}
-              onSortByChange={handleSortByChange}
-              onReset={handleResetFilters}
-            />
-          </aside>
-          <div className="lg:col-span-3">
-            <Tabs value={mediaType} onValueChange={handleMediaTypeChange} className="mb-8">
-              <TabsList>
-                <TabsTrigger value="movie"><Film className="mr-2 h-4 w-4" />{t('movie')}</TabsTrigger>
-                <TabsTrigger value="tv"><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</TabsTrigger>
-                <TabsTrigger value="anime"><Flame className="mr-2 h-4 w-4" />{t('anime')}</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            {discoverLoading ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} />}
-            {!discoverLoading && <PaginationControls />}
+      {/* Search + Mobile filters */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder={t('search_for_media')}
+            className="pl-10"
+          />
+          {searchLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Mobile filter drawer */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="sm:hidden">
+                Filtres
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[320px]">
+              <SheetHeader>
+                <SheetTitle>Filtres</SheetTitle>
+                <SheetDescription>Affinez votre recherche</SheetDescription>
+              </SheetHeader>
+              <div className="py-4">
+                <CatalogFilters
+                  genres={genres}
+                  selectedGenres={selectedGenres}
+                  onGenreToggle={handleGenreToggle}
+                  sortBy={sortBy}
+                  onSortByChange={handleSortByChange}
+                  onReset={handleResetFilters}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Desktop quick buttons */}
+          <div className="hidden sm:flex items-center gap-2">
+            <Button variant={mediaType === 'movie' ? 'secondary' : 'ghost'} onClick={() => handleMediaTypeChange('movie')}><Film className="mr-2 h-4 w-4" />{t('movie')}</Button>
+            <Button variant={mediaType === 'tv' ? 'secondary' : 'ghost'} onClick={() => handleMediaTypeChange('tv')}><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</Button>
+            <Button variant={mediaType === 'anime' ? 'secondary' : 'ghost'} onClick={() => handleMediaTypeChange('anime')}><Flame className="mr-2 h-4 w-4" />{t('anime')}</Button>
           </div>
         </div>
-      )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+        <aside className="hidden lg:block lg:col-span-1">
+          <CatalogFilters
+            genres={genres}
+            selectedGenres={selectedGenres}
+            onGenreToggle={handleGenreToggle}
+            sortBy={sortBy}
+            onSortByChange={handleSortByChange}
+            onReset={handleResetFilters}
+          />
+        </aside>
+
+        <main className="lg:col-span-3">
+          {isSearching ? (
+            <>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-2xl font-semibold">{t('search_results')}</h2>
+                <Button variant="ghost" size="sm" onClick={() => setSearchTerm('')}><X className="h-4 w-4" /> Reset</Button>
+              </div>
+
+              {searchLoading && searchResults.length === 0 ? (
+                <LoadingSkeleton />
+              ) : searchResults.length > 0 ? (
+                <MediaGrid items={searchResults} />
+              ) : (
+                <Card>
+                  <CardContent>
+                    <p className="text-center text-muted-foreground py-8">{t('no_results_found')}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-2xl font-semibold">{t('discover')}</h2>
+                <div className="text-sm text-muted-foreground">Page {page} / {totalPages}</div>
+              </div>
+
+              {discoverLoading ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} />}
+
+              {!discoverLoading && totalPages > 1 && (
+                <div className="flex items-center justify-center gap-3 mt-8">
+                  <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>{t('previous')}</Button>
+                  <div className="text-sm text-muted-foreground">Page {page} / {totalPages}</div>
+                  <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>{t('next')}</Button>
+                </div>
+              )}
+            </>
+          )}
+        </main>
+      </div>
     </div>
   );
 };
