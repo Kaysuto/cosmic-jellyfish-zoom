@@ -57,13 +57,13 @@ const CatalogPage = () => {
       ]);
 
       if (movieRes.error) throw movieRes.error;
-      setMovies(movieRes.data.results);
+      setMovies(movieRes.data.results.slice(0, 10));
 
       if (tvRes.error) throw tvRes.error;
-      setTvShows(tvRes.data.results);
+      setTvShows(tvRes.data.results.slice(0, 10));
 
       if (animeRes.error) throw animeRes.error;
-      setAnimes(animeRes.data.results);
+      setAnimes(animeRes.data.results.slice(0, 10));
 
     } catch (error: any) {
       showError(error.message);
