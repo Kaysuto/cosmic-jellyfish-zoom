@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
 import MediaGrid, { MediaItem } from '../components/catalog/MediaGrid';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Loader2, Film, Tv, Flame, X } from 'lucide-react';
+import { Search, Loader2, Film, Tv, Flame, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -27,7 +27,6 @@ const CatalogPage = () => {
   const [mediaType, setMediaType] = useState<'movie' | 'tv' | 'anime'>('movie');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
 
   const [genres, setGenres] = useState<any[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
@@ -64,11 +63,10 @@ const CatalogPage = () => {
       });
       if (error) throw error;
       
-      setDiscoverMedia(prev => page === 1 ? data.results : [...prev, ...data.results]);
+      setDiscoverMedia(data.results);
       
       const totalApiPages = Math.min(data.total_pages ?? 1, 500);
       setTotalPages(totalApiPages);
-      setHasMore(data.page < totalApiPages);
     } catch (error: any) {
       showError(error.message);
     } finally {
@@ -109,7 +107,6 @@ const CatalogPage = () => {
   const resetAndFetch = () => {
     setPage(1);
     setDiscoverMedia([]);
-    setHasMore(true);
   };
 
   const handleMediaTypeChange = (value: 'movie' | 'tv' | 'anime') => {
@@ -138,18 +135,6 @@ const CatalogPage = () => {
     setSortBy('popularity.desc');
     resetAndFetch();
   };
-
-  const observer = useRef<IntersectionObserver>();
-  const lastElementRef = useCallback((node: HTMLDivElement) => {
-    if (discoverLoading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        setPage(prevPage => prevPage + 1);
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [discoverLoading, hasMore]);
 
   const LoadingSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -239,10 +224,32 @@ const CatalogPage = () => {
                 <h2 className="text-2xl font-semibold">{t('discover')}</h2>
               </div>
               {discoverLoading && discoverMedia.length === 0 ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} onRequest={openRequestModal} />}
-              <div ref={lastElementRef} className="h-10 flex items-center justify-center">
-                {discoverLoading && discoverMedia.length > 0 && <Loader2 className="h-6 w-6 animate-spin" />}
-                {!hasMore && discoverMedia.length > 0 && <p className="text-muted-foreground text-sm">Vous avez atteint la fin.</p>}
-              </div>
+              
+              {!discoverLoading && totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-8">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    {t('previous')}
+                  </Button>
+                  <span className="text-sm text-muted-foreground font-mono">
+                    {t('page')} {page} / {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                  >
+                    {t('next')}
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </main>
