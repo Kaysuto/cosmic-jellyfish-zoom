@@ -16,6 +16,28 @@ import RequestModal from '@/components/catalog/RequestModal';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/contexts/AuthContext';
 
+const popularStudios = [
+  { id: 2, name: 'Walt Disney Pictures' },
+  { id: 3, name: 'Pixar' },
+  { id: 420, name: 'Marvel Studios' },
+  { id: 174, name: 'Warner Bros. Pictures' },
+  { id: 33, name: 'Universal Pictures' },
+  { id: 4, name: 'Paramount' },
+  { id: 5, name: 'Columbia Pictures' },
+  { id: 25, name: '20th Century Studios' },
+];
+
+const popularNetworks = [
+  { id: 213, name: 'Netflix' },
+  { id: 49, name: 'HBO' },
+  { id: 2739, name: 'Disney+' },
+  { id: 1024, name: 'Amazon' },
+  { id: 453, name: 'Hulu' },
+  { id: 1957, name: 'Crunchyroll' },
+  { id: 4, name: 'BBC One' },
+  { id: 2, name: 'ABC' },
+];
+
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
   const { session } = useSession();
@@ -35,6 +57,8 @@ const CatalogPage = () => {
 
   const [genres, setGenres] = useState<any[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
+  const [selectedStudios, setSelectedStudios] = useState<number[]>([]);
+  const [selectedNetworks, setSelectedNetworks] = useState<number[]>([]);
 
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
@@ -71,6 +95,8 @@ const CatalogPage = () => {
           language: i18n.language,
           page,
           genres: selectedGenres.join(','),
+          studios: selectedStudios.join(','),
+          networks: selectedNetworks.join(','),
         },
       });
       if (error) throw error;
@@ -84,7 +110,7 @@ const CatalogPage = () => {
     } finally {
       setDiscoverLoading(false);
     }
-  }, [debouncedSearchTerm, mediaType, i18n.language, page, selectedGenres]);
+  }, [debouncedSearchTerm, mediaType, i18n.language, page, selectedGenres, selectedStudios, selectedNetworks]);
 
   useEffect(() => {
     if (debouncedSearchTerm) {
@@ -124,6 +150,8 @@ const CatalogPage = () => {
   const handleMediaTypeChange = (value: 'movie' | 'tv' | 'anime') => {
     setMediaType(value);
     setSelectedGenres([]);
+    setSelectedStudios([]);
+    setSelectedNetworks([]);
     resetAndFetch();
   };
 
@@ -135,9 +163,29 @@ const CatalogPage = () => {
     );
     resetAndFetch();
   };
+
+  const handleStudioToggle = (studioId: number) => {
+    setSelectedStudios(prev =>
+      prev.includes(studioId)
+        ? prev.filter(id => id !== studioId)
+        : [...prev, studioId]
+    );
+    resetAndFetch();
+  };
+
+  const handleNetworkToggle = (networkId: number) => {
+    setSelectedNetworks(prev =>
+      prev.includes(networkId)
+        ? prev.filter(id => id !== networkId)
+        : [...prev, networkId]
+    );
+    resetAndFetch();
+  };
   
   const handleResetFilters = () => {
     setSelectedGenres([]);
+    setSelectedStudios([]);
+    setSelectedNetworks([]);
     resetAndFetch();
   };
 
@@ -197,6 +245,12 @@ const CatalogPage = () => {
                   onReset={handleResetFilters}
                   mediaType={mediaType}
                   onMediaTypeChange={handleMediaTypeChange}
+                  studios={popularStudios}
+                  selectedStudios={selectedStudios}
+                  onStudioToggle={handleStudioToggle}
+                  networks={popularNetworks}
+                  selectedNetworks={selectedNetworks}
+                  onNetworkToggle={handleNetworkToggle}
                 />
               </div>
             </SheetContent>
@@ -225,6 +279,12 @@ const CatalogPage = () => {
             onReset={handleResetFilters}
             mediaType={mediaType}
             onMediaTypeChange={handleMediaTypeChange}
+            studios={popularStudios}
+            selectedStudios={selectedStudios}
+            onStudioToggle={handleStudioToggle}
+            networks={popularNetworks}
+            selectedNetworks={selectedNetworks}
+            onNetworkToggle={handleNetworkToggle}
           />
         </aside>
 

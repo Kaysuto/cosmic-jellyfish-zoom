@@ -24,7 +24,7 @@ serve(async (req) => {
   }
 
   try {
-    const { mediaType, language, page, sortBy, genres } = await req.json();
+    const { mediaType, language, page, sortBy, genres, studios, networks } = await req.json();
     if (!mediaType) {
       throw new Error("mediaType is required (movie, tv, or anime)");
     }
@@ -35,6 +35,13 @@ serve(async (req) => {
     
     if (genres) {
       params += `&with_genres=${genres}`;
+    }
+
+    if (studios && mediaType === 'movie') {
+      params += `&with_companies=${studios}`;
+    }
+    if (networks && (mediaType === 'tv' || mediaType === 'anime')) {
+      params += `&with_networks=${networks}`;
     }
 
     if (mediaType === 'anime') {

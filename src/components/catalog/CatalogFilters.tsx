@@ -11,6 +11,16 @@ interface Genre {
   name: string;
 }
 
+interface Studio {
+  id: number;
+  name: string;
+}
+
+interface Network {
+  id: number;
+  name: string;
+}
+
 interface CatalogFiltersProps {
   genres: Genre[];
   selectedGenres: number[];
@@ -18,9 +28,21 @@ interface CatalogFiltersProps {
   onReset: () => void;
   mediaType: 'movie' | 'tv' | 'anime';
   onMediaTypeChange: (type: 'movie' | 'tv' | 'anime') => void;
+  studios: Studio[];
+  selectedStudios: number[];
+  onStudioToggle: (studioId: number) => void;
+  networks: Network[];
+  selectedNetworks: number[];
+  onNetworkToggle: (networkId: number) => void;
 }
 
-const CatalogFilters = ({ genres, selectedGenres, onGenreToggle, onReset, mediaType, onMediaTypeChange }: CatalogFiltersProps) => {
+const CatalogFilters = ({ 
+  genres, selectedGenres, onGenreToggle, 
+  onReset, 
+  mediaType, onMediaTypeChange,
+  studios, selectedStudios, onStudioToggle,
+  networks, selectedNetworks, onNetworkToggle
+}: CatalogFiltersProps) => {
   const { t } = useTranslation();
 
   return (
@@ -68,6 +90,62 @@ const CatalogFilters = ({ genres, selectedGenres, onGenreToggle, onReset, mediaT
             </ScrollArea>
           </div>
         </div>
+
+        {mediaType === 'movie' && (
+          <>
+            <Separator />
+            <div>
+              <h4 className="font-medium mb-2">{t('studios')}</h4>
+              <div className="border rounded-lg overflow-hidden">
+                <ScrollArea className="h-40">
+                  <div className="p-3 flex flex-wrap gap-2">
+                    {studios.map(studio => {
+                      const active = selectedStudios.includes(studio.id);
+                      return (
+                        <Badge
+                          key={studio.id}
+                          variant={active ? 'default' : 'secondary'}
+                          onClick={() => onStudioToggle(studio.id)}
+                          className="cursor-pointer select-none"
+                        >
+                          {studio.name}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </div>
+            </div>
+          </>
+        )}
+
+        {(mediaType === 'tv' || mediaType === 'anime') && (
+          <>
+            <Separator />
+            <div>
+              <h4 className="font-medium mb-2">{t('networks')}</h4>
+              <div className="border rounded-lg overflow-hidden">
+                <ScrollArea className="h-40">
+                  <div className="p-3 flex flex-wrap gap-2">
+                    {networks.map(network => {
+                      const active = selectedNetworks.includes(network.id);
+                      return (
+                        <Badge
+                          key={network.id}
+                          variant={active ? 'default' : 'secondary'}
+                          onClick={() => onNetworkToggle(network.id)}
+                          className="cursor-pointer select-none"
+                        >
+                          {network.name}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </div>
+            </div>
+          </>
+        )}
 
         <Separator />
 

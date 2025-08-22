@@ -6,6 +6,8 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "studios": "Studios",
+      "networks": "Diffuseurs",
       "filmography": "Filmographie",
       "role_job": "Rôle / Poste",
       "year": "Année",
@@ -431,6 +433,8 @@ const resources = {
   },
   en: {
     translation: {
+      "studios": "Studios",
+      "networks": "Networks",
       "filmography": "Filmography",
       "role_job": "Role / Job",
       "year": "Year",
