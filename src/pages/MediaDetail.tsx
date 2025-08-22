@@ -278,21 +278,14 @@ const MediaDetailPage = () => {
                   </Select>
                 </div>
                 {seasonLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
-                    {[...Array(8)].map((_, i) => (
-                      <div key={i} className="space-y-2">
-                        <Skeleton className="aspect-video w-full" />
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="h-5 w-1/2" />
-                        <Skeleton className="h-12 w-full" />
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
                   </div>
                 ) : selectedSeason && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {selectedSeason.episodes.map(episode => (
-                      <div key={episode.id}>
-                        <div className="aspect-video bg-muted rounded-lg overflow-hidden mb-3">
+                      <Card key={episode.id} className="overflow-hidden">
+                        <div className="aspect-video bg-muted">
                           {episode.still_path ? (
                             <img src={`https://image.tmdb.org/t/p/w500${episode.still_path}`} alt={episode.name} className="w-full h-full object-cover" />
                           ) : (
@@ -301,16 +294,15 @@ const MediaDetailPage = () => {
                             </div>
                           )}
                         </div>
-                        <div>
+                        <CardContent className="p-4">
                           <p className="text-xs text-muted-foreground">
                             {`Épisode ${episode.episode_number}`}
                             {episode.runtime && ` - ${t('minutes', { count: episode.runtime })}`}
-                            {episode.air_date && ` - ${new Date(episode.air_date).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long', year: 'numeric' })}`}
                           </p>
                           <h4 className="font-semibold text-lg mt-1">{episode.name}</h4>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-3">{episode.overview || t('no_description_available')}</p>
-                        </div>
-                      </div>
+                          <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{episode.overview || t('no_description_available')}</p>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
                 )}
