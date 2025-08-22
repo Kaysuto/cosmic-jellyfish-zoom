@@ -160,15 +160,21 @@ serve(async (req) => {
     console.log(`Prepared ${catalogItems.length} items for database upsert.`);
 
     if (catalogItems.length > 0) {
-      const { error: upsertError } = await supabaseAdmin
-        .from('catalog_items')
-        .upsert(catalogItems, { onConflict: 'jellyfin_id' });
+      const upsertBatchSize = 500;
+      for (let i = 0; i < catalogItems.length; i += upsertBatchSize) {
+        const batch = catalogItems.slice(i, i + upsertBatchSize);
+        console.log(`Upserting batch ${Math.floor(i / upsertBatchSize) + 1} of ${Math.ceil(catalogItems.length / upsertBatchSize)}... (${batch.length} items)`);
+        
+        const { error: upsertError } = await supabaseAdmin
+          .from('catalog_items')
+          .upsert(batch, { onConflict: 'jellyfin_id' });
 
-      if (upsertError) {
-        console.error('Supabase upsert error:', upsertError);
-        throw new Error(`Failed to save items to catalog: ${upsertError.message}`);
+        if (upsertError) {
+          console.error('Supabase upsert error on batch:', upsertError);
+          throw new Error(`Failed to save batch to catalog: ${upsertError.message}`);
+        }
       }
-      console.log(`Successfully upserted ${catalogItems.length} items.`);
+      console.log(`Successfully upserted all ${catalogItems.length} items in batches.`);
     }
 
     const response = {
