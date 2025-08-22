@@ -54,6 +54,7 @@ const CatalogPage = () => {
   const [mediaType, setMediaType] = useState<'movie' | 'tv' | 'anime'>('movie');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState('popularity.desc');
 
   const [genres, setGenres] = useState<any[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
@@ -94,6 +95,7 @@ const CatalogPage = () => {
           mediaType,
           language: i18n.language,
           page,
+          sortBy,
           genres: selectedGenres.join(','),
           studios: selectedStudios.join(','),
           networks: selectedNetworks.join(','),
@@ -110,7 +112,7 @@ const CatalogPage = () => {
     } finally {
       setDiscoverLoading(false);
     }
-  }, [debouncedSearchTerm, mediaType, i18n.language, page, selectedGenres, selectedStudios, selectedNetworks]);
+  }, [debouncedSearchTerm, mediaType, i18n.language, page, selectedGenres, selectedStudios, selectedNetworks, sortBy]);
 
   useEffect(() => {
     if (debouncedSearchTerm) {
@@ -186,8 +188,26 @@ const CatalogPage = () => {
     setSelectedGenres([]);
     setSelectedStudios([]);
     setSelectedNetworks([]);
+    setSortBy('popularity.desc');
     resetAndFetch();
   };
+
+  const handleSortByChange = (value: string) => {
+    setSortBy(value);
+    resetAndFetch();
+  };
+
+  const handleFilterToggle = (type: 'genre' | 'studio' | 'network', id: number) => {
+    if (type === 'genre') handleGenreToggle(id);
+    if (type === 'studio') handleStudioToggle(id);
+    if (type === 'network') handleNetworkToggle(id);
+  };
+
+  const activeFilters = [
+    ...selectedGenres.map(id => ({ id, name: genres.find(g => g.id === id)?.name, type: 'genre' as const })),
+    ...selectedStudios.map(id => ({ id, name: popularStudios.find(s => s.id === id)?.name, type: 'studio' as const })),
+    ...selectedNetworks.map(id => ({ id, name: popularNetworks.find(n => n.id === id)?.name, type: 'network' as const }))
+  ].filter(f => f.name);
 
   const LoadingSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -251,6 +271,8 @@ const CatalogPage = () => {
                   networks={popularNetworks}
                   selectedNetworks={selectedNetworks}
                   onNetworkToggle={handleNetworkToggle}
+                  sortBy={sortBy}
+                  onSortByChange={handleSortByChange}
                 />
               </div>
             </SheetContent>
@@ -258,16 +280,16 @@ const CatalogPage = () => {
         </div>
       </div>
 
-      <div className="mb-4 flex items-center gap-3 flex-wrap">
-        {selectedGenres.length > 0 ? (
+      <div className="mb-4 flex items-center gap-2 flex-wrap min-h-[28px]">
+        {activeFilters.length > 0 && (
           <>
-            {selectedGenres.map((id) => {
-              const g = genres.find((x) => x.id === id);
-              return g ? <Badge key={id} className="cursor-pointer" onClick={() => handleGenreToggle(id)}>{g.name} ✕</Badge> : null;
-            })}
-            <Button variant="ghost" size="sm" onClick={handleResetFilters}>Effacer les filtres</Button>
+            {activeFilters.map(filter => (
+              <Badge key={`${filter.type}-${filter.id}`} variant="secondary" className="cursor-pointer" onClick={() => handleFilterToggle(filter.type, filter.id)}>
+                {filter.name} <X className="ml-1.5 h-3 w-3" />
+              </Badge>
+            ))}
           </>
-        ) : <div className="text-sm text-muted-foreground">Aucun filtre actif</div>}
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
@@ -285,6 +307,8 @@ const CatalogPage = () => {
             networks={popularNetworks}
             selectedNetworks={selectedNetworks}
             onNetworkToggle={handleNetworkToggle}
+            sortBy={sortBy}
+            onSortByChange={handleSortByChange}
           />
         </aside>
 
@@ -299,7 +323,6 @@ const CatalogPage = () => {
             </>
           ) : (
             <>
-              {/* H2 'Discover' removed per request */}
               {discoverLoading && discoverMedia.length === 0 ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} onRequest={openRequestModal} showRequestButton={!!session} />}
               
               {!discoverLoading && totalPages > 1 && (

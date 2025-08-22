@@ -1,25 +1,16 @@
 import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Film, Tv, Flame } from 'lucide-react';
+import { Film, Tv, Flame, X } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
-interface Genre {
-  id: number;
-  name: string;
-}
-
-interface Studio {
-  id: number;
-  name: string;
-}
-
-interface Network {
-  id: number;
-  name: string;
-}
+interface Genre { id: number; name: string; }
+interface Studio { id: number; name: string; }
+interface Network { id: number; name: string; }
 
 interface CatalogFiltersProps {
   genres: Genre[];
@@ -34,6 +25,8 @@ interface CatalogFiltersProps {
   networks: Network[];
   selectedNetworks: number[];
   onNetworkToggle: (networkId: number) => void;
+  sortBy: string;
+  onSortByChange: (value: string) => void;
 }
 
 const CatalogFilters = ({ 
@@ -41,118 +34,113 @@ const CatalogFilters = ({
   onReset, 
   mediaType, onMediaTypeChange,
   studios, selectedStudios, onStudioToggle,
-  networks, selectedNetworks, onNetworkToggle
+  networks, selectedNetworks, onNetworkToggle,
+  sortBy, onSortByChange
 }: CatalogFiltersProps) => {
   const { t } = useTranslation();
 
   return (
     <Card className="sticky top-24">
       <CardHeader>
-        <CardTitle className="text-lg"> {t('filter_and_sort')} </CardTitle>
-        <CardDescription className="text-sm text-muted-foreground">Affinez les résultats rapidement</CardDescription>
+        <div className="flex items-center justify-between">
+          <CardTitle>{t('filter_and_sort')}</CardTitle>
+          <Button variant="ghost" size="sm" onClick={onReset} className="text-xs h-7">
+            <X className="mr-1 h-3 w-3" />
+            {t('clear_filters')}
+          </Button>
+        </div>
+        <CardDescription>{t('catalog_description')}</CardDescription>
       </CardHeader>
-
       <CardContent className="space-y-4">
         <div>
-          <h4 className="font-medium mb-2">{t('media_type')}</h4>
+          <h4 className="font-semibold text-sm mb-2">{t('media_type')}</h4>
           <div className="grid grid-cols-3 gap-2">
             <Button variant={mediaType === 'movie' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('movie')}><Film className="mr-2 h-4 w-4" />{t('movie')}</Button>
             <Button variant={mediaType === 'tv' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('tv')}><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</Button>
             <Button variant={mediaType === 'anime' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('anime')}><Flame className="mr-2 h-4 w-4" />{t('anime')}</Button>
           </div>
         </div>
-
         <Separator />
-        
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="font-medium">{t('genres')}</h4>
-            <button onClick={onReset} className="text-xs text-muted-foreground hover:text-foreground transition">Réinitialiser</button>
-          </div>
-
-          <div className="border rounded-lg overflow-hidden">
-            <ScrollArea className="h-56">
-              <div className="p-3 flex flex-wrap gap-2">
-                {genres.map(genre => {
-                  const active = selectedGenres.includes(genre.id);
-                  return (
-                    <Badge
+          <h4 className="font-semibold text-sm mb-2">{t('sort_by')}</h4>
+          <Select value={sortBy} onValueChange={onSortByChange}>
+            <SelectTrigger>
+              <SelectValue placeholder={t('sort_by')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="popularity.desc">{t('sort_popularity_desc')}</SelectItem>
+              <SelectItem value="release_date.desc">{t('sort_release_date_desc')}</SelectItem>
+              <SelectItem value="vote_average.desc">{t('sort_vote_average_desc')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Separator />
+        <Accordion type="multiple" defaultValue={['genres']} className="w-full">
+          <AccordionItem value="genres">
+            <AccordionTrigger>{t('genres')}</AccordionTrigger>
+            <AccordionContent>
+              <ScrollArea className="h-64">
+                <div className="space-y-1 pr-4">
+                  {genres.map(genre => (
+                    <Button
                       key={genre.id}
-                      variant={active ? 'default' : 'secondary'}
+                      variant={selectedGenres.includes(genre.id) ? 'secondary' : 'ghost'}
+                      size="sm"
+                      className="w-full justify-start"
                       onClick={() => onGenreToggle(genre.id)}
-                      className="cursor-pointer select-none"
                     >
                       {genre.name}
-                    </Badge>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          </div>
-        </div>
-
-        {mediaType === 'movie' && (
-          <>
-            <Separator />
-            <div>
-              <h4 className="font-medium mb-2">{t('studios')}</h4>
-              <div className="border rounded-lg overflow-hidden">
-                <ScrollArea className="h-40">
-                  <div className="p-3 flex flex-wrap gap-2">
-                    {studios.map(studio => {
-                      const active = selectedStudios.includes(studio.id);
-                      return (
-                        <Badge
-                          key={studio.id}
-                          variant={active ? 'default' : 'secondary'}
-                          onClick={() => onStudioToggle(studio.id)}
-                          className="cursor-pointer select-none"
-                        >
-                          {studio.name}
-                        </Badge>
-                      );
-                    })}
+                    </Button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </AccordionContent>
+          </AccordionItem>
+          {mediaType === 'movie' && (
+            <AccordionItem value="studios">
+              <AccordionTrigger>{t('studios')}</AccordionTrigger>
+              <AccordionContent>
+                <ScrollArea className="h-48">
+                  <div className="space-y-1 pr-4">
+                    {studios.map(studio => (
+                      <Button
+                        key={studio.id}
+                        variant={selectedStudios.includes(studio.id) ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => onStudioToggle(studio.id)}
+                      >
+                        {studio.name}
+                      </Button>
+                    ))}
                   </div>
                 </ScrollArea>
-              </div>
-            </div>
-          </>
-        )}
-
-        {(mediaType === 'tv' || mediaType === 'anime') && (
-          <>
-            <Separator />
-            <div>
-              <h4 className="font-medium mb-2">{t('networks')}</h4>
-              <div className="border rounded-lg overflow-hidden">
-                <ScrollArea className="h-40">
-                  <div className="p-3 flex flex-wrap gap-2">
-                    {networks.map(network => {
-                      const active = selectedNetworks.includes(network.id);
-                      return (
-                        <Badge
-                          key={network.id}
-                          variant={active ? 'default' : 'secondary'}
-                          onClick={() => onNetworkToggle(network.id)}
-                          className="cursor-pointer select-none"
-                        >
-                          {network.name}
-                        </Badge>
-                      );
-                    })}
+              </AccordionContent>
+            </AccordionItem>
+          )}
+          {(mediaType === 'tv' || mediaType === 'anime') && (
+            <AccordionItem value="networks">
+              <AccordionTrigger>{t('networks')}</AccordionTrigger>
+              <AccordionContent>
+                <ScrollArea className="h-48">
+                  <div className="space-y-1 pr-4">
+                    {networks.map(network => (
+                      <Button
+                        key={network.id}
+                        variant={selectedNetworks.includes(network.id) ? 'secondary' : 'ghost'}
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => onNetworkToggle(network.id)}
+                      >
+                        {network.name}
+                      </Button>
+                    ))}
                   </div>
                 </ScrollArea>
-              </div>
-            </div>
-          </>
-        )}
-
-        <Separator />
-
-        <div className="space-y-2">
-          <h4 className="font-medium">Astuce</h4>
-          <p className="text-sm text-muted-foreground">Utilisez les filtres pour réduire rapidement la liste. Cliquez sur un genre pour l'activer/désactiver.</p>
-        </div>
+              </AccordionContent>
+            </AccordionItem>
+          )}
+        </Accordion>
       </CardContent>
     </Card>
   );
