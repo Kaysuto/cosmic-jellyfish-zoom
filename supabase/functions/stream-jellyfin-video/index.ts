@@ -48,6 +48,15 @@ serve(async (req) => {
 
     const jellyfinResponse = await fetch(streamUrl, { headers });
 
+    if (!jellyfinResponse.ok) {
+      const errorBody = await jellyfinResponse.text();
+      console.error(`Jellyfin server returned an error: ${jellyfinResponse.status}`, {
+        url: streamUrl,
+        body: errorBody,
+      });
+      throw new Error(`Jellyfin server error: ${jellyfinResponse.status} ${jellyfinResponse.statusText}. This could be due to an invalid API key or network issue.`);
+    }
+
     // Create a new response that streams the body from Jellyfin
     const responseHeaders = new Headers(corsHeaders);
     responseHeaders.set('Content-Type', jellyfinResponse.headers.get('Content-Type') || 'video/mp4');

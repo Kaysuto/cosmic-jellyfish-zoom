@@ -13,20 +13,22 @@ const VideoPlayer = ({ src, title }: VideoPlayerProps) => {
   if (!src) return null;
 
   function onCanPlay(event: MediaCanPlayEvent) {
-    console.log('Vidstack: Média prêt à être lu. Event:', event);
+    console.log('Vidstack: Media can play.', { detail: (event as any).detail });
   }
 
   function onError(event: MediaErrorEvent) {
-    console.error('Vidstack: Erreur du lecteur. Event:', event);
-    alert(`Erreur du lecteur vidéo. Vérifiez la console (F12) pour les détails techniques. Cela est souvent dû à un problème de CORS sur votre serveur Jellyfin. Assurez-vous que l'URL de cette application est ajoutée aux domaines autorisés dans les paramètres réseau de Jellyfin.`);
+    const error = (event as any).detail;
+    console.error('Vidstack: Player Error.', { detail: error });
+    alert(`Erreur du lecteur vidéo : ${error.message} (Code: ${error.code}). Vérifiez la console (F12) pour plus de détails.`);
   }
 
   return (
     <MediaPlayer
       className="w-full h-full"
       title={title}
-      src={src}
+      src={{ src: src, type: 'video/mp4' }}
       playsInline
+      crossOrigin
       onCanPlay={onCanPlay}
       onError={onError}
     >
