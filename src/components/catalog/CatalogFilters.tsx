@@ -6,7 +6,8 @@ import { Separator } from "@/components/ui/separator";
 import { Film, Tv, Flame, X } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 interface Genre { id: number; name: string; }
 interface Studio { id: number; name: string; }
@@ -54,11 +55,27 @@ const CatalogFilters = ({
       <CardContent className="space-y-4">
         <div>
           <h4 className="font-semibold text-sm mb-2">{t('media_type')}</h4>
-          <div className="grid grid-cols-3 gap-2">
-            <Button variant={mediaType === 'movie' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('movie')}><Film className="mr-2 h-4 w-4" />{t('movie')}</Button>
-            <Button variant={mediaType === 'tv' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('tv')}><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</Button>
-            <Button variant={mediaType === 'anime' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('anime')}><Flame className="mr-2 h-4 w-4" />{t('anime')}</Button>
-          </div>
+          <RadioGroup
+            value={mediaType}
+            onValueChange={(value) => onMediaTypeChange(value as 'movie' | 'tv' | 'anime')}
+            className="grid grid-cols-3 gap-2"
+          >
+            <Label className="flex items-center justify-center gap-2 rounded-md border p-2 cursor-pointer [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-accent">
+              <RadioGroupItem value="movie" id="movie" className="sr-only" />
+              <Film className="h-4 w-4" />
+              {t('movie')}
+            </Label>
+            <Label className="flex items-center justify-center gap-2 rounded-md border p-2 cursor-pointer [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-accent">
+              <RadioGroupItem value="tv" id="tv" className="sr-only" />
+              <Tv className="h-4 w-4" />
+              {t('tv_show')}
+            </Label>
+            <Label className="flex items-center justify-center gap-2 rounded-md border p-2 cursor-pointer [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-accent">
+              <RadioGroupItem value="anime" id="anime" className="sr-only" />
+              <Flame className="h-4 w-4" />
+              {t('anime')}
+            </Label>
+          </RadioGroup>
         </div>
         <Separator />
         <div>
