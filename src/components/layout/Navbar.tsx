@@ -29,6 +29,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import logo from '/logo.png';
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -140,7 +141,7 @@ const Navbar = () => {
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2">
-              <img src="/logo.png" alt="Jelly Logo" className="h-8 w-auto" />
+              <img src={logo} alt="Jelly Logo" className="h-8 w-auto" />
             </Link>
             <div className="hidden md:flex items-center gap-2">
               {navItems.map((item) => (
