@@ -3,7 +3,8 @@ import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/AuthContext';
-import { showError, showSuccess } from '@/utils/toast';
+import { useJellyfin } from '@/contexts/JellyfinContext';
+import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -57,6 +58,7 @@ const MediaDetailPage = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { session } = useSession();
+  const { jellyfinUrl } = useJellyfin();
   const [details, setDetails] = useState<MediaDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [requestStatus, setRequestStatus] = useState<RequestStatus>(null);
@@ -106,12 +108,24 @@ const MediaDetailPage = () => {
         const videosPromise = supabase.functions.invoke('get-media-videos', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } });
         const similarPromise = supabase.functions.invoke('get-similar-media', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } });
         const creditsPromise = supabase.functions.invoke('get-media-credits', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } });
+        const catalogPromise = supabase
+          .from('catalog_items')
+          .select('jellyfin_id')
+          .eq('tmdb_id', id)
+          .eq('media_type', apiMediaType)
+          .maybeSingle();
         
-        const [detailsResult, videosResult, similarResult, creditsResult] = await Promise.all([detailsPromise, videosPromise, similarPromise, creditsPromise]);
+        const [detailsResult, videosResult, similarResult, creditsResult, catalogResult] = await Promise.all([detailsPromise, videosPromise, similarPromise, creditsPromise, catalogPromise]);
 
         if (detailsResult.error) throw detailsResult.error;
         const tmdbDetails = detailsResult.data;
         setDetails(tmdbDetails);
+
+        if (catalogResult.error) {
+          console.error("Error fetching from catalog:", catalogResult.error);
+        } else if (catalogResult.data) {
+          setJellyfinId(catalogResult.data.jellyfin_id);
+        }
 
         fetchRequestStatus();
 
@@ -153,10 +167,23 @@ const MediaDetailPage = () => {
   };
 
   const handlePlay = () => {
-    showError("La lecture Jellyfin a été désactivée dans cette instance.");
+    if (jellyfinUrl && jellyfinId) {
+      const playUrl = `${jellyfinUrl}/web/index.html#!/item?id=${jellyfinId}`;
+      window.open(playUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      showError("L'URL de lecture Jellyfin n'est pas disponible.");
+    }
   };
 
   const renderActionButton = () => {
+    if (jellyfinId) {
+      return (
+        <Button size="lg" onClick={handlePlay}>
+          <Play className="mr-2 h-4 w-4" /> {t('play')}
+        </Button>
+      );
+    }
+
     if (!session) {
       return (
         <Button size="lg" onClick={() => navigate('/login')}>
@@ -165,16 +192,10 @@ const MediaDetailPage = () => {
       );
     }
 
-    if (requestStatus === 'available') {
-      return (
-        <Button size="lg" disabled className="bg-gray-700 text-gray-300 cursor-not-allowed">
-          <Play className="mr-2 h-4 w-4" /> {t('play')} (désactivé)
-        </Button>
-      );
-    }
     if (requestStatus === 'pending' || requestStatus === 'approved') {
       return <Button size="lg" disabled><Check className="mr-2 h-4 w-4" /> {t('requested')}</Button>;
     }
+    
     return (
       <Button size="lg" onClick={handleRequest}>
         <Film className="mr-2 h-4 w-4" />
