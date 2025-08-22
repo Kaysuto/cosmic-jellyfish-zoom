@@ -11,7 +11,6 @@ import { useMaintenances } from '@/hooks/useMaintenances';
 import OverallStatus from '@/components/status/OverallStatus';
 import ServicesStatus from '@/components/status/ServicesStatus';
 import IncidentHistory from '@/components/status/IncidentHistory';
-import ScheduledMaintenances from '@/components/status/ScheduledMaintenances';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 

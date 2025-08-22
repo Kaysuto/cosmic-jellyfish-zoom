@@ -51,18 +51,20 @@ const ServicesStatus = ({ services, incidents, maintenances }: ServicesStatusPro
 
         return (
           <div key={service.id} className="bg-card border rounded-lg transition-all duration-300">
-            <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <config.Icon className={cn("h-6 w-6 flex-shrink-0", config.className)} />
-                <span className="font-bold text-lg text-foreground">{t(service.name.toLowerCase().replace(/ /g, '_'))}</span>
-              </div>
-              <div className="flex items-center gap-4 sm:gap-6 ml-9 sm:ml-0">
-                <ServiceUptimeSparkline serviceId={service.id} />
-                <div className="text-right">
-                  <div className="font-bold text-lg text-foreground">{service.uptime_percentage.toFixed(2)}%</div>
-                  <div className="text-xs text-muted-foreground">{t('ninety_day_uptime')}</div>
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <config.Icon className={cn("h-6 w-6 flex-shrink-0", config.className)} />
+                  <span className="font-bold text-lg text-foreground">{t(service.name.toLowerCase().replace(/ /g, '_'))}</span>
                 </div>
                 <div className={cn("font-semibold text-lg", config.className)}>{config.text}</div>
+              </div>
+              <div className="flex items-center justify-between pt-4 border-t">
+                <div className="text-left">
+                  <div className="text-xs text-muted-foreground">{t('ninety_day_uptime')}</div>
+                  <div className="font-bold text-lg text-foreground">{service.uptime_percentage.toFixed(2)}%</div>
+                </div>
+                <ServiceUptimeSparkline serviceId={service.id} />
               </div>
             </div>
             {(activeIncidents.length > 0 || scheduledMaintenances.length > 0) && (
