@@ -6,6 +6,10 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "navigation": "Navigation",
+      "legal": "Légal",
+      "language": "Langue",
+      "disclaimer": "Ce projet est une instance privée et n'est pas affilié à Jellyfin ou The Movie Database (TMDB).",
       "studios": "Studios",
       "networks": "Diffuseurs",
       "filmography": "Filmographie",
@@ -433,6 +437,10 @@ const resources = {
   },
   en: {
     translation: {
+      "navigation": "Navigation",
+      "legal": "Legal",
+      "language": "Language",
+      "disclaimer": "This project is a private instance and is not affiliated with Jellyfin or The Movie Database (TMDB).",
       "studios": "Studios",
       "networks": "Networks",
       "filmography": "Filmography",
