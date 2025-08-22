@@ -25,7 +25,6 @@ export const FooterContent = () => {
         <div className="md:col-span-1">
           <Link to="/" className="flex items-center gap-2 mb-4">
             <img src={logo} alt="Jelly Logo" className="h-8 w-auto" />
-            <span className="font-bold text-lg text-white">{t('jelly_brand')}</span>
           </Link>
           <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} {t('jelly_brand')}. {t('all_rights_reserved')}</p>
         </div>
