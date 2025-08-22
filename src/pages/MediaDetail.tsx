@@ -167,12 +167,8 @@ const MediaDetailPage = () => {
   };
 
   const handlePlay = () => {
-    if (jellyfinUrl && jellyfinId) {
-      const playUrl = `${jellyfinUrl}/web/index.html#!/item?id=${jellyfinId}`;
-      window.open(playUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      showError("L'URL de lecture Jellyfin n'est pas disponible.");
-    }
+    if (!type || !id) return;
+    navigate(`/media/${type}/${id}/play`);
   };
 
   const renderActionButton = () => {

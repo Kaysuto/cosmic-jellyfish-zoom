@@ -39,6 +39,7 @@ import UserPublicProfile from './pages/UserPublicProfile';
 import ProfileOwnerRoute from './components/auth/ProfileOwnerRoute';
 import MyRequestsPage from './pages/MyRequests';
 import { JellyfinProvider } from "./contexts/JellyfinContext";
+import PlayerPage from "./pages/PlayerPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -95,6 +96,7 @@ const App = () => (
                       </Route>
                       <Route element={<ProtectedRoute />}>
                         <Route path="/requests" element={<MyRequestsPage />} />
+                        <Route path="/media/:type/:id/play" element={<PlayerPage />} />
                       </Route>
                     </Route>
                     <Route element={<AdminRoute />}>
