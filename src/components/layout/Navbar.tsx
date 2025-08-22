@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown, Heart } from "lucide-react";
+import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown, Heart, MailQuestion } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -110,9 +110,15 @@ const Navbar = () => {
           </DropdownMenuItem>
         )}
         <DropdownMenuItem asChild>
-          <Link to={`/users/${profile?.id}/settings`} className="cursor-pointer">
+          <Link to={`/users/${profile?.id}`} className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
             <span>Profil</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/requests" className="cursor-pointer">
+            <MailQuestion className="mr-2 h-4 w-4" />
+            <span>{t('my_requests')}</span>
           </Link>
         </DropdownMenuItem>
         {profile?.role === 'admin' && (
@@ -214,7 +220,8 @@ const Navbar = () => {
                               <NavLink to="/admin/settings" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><Settings className="mr-3 h-5 w-5" />{t('settings')}</NavLink>
                             </>
                           )}
-                          <NavLink to={`/users/${profile.id}/settings`} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
+                          <NavLink to={`/users/${profile.id}`} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
+                          <NavLink to="/requests" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><MailQuestion className="mr-3 h-5 w-5" />{t('my_requests')}</NavLink>
                           <div className="px-4 pt-2">
                             <Button onClick={handleLogoutClick} variant="destructive" className="w-full justify-start">
                               <LogOut className="mr-3 h-5 w-5" />

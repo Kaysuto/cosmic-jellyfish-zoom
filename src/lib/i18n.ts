@@ -6,6 +6,13 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "my_requests": "Mes Demandes",
+      "my_requests_description": "Suivez le statut de toutes vos demandes de médias.",
+      "cancel_request": "Annuler la demande",
+      "confirm_cancel_request_title": "Annuler la demande ?",
+      "confirm_cancel_request_desc": "Êtes-vous sûr de vouloir annuler votre demande pour \"{{title}}\" ? Cette action est irréversible.",
+      "request_cancelled_successfully": "Demande annulée avec succès.",
+      "error_cancelling_request": "Erreur lors de l'annulation de la demande.",
       "edit_profile": "Modifier le profil",
       "user_not_found": "Utilisateur non trouvé.",
       "media_requests": "Demandes de médias",
@@ -136,7 +143,6 @@ const resources = {
       "seasons_other": "saisons",
       "requests": "Demandes",
       "new_request": "Nouvelle demande",
-      "my_requests": "Mes demandes",
       "admin_manage_requests": "Gérer les demandes",
       "search_for_media": "Rechercher un film ou une série...",
       "search": "Rechercher",
@@ -463,6 +469,13 @@ const resources = {
   },
   en: {
     translation: {
+      "my_requests": "My Requests",
+      "my_requests_description": "Track the status of all your media requests.",
+      "cancel_request": "Cancel Request",
+      "confirm_cancel_request_title": "Cancel Request?",
+      "confirm_cancel_request_desc": "Are you sure you want to cancel your request for \"{{title}}\"? This action is irreversible.",
+      "request_cancelled_successfully": "Request cancelled successfully.",
+      "error_cancelling_request": "Error cancelling request.",
       "edit_profile": "Edit Profile",
       "user_not_found": "User not found.",
       "media_requests": "Media Requests",
@@ -588,7 +601,6 @@ const resources = {
       "seasons_other": "seasons",
       "requests": "Requests",
       "new_request": "New Request",
-      "my_requests": "My Requests",
       "admin_manage_requests": "Manage Requests",
       "search_for_media": "Search for a movie or TV show...",
       "search": "Search",
