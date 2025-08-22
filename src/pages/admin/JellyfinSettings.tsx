@@ -31,15 +31,20 @@ const JellyfinSettings = () => {
     const toastId = showLoading("Test de la connexion...");
     try {
       const { data, error } = await supabase.functions.invoke('test-jellyfin-connection');
-      if (error) throw error;
+      
+      if (error) {
+        throw error;
+      }
+
       setConnStatus(data);
       if (data.success) {
         showSuccess(data.message);
       } else {
         showError(data.message);
       }
+
     } catch (error: any) {
-      const message = error.message || "Échec du test de la connexion.";
+      const message = error.message || "Échec du test de la connexion. Impossible de contacter la fonction.";
       setConnStatus({ success: false, message });
       showError(message);
     } finally {

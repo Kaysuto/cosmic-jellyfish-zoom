@@ -17,7 +17,7 @@ serve(async (_req) => {
   if (!JELLYFIN_BASE_URL || !JELLYFIN_API_KEY) {
     return new Response(
       JSON.stringify({ success: false, message: "L'URL ou la clé API de Jellyfin ne sont pas configurées dans les variables d'environnement." }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   }
 
@@ -26,7 +26,10 @@ serve(async (_req) => {
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`L'API Jellyfin a retourné un statut non-2xx : ${response.status} ${response.statusText}`);
+      return new Response(
+        JSON.stringify({ success: false, message: `L'API Jellyfin a retourné une erreur : ${response.status} ${response.statusText}` }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
     }
 
     const data = await response.json();
@@ -47,8 +50,8 @@ serve(async (_req) => {
   } catch (error) {
     console.error("Erreur lors du test de la connexion Jellyfin:", error.message);
     return new Response(
-      JSON.stringify({ success: false, message: error.message }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      JSON.stringify({ success: false, message: `Erreur de réseau ou de configuration : ${error.message}` }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   }
 });
