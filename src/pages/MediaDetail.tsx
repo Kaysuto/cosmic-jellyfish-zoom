@@ -269,7 +269,6 @@ const MediaDetailPage = () => {
                   <AlertDescription>{t('tmdb_disclaimer_content')}</AlertDescription>
                 </Alert>
                 <div className="flex items-center gap-4 mb-6">
-                  <h2 className="text-3xl font-bold">{t('seasons', { count: 2})}</h2>
                   <Select value={selectedSeasonNumber?.toString()} onValueChange={(value) => setSelectedSeasonNumber(Number(value))}>
                     <SelectTrigger className="w-[250px]"><SelectValue placeholder="Select a season" /></SelectTrigger>
                     <SelectContent>
