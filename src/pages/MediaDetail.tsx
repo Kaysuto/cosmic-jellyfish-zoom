@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import MediaGrid from '@/components/catalog/MediaGrid';
 import { motion } from 'framer-motion';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 interface MediaDetails {
   id: number;
@@ -280,12 +281,15 @@ const MediaDetailPage = () => {
 
           <div className="mt-12">
             <Tabs defaultValue={apiMediaType === 'tv' ? 'episodes' : 'videos'} className="w-full">
-              <TabsList>
-                {apiMediaType === 'tv' && <TabsTrigger value="episodes">{t('episodes')}</TabsTrigger>}
-                <TabsTrigger value="videos">{t('videos_and_trailers')}</TabsTrigger>
-                <TabsTrigger value="similar">{t('similar_content')}</TabsTrigger>
-                <TabsTrigger value="cast">{t('cast_and_production')}</TabsTrigger>
-              </TabsList>
+              <ScrollArea className="w-full whitespace-nowrap">
+                <TabsList className="inline-flex w-max">
+                  {apiMediaType === 'tv' && <TabsTrigger value="episodes">{t('episodes')}</TabsTrigger>}
+                  <TabsTrigger value="videos">{t('videos_and_trailers')}</TabsTrigger>
+                  <TabsTrigger value="similar">{t('similar_content')}</TabsTrigger>
+                  <TabsTrigger value="cast">{t('cast_and_production')}</TabsTrigger>
+                </TabsList>
+                <ScrollBar orientation="horizontal" className="invisible" />
+              </ScrollArea>
 
               {apiMediaType === 'tv' && (
                 <TabsContent value="episodes" className="mt-6">
