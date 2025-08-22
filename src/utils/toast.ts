@@ -8,8 +8,8 @@ export const showError = (message: string) => {
   toast.error(message);
 };
 
-export const showLoading = (message: string) => {
-  return toast.loading(message);
+export const showLoading = (message: string, options?: { id?: string | number }) => {
+  return toast.loading(message, options);
 };
 
 export const dismissToast = (toastId: string | number) => {

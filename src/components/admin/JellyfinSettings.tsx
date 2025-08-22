@@ -66,14 +66,37 @@ const JellyfinSettings = () => {
 
   const handleSync = async () => {
     setIsSyncing(true);
-    const toastId = showLoading('Démarrage de la synchronisation Jellyfin...');
+    const toastId = showLoading('Initialisation de la synchronisation...');
+    let totalItemsProcessed = 0;
+
     try {
-      const { data, error } = await supabase.functions.invoke('sync-jellyfin');
-      if (error) throw error;
-      
+      // 1. Get the list of libraries (views)
+      const { data: viewsResponse, error: viewsError } = await supabase.functions.invoke('sync-jellyfin', { body: {} });
+      if (viewsError) throw viewsError;
+      const views = viewsResponse.views;
+
+      // 2. Loop through each library
+      for (const [index, view] of views.entries()) {
+        let startIndex = 0;
+        let isViewDone = false;
+
+        while (!isViewDone) {
+          showLoading(`[${index + 1}/${views.length}] Sync: '${view.name}' (${startIndex}/${view.totalItems})`, { id: toastId });
+
+          // 3. Invoke function for each page
+          const { data: pageResponse, error: pageError } = await supabase.functions.invoke('sync-jellyfin', {
+            body: { viewId: view.id, startIndex: startIndex }
+          });
+          if (pageError) throw pageError;
+
+          totalItemsProcessed += pageResponse.itemsProcessed;
+          startIndex = pageResponse.nextStartIndex;
+          isViewDone = pageResponse.isViewDone;
+        }
+      }
+
       dismissToast(toastId);
-      showSuccess(`Synchronisation terminée ! ${data.itemsUpserted} éléments traités.`);
-      console.log('Sync result:', data);
+      showSuccess(`Synchronisation terminée ! ${totalItemsProcessed} éléments traités.`);
 
     } catch (error: any) {
       dismissToast(toastId);
