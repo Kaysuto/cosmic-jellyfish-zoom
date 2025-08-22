@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Film, Star, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { MediaItem } from './MediaGrid';
+import { useJellyfin } from '@/contexts/JellyfinContext';
 
 interface MediaCardProps {
   item: MediaItem;
@@ -15,6 +16,7 @@ interface MediaCardProps {
 
 const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, onRequest, searchTerm }) => {
   const { t } = useTranslation();
+  const { jellyfinUrl } = useJellyfin();
 
   const title = item.title || item.name || 'No title';
   const releaseDate = item.release_date || item.first_air_date;
@@ -25,13 +27,29 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
     ? `/media/${item.media_type}/${item.id}?fromSearch=${encodeURIComponent(searchTerm)}`
     : `/media/${item.media_type}/${item.id}`;
 
+  const getImageUrl = (path: string | null | undefined) => {
+    if (!path) return null;
+    if (path.startsWith('/')) {
+      // TMDB path
+      return `https://image.tmdb.org/t/p/w500${path}`;
+    }
+    if (jellyfinUrl && path.includes('/Items/')) {
+      // Jellyfin relative path
+      return `${jellyfinUrl}${path}`;
+    }
+    // Fallback for other cases or if jellyfinUrl is not ready
+    return null;
+  };
+
+  const imageUrl = getImageUrl(item.poster_path);
+
   return (
     <Card className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-card h-full">
       <Link to={linkTo} className="block h-full" aria-label={title}>
         <div className="relative aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden h-full">
-          {item.poster_path ? (
+          {imageUrl ? (
             <img
-              src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
+              src={imageUrl}
               alt={title}
               className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-105"
               loading="lazy"

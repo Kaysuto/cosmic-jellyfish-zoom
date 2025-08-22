@@ -38,6 +38,7 @@ import SchedulePage from "./pages/Schedule";
 import UserPublicProfile from './pages/UserPublicProfile';
 import ProfileOwnerRoute from './components/auth/ProfileOwnerRoute';
 import MyRequestsPage from './pages/MyRequests';
+import { JellyfinProvider } from "./contexts/JellyfinContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,49 +72,51 @@ const App = () => (
       <TooltipProvider delayDuration={100}>
         <SettingsProvider>
           <AuthProvider>
-            <AppStateInitializer>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
-                  <Route element={<MainLayout />}>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/status" element={<StatusPage />} />
-                    <Route path="/dmca" element={<DmcaPage />} />
-                    <Route path="/about" element={<AboutPage />} />
-                    <Route path="/privacy" element={<PrivacyPage />} />
-                    <Route path="/schedule" element={<SchedulePage />} />
-                    <Route path="/media/:type/:id" element={<MediaDetailPage />} />
-                    <Route path="/person/:id" element={<PersonDetailPage />} />
-                    <Route path="/catalog" element={<CatalogPage />} />
-                    <Route path="/catalog/:mediaType" element={<FullSectionPage />} />
-                    <Route path="/users/:userId" element={<UserPublicProfile />} />
-                    <Route element={<ProfileOwnerRoute />}>
-                      <Route path="/users/:userId/settings" element={<Profile />} />
+            <JellyfinProvider>
+              <AppStateInitializer>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Routes>
+                    <Route element={<MainLayout />}>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/status" element={<StatusPage />} />
+                      <Route path="/dmca" element={<DmcaPage />} />
+                      <Route path="/about" element={<AboutPage />} />
+                      <Route path="/privacy" element={<PrivacyPage />} />
+                      <Route path="/schedule" element={<SchedulePage />} />
+                      <Route path="/media/:type/:id" element={<MediaDetailPage />} />
+                      <Route path="/person/:id" element={<PersonDetailPage />} />
+                      <Route path="/catalog" element={<CatalogPage />} />
+                      <Route path="/catalog/:mediaType" element={<FullSectionPage />} />
+                      <Route path="/users/:userId" element={<UserPublicProfile />} />
+                      <Route element={<ProfileOwnerRoute />}>
+                        <Route path="/users/:userId/settings" element={<Profile />} />
+                      </Route>
+                      <Route element={<ProtectedRoute />}>
+                        <Route path="/requests" element={<MyRequestsPage />} />
+                      </Route>
                     </Route>
-                    <Route element={<ProtectedRoute />}>
-                      <Route path="/requests" element={<MyRequestsPage />} />
+                    <Route element={<AdminRoute />}>
+                      <Route path="/admin" element={<Admin />}>
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="services" element={<ServiceManager />} />
+                        <Route path="incidents" element={<IncidentManager />} />
+                        <Route path="maintenance" element={<MaintenanceManager />} />
+                        <Route path="users" element={<UserManager />} />
+                        <Route path="users/:userId/edit" element={<EditUserPage />} />
+                        <Route path="requests" element={<AdminRequestManager />} />
+                        <Route path="settings" element={<Settings />} />
+                        <Route path="logs" element={<LogsPage />} />
+                      </Route>
                     </Route>
-                  </Route>
-                  <Route element={<AdminRoute />}>
-                    <Route path="/admin" element={<Admin />}>
-                      <Route index element={<AdminDashboard />} />
-                      <Route path="services" element={<ServiceManager />} />
-                      <Route path="incidents" element={<IncidentManager />} />
-                      <Route path="maintenance" element={<MaintenanceManager />} />
-                      <Route path="users" element={<UserManager />} />
-                      <Route path="users/:userId/edit" element={<EditUserPage />} />
-                      <Route path="requests" element={<AdminRequestManager />} />
-                      <Route path="settings" element={<Settings />} />
-                      <Route path="logs" element={<LogsPage />} />
-                    </Route>
-                  </Route>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/update-password" element={<UpdatePassword />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </AppStateInitializer>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/update-password" element={<UpdatePassword />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </AppStateInitializer>
+            </JellyfinProvider>
           </AuthProvider>
         </SettingsProvider>
       </TooltipProvider>
