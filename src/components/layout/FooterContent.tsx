@@ -66,7 +66,7 @@ export const FooterContent = () => {
         <div className="flex items-center justify-center gap-1">
           <span>{t('made_with_love')}</span>
           <Heart className="h-4 w-4 text-red-500 fill-current" />
-          <span>{t('by_kaysuto')}</span>
+          <span>{t('by_the_community')}</span>
         </div>
       </div>
     </div>
