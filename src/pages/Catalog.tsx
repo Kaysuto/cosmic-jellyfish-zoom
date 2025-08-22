@@ -1,17 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
-import MediaGrid from '../components/catalog/MediaGrid';
+import MediaGrid, { MediaItem } from '../components/catalog/MediaGrid';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Loader2, Film, Tv, Flame, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { useDebounce } from '@/hooks/useDebounce';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CatalogFilters from '../components/catalog/CatalogFilters';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/ui/sheet';
 import { Card, CardContent } from '@/components/ui/card';
+import RequestModal from '@/components/catalog/RequestModal';
+import { Badge } from '@/components/ui/badge';
 
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
@@ -30,6 +31,10 @@ const CatalogPage = () => {
   const [genres, setGenres] = useState<any[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [sortBy, setSortBy] = useState('popularity.desc');
+
+  // modal state
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
 
   const fetchGenres = useCallback(async () => {
     const apiMediaType = mediaType === 'anime' ? 'tv' : mediaType;
@@ -59,7 +64,7 @@ const CatalogPage = () => {
       });
       if (error) throw error;
       setDiscoverMedia(data.results);
-      setTotalPages(Math.min(data.total_pages ?? 1, 500)); // TMDB API has a 500 page limit
+      setTotalPages(Math.min(data.total_pages ?? 1, 500));
     } catch (error: any) {
       showError(error.message);
     } finally {
@@ -138,6 +143,16 @@ const CatalogPage = () => {
 
   const isSearching = debouncedSearchTerm.length > 0;
 
+  // request modal handlers
+  const openRequestModal = (item: MediaItem) => {
+    setSelectedItemForRequest(item);
+    setRequestModalOpen(true);
+  };
+
+  const onRequestSuccess = () => {
+    // optional: refresh data or show status — kept minimal
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
@@ -193,6 +208,21 @@ const CatalogPage = () => {
         </div>
       </div>
 
+      {/* Selected genre chips + clear */}
+      <div className="mb-4 flex items-center gap-3 flex-wrap">
+        {selectedGenres.length > 0 ? (
+          <>
+            {selectedGenres.map((id) => {
+              const g = genres.find((x) => x.id === id);
+              return g ? <Badge key={id} className="cursor-pointer" onClick={() => handleGenreToggle(id)}>{g.name} ✕</Badge> : null;
+            })}
+            <Button variant="ghost" size="sm" onClick={handleResetFilters}>Effacer les filtres</Button>
+          </>
+        ) : (
+          <div className="text-sm text-muted-foreground">Aucun filtre actif</div>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         <aside className="hidden lg:block lg:col-span-1">
           <CatalogFilters
@@ -216,7 +246,7 @@ const CatalogPage = () => {
               {searchLoading && searchResults.length === 0 ? (
                 <LoadingSkeleton />
               ) : searchResults.length > 0 ? (
-                <MediaGrid items={searchResults} />
+                <MediaGrid items={searchResults} onRequest={openRequestModal} />
               ) : (
                 <Card>
                   <CardContent>
@@ -232,7 +262,7 @@ const CatalogPage = () => {
                 <div className="text-sm text-muted-foreground">Page {page} / {totalPages}</div>
               </div>
 
-              {discoverLoading ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} />}
+              {discoverLoading ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} onRequest={openRequestModal} />}
 
               {!discoverLoading && totalPages > 1 && (
                 <div className="flex items-center justify-center gap-3 mt-8">
@@ -245,6 +275,13 @@ const CatalogPage = () => {
           )}
         </main>
       </div>
+
+      <RequestModal
+        open={requestModalOpen}
+        onOpenChange={setRequestModalOpen}
+        item={selectedItemForRequest}
+        onSuccess={onRequestSuccess}
+      />
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Film, Star, Info, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-interface MediaItem {
+export interface MediaItem {
   id: number;
   title?: string;
   name?: string;
@@ -19,9 +20,10 @@ interface MediaItem {
 interface MediaGridProps {
   items: MediaItem[];
   showRequestButton?: boolean;
+  onRequest?: (item: MediaItem) => void;
 }
 
-const MediaGrid = ({ items, showRequestButton = true }: MediaGridProps) => {
+const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, onRequest }) => {
   const { t } = useTranslation();
 
   return (
@@ -46,7 +48,7 @@ const MediaGrid = ({ items, showRequestButton = true }: MediaGridProps) => {
           >
             <Card className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-shadow bg-gradient-to-br from-card to-popover">
               <div className="relative">
-                <Link to={`/media/${item.media_type}/${item.id}`} className="block">
+                <Link to={`/media/${item.media_type}/${item.id}`} className="block" aria-label={title}>
                   <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden">
                     {item.poster_path ? (
                       <img
@@ -68,6 +70,7 @@ const MediaGrid = ({ items, showRequestButton = true }: MediaGridProps) => {
                     {/* Center icons: semi-transparent by default, full on hover */}
                     <div className="absolute inset-0 flex items-center justify-center gap-3 pointer-events-none">
                       <div className="flex items-center gap-3 opacity-20 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-200">
+                        {/* Info: navigates to details */}
                         <Button
                           asChild
                           variant="ghost"
@@ -80,18 +83,19 @@ const MediaGrid = ({ items, showRequestButton = true }: MediaGridProps) => {
                           </Link>
                         </Button>
 
+                        {/* Request: call callback (if provided) */}
                         {showRequestButton ? (
-                          <Button
-                            asChild
-                            variant="ghost"
-                            size="icon"
-                            className="bg-black/30 hover:bg-black/50 text-white rounded-full pointer-events-auto"
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (onRequest) onRequest(item);
+                            }}
                             aria-label={`${t('request')} ${title}`}
+                            className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-black/30 hover:bg-black/50 text-white pointer-events-auto focus:outline-none"
                           >
-                            <Link to={`/media/${item.media_type}/${item.id}?action=request`}>
-                              <Plus className="h-4 w-4" />
-                            </Link>
-                          </Button>
+                            <Plus className="h-4 w-4" />
+                          </button>
                         ) : null}
                       </div>
                     </div>
@@ -118,7 +122,7 @@ const MediaGrid = ({ items, showRequestButton = true }: MediaGridProps) => {
                   </div>
                 </div>
 
-                {/* Keep space for actions on small screens if desired (but icons overlay handle primary actions) */}
+                {/* Keep space for alignment on small screens */}
                 <div className="mt-1 h-8" aria-hidden />
               </CardContent>
             </Card>
