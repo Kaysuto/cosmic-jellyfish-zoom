@@ -6,15 +6,8 @@ import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Film, Tv, User } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface PersonDetails {
   id: number;
@@ -155,57 +148,32 @@ const PersonDetailPage = () => {
           </div>
           <div>
             <h3 className="text-3xl font-bold mb-4">{t('filmography')}</h3>
-            <Card>
-              <ScrollArea className="h-[600px]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[80px]">{t('year')}</TableHead>
-                      <TableHead>{t('title')}</TableHead>
-                      <TableHead>{t('role_job')}</TableHead>
-                      <TableHead className="w-[80px]">{t('media_type')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {credits.map(credit => {
-                      const year = credit.release_date ? new Date(credit.release_date).getFullYear() : (credit.first_air_date ? new Date(credit.first_air_date).getFullYear() : 'N/A');
-                      return (
-                        <TableRow key={`${credit.id}-${credit.job || credit.character}`}>
-                          <TableCell className="font-medium">{year}</TableCell>
-                          <TableCell>
-                            <Link to={`/media/${credit.media_type}/${credit.id}`} className="hover:underline">
-                              {credit.title || credit.name}
-                            </Link>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">{credit.character || credit.job}</TableCell>
-                          <TableCell>
-                            {credit.media_type === 'movie' ? (
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <Film className="h-5 w-5 text-muted-foreground" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{t('movie')}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            ) : (
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <Tv className="h-5 w-5 text-muted-foreground" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{t('tv_show')}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
-            </Card>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {credits.map(credit => {
+                const year = credit.release_date ? new Date(credit.release_date).getFullYear() : (credit.first_air_date ? new Date(credit.first_air_date).getFullYear() : 'N/A');
+                const title = credit.title || credit.name;
+                return (
+                  <Link to={`/media/${credit.media_type}/${credit.id}`} key={`${credit.id}-${credit.job || credit.character}`} className="text-left">
+                    <Card className="overflow-hidden bg-muted/20 border-border h-full transition-transform hover:scale-105">
+                      <div className="aspect-[2/3] bg-muted">
+                        {credit.poster_path ? (
+                          <img src={`https://image.tmdb.org/t/p/w500${credit.poster_path}`} alt={title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                            {credit.media_type === 'movie' ? <Film className="h-12 w-12" /> : <Tv className="h-12 w-12" />}
+                          </div>
+                        )}
+                      </div>
+                      <CardContent className="p-2">
+                        <p className="font-bold text-sm truncate" title={title}>{title}</p>
+                        <p className="text-xs text-muted-foreground truncate" title={credit.character || credit.job}>{credit.character || credit.job}</p>
+                        <p className="text-xs text-muted-foreground">{year}</p>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
