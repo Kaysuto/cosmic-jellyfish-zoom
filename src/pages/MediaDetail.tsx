@@ -7,13 +7,15 @@ import { showError, showSuccess } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight, Gift } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import MediaGrid from '@/components/catalog/MediaGrid';
 import { motion } from 'framer-motion';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface MediaDetails {
   id: number;
@@ -68,7 +70,28 @@ const MediaDetailPage = () => {
   const [videoPage, setVideoPage] = useState(1);
   const [jellyfinId, setJellyfinId] = useState<string | null>(null);
 
+  const [actorDetails, setActorDetails] = useState<any | null>(null);
+  const [isActorDetailOpen, setIsActorDetailOpen] = useState(false);
+  const [actorDetailLoading, setActorDetailLoading] = useState(false);
+
   const fromSearch = searchParams.get('fromSearch');
+
+  const handleActorClick = async (actor: any) => {
+    setIsActorDetailOpen(true);
+    setActorDetailLoading(true);
+    setActorDetails(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('get-person-details', {
+        body: { personId: actor.id, language: i18n.language },
+      });
+      if (error) throw error;
+      setActorDetails(data);
+    } catch (error: any) {
+      showError(error.message);
+    } finally {
+      setActorDetailLoading(false);
+    }
+  };
 
   const fetchSeasonDetails = async (seasonNumber: number) => {
     if (!type || !id) return;
@@ -226,189 +249,228 @@ const MediaDetailPage = () => {
   const backLink = fromSearch ? `/catalog?q=${encodeURIComponent(fromSearch)}` : '/catalog';
 
   return (
-    <div className="relative -mt-16">
-      <div className="absolute inset-0 h-[60vh] overflow-hidden">
-        {details.backdrop_path ? (
-          <img src={`https://image.tmdb.org/t/p/original${details.backdrop_path}`} alt="" className="w-full h-full object-cover object-center" />
-        ) : (
-          <div className="w-full h-full bg-muted" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-      </div>
-      <div className="relative container mx-auto px-4 pt-[40vh] pb-16">
-        <div className="md:flex gap-8">
-          <motion.div 
-            className="w-full md:w-1/3 lg:w-1/4 -mt-24 flex-shrink-0"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
-          >
-            {details.poster_path ? (
-              <img src={`https://image.tmdb.org/t/p/w500${details.poster_path}`} alt={title} className="w-full rounded-lg shadow-2xl" />
-            ) : (
-              <div className="w-full aspect-[2/3] bg-muted rounded-lg shadow-2xl flex items-center justify-center text-muted-foreground">
-                <Film className="h-24 w-24" />
-              </div>
-            )}
-          </motion.div>
-          <motion.div 
-            className="mt-8 md:mt-0 flex-grow"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeInOut" }}
-          >
-            <Button asChild variant="outline" className="mb-6">
-              <Link to={backLink}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_catalog')}
-              </Link>
-            </Button>
-            <h1 className="text-5xl font-bold">{title}</h1>
-            <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-2 text-muted-foreground">
-              {releaseDate && <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" /> {new Date(releaseDate).getFullYear()}</span>}
-              <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-yellow-400" /> {details.vote_average.toFixed(1)} / 10</span>
-              {runtime && <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {runtime} min</span>}
-              {apiMediaType === 'tv' && details.number_of_seasons && <span className="flex items-center gap-1.5"><Tv className="h-4 w-4" /> {details.number_of_seasons} {t('seasons', { count: details.number_of_seasons })}</span>}
-            </div>
-            <div className="flex flex-wrap gap-2 mt-4">
-              {details.genres.map(genre => <Badge key={genre.id} variant="secondary">{genre.name}</Badge>)}
-            </div>
-            <p className="mt-6 text-lg text-muted-foreground">{details.overview}</p>
-            <div className="mt-8">{renderActionButton()}</div>
-          </motion.div>
+    <>
+      <div className="relative -mt-16">
+        <div className="absolute inset-0 h-[60vh] overflow-hidden">
+          {details.backdrop_path ? (
+            <img src={`https://image.tmdb.org/t/p/original${details.backdrop_path}`} alt="" className="w-full h-full object-cover object-center" />
+          ) : (
+            <div className="w-full h-full bg-muted" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
         </div>
-
-        <div className="mt-12">
-          <Tabs defaultValue={apiMediaType === 'tv' ? 'episodes' : 'videos'} className="w-full">
-            <TabsList>
-              {apiMediaType === 'tv' && <TabsTrigger value="episodes">{t('episodes')}</TabsTrigger>}
-              <TabsTrigger value="videos">{t('videos_and_trailers')}</TabsTrigger>
-              <TabsTrigger value="similar">{t('similar_content')}</TabsTrigger>
-              <TabsTrigger value="cast">{t('cast_and_production')}</TabsTrigger>
-            </TabsList>
-
-            {apiMediaType === 'tv' && (
-              <TabsContent value="episodes" className="mt-6">
-                <Alert variant="destructive" className="my-6 bg-red-900/30 border-red-500/30 text-red-300">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>{t('tmdb_disclaimer_title')}</AlertTitle>
-                  <AlertDescription>{t('tmdb_disclaimer_content')}</AlertDescription>
-                </Alert>
-                <div className="flex items-center gap-4 mb-6">
-                  <Select value={selectedSeasonNumber?.toString()} onValueChange={(value) => setSelectedSeasonNumber(Number(value))}>
-                    <SelectTrigger className="w-[250px]"><SelectValue placeholder="Select a season" /></SelectTrigger>
-                    <SelectContent>
-                      {details.seasons?.map(season => <SelectItem key={season.id} value={season.season_number.toString()}>{season.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+        <div className="relative container mx-auto px-4 pt-[40vh] pb-16">
+          <div className="md:flex gap-8">
+            <motion.div 
+              className="w-full md:w-1/3 lg:w-1/4 -mt-24 flex-shrink-0"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+            >
+              {details.poster_path ? (
+                <img src={`https://image.tmdb.org/t/p/w500${details.poster_path}`} alt={title} className="w-full rounded-lg shadow-2xl" />
+              ) : (
+                <div className="w-full aspect-[2/3] bg-muted rounded-lg shadow-2xl flex items-center justify-center text-muted-foreground">
+                  <Film className="h-24 w-24" />
                 </div>
-                {seasonLoading ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {[...Array(10)].map((_, i) => (
-                      <div key={i} className="space-y-2">
-                        <Skeleton className="aspect-video w-full" />
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="h-4 w-1/2" />
-                      </div>
-                    ))}
-                  </div>
-                ) : selectedSeason && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {selectedSeason.episodes.map(episode => (
-                      <Card key={episode.id} className="overflow-hidden transition-transform hover:scale-105">
-                        <div className="aspect-video bg-muted">
-                          {episode.still_path ? (
-                            <img src={`https://image.tmdb.org/t/p/w500${episode.still_path}`} alt={episode.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                              <Tv className="h-8 w-8" />
-                            </div>
-                          )}
-                        </div>
-                        <CardContent className="p-3">
-                          <p className="text-xs text-muted-foreground">Épisode {episode.episode_number}</p>
-                          <h4 className="font-semibold text-sm truncate">{episode.name}</h4>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-            )}
+              )}
+            </motion.div>
+            <motion.div 
+              className="mt-8 md:mt-0 flex-grow"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeInOut" }}
+            >
+              <Button asChild variant="outline" className="mb-6">
+                <Link to={backLink}>
+                  <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_catalog')}
+                </Link>
+              </Button>
+              <h1 className="text-5xl font-bold">{title}</h1>
+              <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-2 text-muted-foreground">
+                {releaseDate && <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" /> {new Date(releaseDate).getFullYear()}</span>}
+                <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-yellow-400" /> {details.vote_average.toFixed(1)} / 10</span>
+                {runtime && <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {runtime} min</span>}
+                {apiMediaType === 'tv' && details.number_of_seasons && <span className="flex items-center gap-1.5"><Tv className="h-4 w-4" /> {details.number_of_seasons} {t('seasons', { count: details.number_of_seasons })}</span>}
+              </div>
+              <div className="flex flex-wrap gap-2 mt-4">
+                {details.genres.map(genre => <Badge key={genre.id} variant="secondary">{genre.name}</Badge>)}
+              </div>
+              <p className="mt-6 text-lg text-muted-foreground">{details.overview}</p>
+              <div className="mt-8">{renderActionButton()}</div>
+            </motion.div>
+          </div>
 
-            <TabsContent value="videos" className="mt-6">
-              {youtubeVideos.length > 0 ? (
-                <div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {currentVideos.map(video => (
-                      <div key={video.id}>
-                        <div className="aspect-video mb-2">
-                          <iframe 
-                            className="w-full h-full rounded-lg" 
-                            src={`https://www.youtube.com/embed/${video.key}`} 
-                            title={video.name} 
-                            frameBorder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowFullScreen>
-                          </iframe>
-                        </div>
-                        <h4 className="font-semibold">{video.name}</h4>
-                        <p className="text-sm text-muted-foreground">{video.type}</p>
-                      </div>
-                    ))}
+          <div className="mt-12">
+            <Tabs defaultValue={apiMediaType === 'tv' ? 'episodes' : 'videos'} className="w-full">
+              <TabsList>
+                {apiMediaType === 'tv' && <TabsTrigger value="episodes">{t('episodes')}</TabsTrigger>}
+                <TabsTrigger value="videos">{t('videos_and_trailers')}</TabsTrigger>
+                <TabsTrigger value="similar">{t('similar_content')}</TabsTrigger>
+                <TabsTrigger value="cast">{t('cast_and_production')}</TabsTrigger>
+              </TabsList>
+
+              {apiMediaType === 'tv' && (
+                <TabsContent value="episodes" className="mt-6">
+                  <Alert variant="destructive" className="my-6 bg-red-900/30 border-red-500/30 text-red-300">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>{t('tmdb_disclaimer_title')}</AlertTitle>
+                    <AlertDescription>{t('tmdb_disclaimer_content')}</AlertDescription>
+                  </Alert>
+                  <div className="flex items-center gap-4 mb-6">
+                    <Select value={selectedSeasonNumber?.toString()} onValueChange={(value) => setSelectedSeasonNumber(Number(value))}>
+                      <SelectTrigger className="w-[250px]"><SelectValue placeholder="Select a season" /></SelectTrigger>
+                      <SelectContent>
+                        {details.seasons?.map(season => <SelectItem key={season.id} value={season.season_number.toString()}>{season.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  {totalVideoPages > 1 && (
-                    <div className="flex items-center justify-center gap-4 mt-6">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setVideoPage(p => p - 1)}
-                        disabled={videoPage === 1}
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        {t('previous')}
-                      </Button>
-                      <span className="text-sm text-muted-foreground">
-                        {t('page')} {videoPage} / {totalVideoPages}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setVideoPage(p => p + 1)}
-                        disabled={videoPage === totalVideoPages}
-                      >
-                        {t('next')}
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
+                  {seasonLoading ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                      {[...Array(10)].map((_, i) => (
+                        <div key={i} className="space-y-2">
+                          <Skeleton className="aspect-video w-full" />
+                          <Skeleton className="h-4 w-3/4" />
+                          <Skeleton className="h-4 w-1/2" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : selectedSeason && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                      {selectedSeason.episodes.map(episode => (
+                        <Card key={episode.id} className="overflow-hidden transition-transform hover:scale-105">
+                          <div className="aspect-video bg-muted">
+                            {episode.still_path ? (
+                              <img src={`https://image.tmdb.org/t/p/w500${episode.still_path}`} alt={episode.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                                <Tv className="h-8 w-8" />
+                              </div>
+                            )}
+                          </div>
+                          <CardContent className="p-3">
+                            <p className="text-xs text-muted-foreground">Épisode {episode.episode_number}</p>
+                            <h4 className="font-semibold text-sm truncate">{episode.name}</h4>
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
                   )}
-                </div>
-              ) : (
-                <p>{t('no_trailer_available')}</p>
+                </TabsContent>
               )}
-            </TabsContent>
-            <TabsContent value="similar" className="mt-6">
-              {similarWithMediaType.length > 0 ? <MediaGrid items={similarWithMediaType} /> : <p>{t('no_similar_content')}</p>}
-            </TabsContent>
-            <TabsContent value="cast" className="mt-6">
-              <h3 className="text-2xl font-bold mb-4">{t('cast')}</h3>
-              {credits.cast.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {credits.cast.slice(0, 18).map((person) => (
-                    <Card key={person.id} className="text-center overflow-hidden bg-muted/20 border-border">
-                      {person.profile_path ? <img src={`https://image.tmdb.org/t/p/w185${person.profile_path}`} alt={person.name} className="w-full h-auto object-cover aspect-[2/3]" /> : <div className="w-full aspect-[2/3] flex items-center justify-center bg-muted text-muted-foreground"><User className="h-12 w-12" /></div>}
-                      <CardContent className="p-2">
-                        <p className="font-bold text-sm truncate">{person.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{person.character}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : <p>{t('no_cast_info')}</p>}
-            </TabsContent>
-          </Tabs>
+
+              <TabsContent value="videos" className="mt-6">
+                {youtubeVideos.length > 0 ? (
+                  <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {currentVideos.map(video => (
+                        <div key={video.id}>
+                          <div className="aspect-video mb-2">
+                            <iframe 
+                              className="w-full h-full rounded-lg" 
+                              src={`https://www.youtube.com/embed/${video.key}`} 
+                              title={video.name} 
+                              frameBorder="0" 
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                              allowFullScreen>
+                            </iframe>
+                          </div>
+                          <h4 className="font-semibold">{video.name}</h4>
+                          <p className="text-sm text-muted-foreground">{video.type}</p>
+                        </div>
+                      ))}
+                    </div>
+                    {totalVideoPages > 1 && (
+                      <div className="flex items-center justify-center gap-4 mt-6">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setVideoPage(p => p - 1)}
+                          disabled={videoPage === 1}
+                        >
+                          <ChevronLeft className="h-4 w-4 mr-1" />
+                          {t('previous')}
+                        </Button>
+                        <span className="text-sm text-muted-foreground">
+                          {t('page')} {videoPage} / {totalVideoPages}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setVideoPage(p => p + 1)}
+                          disabled={videoPage === totalVideoPages}
+                        >
+                          {t('next')}
+                          <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p>{t('no_trailer_available')}</p>
+                )}
+              </TabsContent>
+              <TabsContent value="similar" className="mt-6">
+                {similarWithMediaType.length > 0 ? <MediaGrid items={similarWithMediaType} /> : <p>{t('no_similar_content')}</p>}
+              </TabsContent>
+              <TabsContent value="cast" className="mt-6">
+                <h3 className="text-2xl font-bold mb-4">{t('cast')}</h3>
+                {credits.cast.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {credits.cast.slice(0, 18).map((person) => (
+                      <button key={person.id} onClick={() => handleActorClick(person)} className="text-left">
+                        <Card className="text-center overflow-hidden bg-muted/20 border-border h-full transition-transform hover:scale-105">
+                          {person.profile_path ? <img src={`https://image.tmdb.org/t/p/w185${person.profile_path}`} alt={person.name} className="w-full h-auto object-cover aspect-[2/3]" /> : <div className="w-full aspect-[2/3] flex items-center justify-center bg-muted text-muted-foreground"><User className="h-12 w-12" /></div>}
+                          <CardContent className="p-2">
+                            <p className="font-bold text-sm truncate">{person.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{person.character}</p>
+                          </CardContent>
+                        </Card>
+                      </button>
+                    ))}
+                  </div>
+                ) : <p>{t('no_cast_info')}</p>}
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </div>
-    </div>
+      <Dialog open={isActorDetailOpen} onOpenChange={setIsActorDetailOpen}>
+        <DialogContent className="sm:max-w-3xl h-[90vh]">
+          {actorDetailLoading ? (
+            <div className="flex items-center justify-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>
+          ) : actorDetails ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-3xl">{actorDetails.name}</DialogTitle>
+                <DialogDescription>
+                  {actorDetails.birthday && (
+                    <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Gift className="h-4 w-4" />
+                      {t('born_on', { date: new Date(actorDetails.birthday).toLocaleDateString(i18n.language) })}
+                      {actorDetails.place_of_birth && ` ${t('in')} ${actorDetails.place_of_birth}`}
+                    </span>
+                  )}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid md:grid-cols-3 gap-6 py-4 h-full overflow-hidden">
+                <div className="md:col-span-1">
+                  <img src={`https://image.tmdb.org/t/p/w500${actorDetails.profile_path}`} alt={actorDetails.name} className="rounded-lg w-full" />
+                </div>
+                <div className="md:col-span-2 h-full flex flex-col">
+                  <h4 className="font-semibold text-lg mb-2">{t('biography')}</h4>
+                  <ScrollArea className="flex-grow pr-4 -mr-4">
+                    <p className="text-muted-foreground whitespace-pre-wrap">
+                      {actorDetails.biography || t('no_biography_available')}
+                    </p>
+                  </ScrollArea>
+                </div>
+              </div>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

@@ -6,6 +6,10 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "biography": "Biographie",
+      "born_on": "Né(e) le {{date}}",
+      "in": "à",
+      "no_biography_available": "Aucune biographie disponible.",
       "back_to_catalog": "Retour au catalogue",
       "media_type": "Type de média",
       "login_to_request": "Se connecter pour demander",
@@ -419,6 +423,10 @@ const resources = {
   },
   en: {
     translation: {
+      "biography": "Biography",
+      "born_on": "Born on {{date}}",
+      "in": "in",
+      "no_biography_available": "No biography available.",
       "back_to_catalog": "Back to Catalog",
       "media_type": "Media Type",
       "login_to_request": "Login to Request",
