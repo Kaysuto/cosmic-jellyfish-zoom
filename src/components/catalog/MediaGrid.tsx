@@ -46,7 +46,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, 
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25, delay: index * 0.02 }}
           >
-            <Card className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-shadow bg-gradient-to-br from-card to-popover">
+            <Card className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-shadow bg-gradient-to-br from-card to-popover flex flex-col">
               <div className="relative">
                 <Link to={`/media/${item.media_type}/${item.id}`} className="block" aria-label={title}>
                   <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden">
@@ -113,17 +113,14 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, 
                 </Link>
               </div>
 
-              <CardContent className="p-3 flex flex-col gap-3">
+              <CardContent className="p-3 flex-grow">
                 <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-foreground line-clamp-2">{title}</h3>
+                  <h3 className="text-sm font-semibold text-foreground line-clamp-2 h-10">{title}</h3>
                   <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
                     <span>{year}</span>
                     <span className="uppercase tracking-wider text-[10px]">{t(item.media_type)}</span>
                   </div>
                 </div>
-
-                {/* Keep space for alignment on small screens */}
-                <div className="mt-1 h-8" aria-hidden />
               </CardContent>
             </Card>
           </motion.div>
