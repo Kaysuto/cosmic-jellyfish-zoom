@@ -13,9 +13,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTr
 import { Card, CardContent } from '@/components/ui/card';
 import RequestModal from '@/components/catalog/RequestModal';
 import { Badge } from '@/components/ui/badge';
+import { useSession } from '@/contexts/AuthContext';
 
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
+  const { session } = useSession();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 450);
   
@@ -207,12 +209,12 @@ const CatalogPage = () => {
                 <h2 className="text-2xl font-semibold">{t('search_results')}</h2>
                 <Button variant="ghost" size="sm" onClick={() => setSearchTerm('')}><X className="h-4 w-4" /> Reset</Button>
               </div>
-              {searchLoading && searchResults.length === 0 ? <LoadingSkeleton /> : searchResults.length > 0 ? <MediaGrid items={searchResults} onRequest={openRequestModal} /> : <Card><CardContent><p className="text-center text-muted-foreground py-8">{t('no_results_found')}</p></CardContent></Card>}
+              {searchLoading && searchResults.length === 0 ? <LoadingSkeleton /> : searchResults.length > 0 ? <MediaGrid items={searchResults} onRequest={openRequestModal} showRequestButton={!!session} /> : <Card><CardContent><p className="text-center text-muted-foreground py-8">{t('no_results_found')}</p></CardContent></Card>}
             </>
           ) : (
             <>
               {/* H2 'Discover' removed per request */}
-              {discoverLoading && discoverMedia.length === 0 ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} onRequest={openRequestModal} />}
+              {discoverLoading && discoverMedia.length === 0 ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} onRequest={openRequestModal} showRequestButton={!!session} />}
               
               {!discoverLoading && totalPages > 1 && (
                 <div className="flex items-center justify-center gap-4 mt-8">

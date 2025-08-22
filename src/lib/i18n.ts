@@ -6,6 +6,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "login_to_request": "Se connecter pour demander",
       "about_us": "À propos de nous",
       "privacy_policy": "Sécurité & Confidentialité",
       "jellyfin_settings": "Paramètres Jellyfin",
@@ -420,6 +421,7 @@ const resources = {
   },
   en: {
     translation: {
+      "login_to_request": "Login to Request",
       "about_us": "About Us",
       "privacy_policy": "Security & Privacy",
       "jellyfin_settings": "Jellyfin Settings",

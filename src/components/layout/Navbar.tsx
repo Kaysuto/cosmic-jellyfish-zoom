@@ -45,10 +45,10 @@ const Navbar = () => {
   const navItems = [
     { to: "/", label: t('home') },
     { to: "/status", label: t('status') },
+    { to: "/catalog", label: t('catalog') },
   ];
 
-  const protectedNavItems = [
-    { to: "/catalog", label: t('catalog') },
+  const protectedNavItems: { to: string, label: string }[] = [
   ];
 
   const handleLogoutClick = () => {

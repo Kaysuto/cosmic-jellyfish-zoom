@@ -172,6 +172,14 @@ const MediaDetailPage = () => {
   };
 
   const renderActionButton = () => {
+    if (!session) {
+      return (
+        <Button size="lg" onClick={() => navigate('/login')}>
+          <User className="mr-2 h-4 w-4" /> {t('login_to_request')}
+        </Button>
+      );
+    }
+
     if (requestStatus === 'available') {
       return (
         <Button size="lg" disabled className="bg-gray-700 text-gray-300 cursor-not-allowed">
@@ -179,7 +187,7 @@ const MediaDetailPage = () => {
         </Button>
       );
     }
-    if (requestStatus) {
+    if (requestStatus === 'pending' || requestStatus === 'approved') {
       return <Button size="lg" disabled><Check className="mr-2 h-4 w-4" /> {t('requested')}</Button>;
     }
     return (

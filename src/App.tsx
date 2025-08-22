@@ -75,9 +75,9 @@ const App = () => (
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/privacy" element={<PrivacyPage />} />
                     <Route path="/media/:type/:id" element={<MediaDetailPage />} />
+                    <Route path="/catalog" element={<CatalogPage />} />
                     <Route element={<ProtectedRoute />}>
                       <Route path="/profile" element={<Profile />} />
-                      <Route path="/catalog" element={<CatalogPage />} />
                     </Route>
                   </Route>
                   <Route element={<AdminRoute />}>
