@@ -140,55 +140,72 @@ serve(async (req) => {
     }
     const TMDB_API_URL = 'https://api.themoviedb.org/3';
 
-    const enrichedItems = [];
-    for (const item of filteredItems) {
-      if (!item.ProviderIds?.Tmdb) {
-        console.log(`Skipping item without TMDB ID: ${item.Name}`);
-        continue;
-      }
+    const allEnrichedItems = [];
+    const batchSize = 50; // Process 50 items at a time
 
-      const mediaType = item.Type === 'Series' ? 'tv' : 'movie';
-      const tmdbId = item.ProviderIds.Tmdb;
+    for (let i = 0; i < filteredItems.length; i += batchSize) {
+      const batch = filteredItems.slice(i, i + batchSize);
+      console.log(`Processing batch ${i / batchSize + 1}...`);
 
-      try {
-        const tmdbUrl = `${TMDB_API_URL}/${mediaType}/${tmdbId}?api_key=${TMDB_API_KEY}&language=fr-FR`;
-        const tmdbResponse = await fetch(tmdbUrl);
-        if (!tmdbResponse.ok) {
-          console.error(`Failed to fetch TMDB data for ${item.Name} (ID: ${tmdbId}). Status: ${tmdbResponse.status}`);
-          continue;
+      const promises = batch.map(async (item) => {
+        if (!item.ProviderIds?.Tmdb) {
+          console.log(`Skipping item without TMDB ID: ${item.Name}`);
+          return null;
         }
-        const tmdbData = await tmdbResponse.json();
 
-        enrichedItems.push({
-          jellyfin_id: item.Id,
-          media_type: mediaType,
-          title: tmdbData.title || tmdbData.name,
-          overview: tmdbData.overview,
-          poster_path: tmdbData.poster_path,
-          backdrop_path: tmdbData.backdrop_path,
-          release_date: tmdbData.release_date || tmdbData.first_air_date,
-          tmdb_id: tmdbId,
-          tvdb_id: item.ProviderIds?.Tvdb ? parseInt(item.ProviderIds.Tvdb, 10) : null,
-          genres: tmdbData.genres,
-          vote_average: tmdbData.vote_average,
-        });
-      } catch (e) {
-        console.error(`Error processing TMDB data for ${item.Name}: ${e.message}`);
-      }
+        const mediaType = item.Type === 'Series' ? 'tv' : 'movie';
+        const tmdbId = item.ProviderIds.Tmdb;
+
+        try {
+          const tmdbUrl = `${TMDB_API_URL}/${mediaType}/${tmdbId}?api_key=${TMDB_API_KEY}&language=fr-FR`;
+          const tmdbResponse = await fetch(tmdbUrl);
+          if (!tmdbResponse.ok) {
+            console.error(`Failed to fetch TMDB data for ${item.Name} (ID: ${tmdbId}). Status: ${tmdbResponse.status}`);
+            return null;
+          }
+          const tmdbData = await tmdbResponse.json();
+
+          return {
+            jellyfin_id: item.Id,
+            media_type: mediaType,
+            title: tmdbData.title || tmdbData.name,
+            overview: tmdbData.overview,
+            poster_path: tmdbData.poster_path,
+            backdrop_path: tmdbData.backdrop_path,
+            release_date: tmdbData.release_date || tmdbData.first_air_date,
+            tmdb_id: tmdbId,
+            tvdb_id: item.ProviderIds?.Tvdb ? parseInt(item.ProviderIds.Tvdb, 10) : null,
+            genres: tmdbData.genres,
+            vote_average: tmdbData.vote_average,
+          };
+        } catch (e) {
+          console.error(`Error processing TMDB data for ${item.Name}: ${e.message}`);
+          return null;
+        }
+      });
+
+      const batchResults = await Promise.all(promises);
+      const successfulResults = batchResults.filter(item => item !== null);
+      allEnrichedItems.push(...successfulResults);
     }
 
-    console.log(`Prepared ${enrichedItems.length} items for database upsert.`);
+    console.log(`Prepared ${allEnrichedItems.length} items for database upsert.`);
 
-    if (enrichedItems.length > 0) {
-      const { error: upsertError } = await supabaseAdmin
-        .from('catalog_items')
-        .upsert(enrichedItems, { onConflict: 'jellyfin_id' });
+    if (allEnrichedItems.length > 0) {
+      const upsertBatchSize = 500;
+      for (let i = 0; i < allEnrichedItems.length; i += upsertBatchSize) {
+        const upsertBatch = allEnrichedItems.slice(i, i + upsertBatchSize);
+        console.log(`Upserting batch of ${upsertBatch.length} items...`);
+        const { error: upsertError } = await supabaseAdmin
+          .from('catalog_items')
+          .upsert(upsertBatch, { onConflict: 'jellyfin_id' });
 
-      if (upsertError) {
-        console.error('Supabase upsert error:', upsertError);
-        throw new Error(`Failed to save items to catalog: ${upsertError.message}`);
+        if (upsertError) {
+          console.error('Supabase upsert error:', upsertError);
+          throw new Error(`Failed to save items to catalog: ${upsertError.message}`);
+        }
       }
-      console.log(`Successfully upserted ${enrichedItems.length} items.`);
+      console.log(`Successfully upserted all ${allEnrichedItems.length} items.`);
     }
 
     const response = {
@@ -196,7 +213,7 @@ serve(async (req) => {
       totalItemsFetched: allLibraryItems.length,
       itemsExcluded: excludedCount,
       itemsProcessed: filteredItems.length,
-      itemsUpserted: enrichedItems.length,
+      itemsUpserted: allEnrichedItems.length,
     };
 
     return new Response(JSON.stringify(response), {
