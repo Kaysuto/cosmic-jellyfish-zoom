@@ -22,8 +22,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     getSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // On ne met à jour la session que pour les événements significatifs,
+      // en ignorant les rafraîchissements de token qui se produisent au focus de la fenêtre.
+      if (event !== 'TOKEN_REFRESHED') {
+        setSession(session);
+      }
     });
 
     return () => {
