@@ -28,6 +28,7 @@ export const FooterContent = () => {
         <div className="flex items-center gap-4">
           <Link to="/status" className="text-sm text-muted-foreground hover:text-white transition-colors">{t('status')}</Link>
           <Link to="/catalog" className="text-sm text-muted-foreground hover:text-white transition-colors">{t('catalog')}</Link>
+          <Link to="/dmca" className="text-sm text-muted-foreground hover:text-white transition-colors">DMCA</Link>
         </div>
         <div className="flex items-center gap-4">
           <DropdownMenu modal={false}>
