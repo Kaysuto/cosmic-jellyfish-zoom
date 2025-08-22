@@ -7,12 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const JELLYFIN_BASE_URL = Deno.env.get("JELLYFIN_BASE_URL");
-const JELLYFIN_API_KEY = Deno.env.get("JELLYFIN_API_KEY");
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-async function fetchJellyfinItemsByPage(startIndex = 0, limit = 200) {
+async function fetchJellyfinItemsByPage(JELLYFIN_BASE_URL, JELLYFIN_API_KEY, startIndex = 0, limit = 200) {
   let items = [];
   let totalRecordCount = 0;
   try {
@@ -77,11 +72,8 @@ async function fetchJellyfinItemsByPage(startIndex = 0, limit = 200) {
   return { items: normalizedItems, total: totalRecordCount };
 }
 
-async function upsertBatchToSupabase(items) {
+async function upsertBatchToSupabase(supabaseAdmin, items) {
   if (!items || items.length === 0) return 0;
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing");
-
-  const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   const recordsToUpsert = items.map((it) => ({
     jellyfin_id: it.jellyfin_id,
@@ -114,6 +106,24 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: settings, error: settingsError } = await supabaseAdmin
+      .from('jellyfin_settings')
+      .select('url, api_key')
+      .eq('id', 1)
+      .single();
+
+    if (settingsError || !settings || !settings.url || !settings.api_key) {
+      throw new Error("Jellyfin URL and API Key are not configured in the admin settings.");
+    }
+    
+    const JELLYFIN_BASE_URL = settings.url;
+    const JELLYFIN_API_KEY = settings.api_key;
+
     const body = await req.json().catch(() => ({}));
     const { _path, startIndex = 0, limit = 50 } = body;
 
@@ -124,9 +134,9 @@ serve(async (req) => {
       let hasMore = true;
 
       while (hasMore) {
-        const { items, total } = await fetchJellyfinItemsByPage(currentStartIndex, batchLimit);
+        const { items, total } = await fetchJellyfinItemsByPage(JELLYFIN_BASE_URL, JELLYFIN_API_KEY, currentStartIndex, batchLimit);
         if (items.length > 0) {
-          const upsertedCount = await upsertBatchToSupabase(items);
+          const upsertedCount = await upsertBatchToSupabase(supabaseAdmin, items);
           totalUpserted += upsertedCount;
         }
         currentStartIndex += items.length;
@@ -143,7 +153,7 @@ serve(async (req) => {
     const log = { request: { startIndex, limit }, fetch: {}, upsert: {} };
     let fetchedItems;
     try {
-      const { items, total } = await fetchJellyfinItemsByPage(startIndex, limit);
+      const { items, total } = await fetchJellyfinItemsByPage(JELLYFIN_BASE_URL, JELLYFIN_API_KEY, startIndex, limit);
       fetchedItems = items;
       log.fetch = { status: 'success', count: items.length, totalServerItems: total, firstItemName: items.length > 0 ? items[0].name : 'N/A' };
     } catch (e) {
@@ -151,7 +161,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ log }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     try {
-      const upsertedCount = await upsertBatchToSupabase(fetchedItems);
+      const upsertedCount = await upsertBatchToSupabase(supabaseAdmin, fetchedItems);
       log.upsert = { status: 'success', count: upsertedCount };
     } catch (e) {
       log.upsert = { status: 'error', message: e.message, itemsSent: fetchedItems.map(i => ({ name: i.name, tmdb_id: i.tmdb_id, jellyfin_id: i.jellyfin_id })) };

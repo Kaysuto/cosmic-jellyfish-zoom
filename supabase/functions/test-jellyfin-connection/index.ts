@@ -1,27 +1,39 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const JELLYFIN_BASE_URL = Deno.env.get("JELLYFIN_BASE_URL");
-const JELLYFIN_API_KEY = Deno.env.get("JELLYFIN_API_KEY");
-
 serve(async (_req) => {
   if (_req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  if (!JELLYFIN_BASE_URL || !JELLYFIN_API_KEY) {
-    return new Response(
-      JSON.stringify({ success: false, message: "L'URL ou la clé API de Jellyfin ne sont pas configurées dans les variables d'environnement." }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-    );
-  }
-
   try {
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: settings, error: settingsError } = await supabaseAdmin
+      .from('jellyfin_settings')
+      .select('url, api_key')
+      .eq('id', 1)
+      .single();
+
+    if (settingsError || !settings || !settings.url || !settings.api_key) {
+      return new Response(
+        JSON.stringify({ success: false, message: "Veuillez configurer l'URL et la clé API de Jellyfin dans les paramètres d'administration." }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
+    }
+
+    const JELLYFIN_BASE_URL = settings.url;
+    const JELLYFIN_API_KEY = settings.api_key;
+
     const url = `${JELLYFIN_BASE_URL}/System/Info?api_key=${JELLYFIN_API_KEY}`;
     const response = await fetch(url);
 
