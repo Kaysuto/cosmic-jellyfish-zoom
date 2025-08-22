@@ -11,8 +11,9 @@ import { useMaintenances } from '@/hooks/useMaintenances';
 import OverallStatus from '@/components/status/OverallStatus';
 import ServicesStatus from '@/components/status/ServicesStatus';
 import IncidentHistory from '@/components/status/IncidentHistory';
+import UptimeHistory from '@/components/status/UptimeHistory';
+import ScheduledMaintenances from '@/components/status/ScheduledMaintenances';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const StatusPage = () => {
   const { t, i18n } = useTranslation();
@@ -21,9 +22,19 @@ const StatusPage = () => {
   const { maintenances, loading: maintenancesLoading } = useMaintenances();
   
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
 
   const loading = servicesLoading || incidentsLoading || maintenancesLoading;
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
+
+  useEffect(() => {
+    if (services && services.length > 0 && !selectedServiceId) {
+      const initialService = services.find(s => s.url) || services[0];
+      if (initialService) {
+        setSelectedServiceId(initialService.id);
+      }
+    }
+  }, [services, selectedServiceId]);
 
   useEffect(() => {
     if (services && services.length > 0) {
@@ -44,16 +55,16 @@ const StatusPage = () => {
     return 'all_systems_operational';
   }, [services]);
 
-  const resolvedIncidents = useMemo(() => {
-    return incidents.filter(i => i.status === 'resolved');
-  }, [incidents]);
-
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        <Skeleton className="h-24 w-full" />
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+      <div className="container mx-auto px-4 py-8">
+        <Skeleton className="h-24 w-full mb-8" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-8">
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-96 w-full" />
+          </div>
+          <Skeleton className="h-full w-full min-h-[400px]" />
         </div>
       </div>
     );
@@ -69,23 +80,21 @@ const StatusPage = () => {
       <OverallStatus status={overallStatus} lastUpdatedText={lastUpdated ? `${t('live_status_last_updated')} ${formatDistanceToNow(lastUpdated, { addSuffix: true, locale: currentLocale })}` : ''} />
       
       <div className="mt-8">
-        <ServicesStatus services={services} incidents={incidents} maintenances={maintenances} />
+        <ScheduledMaintenances maintenances={maintenances} />
       </div>
 
-      {resolvedIncidents.length > 0 && (
-        <div className="mt-12">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="past-incidents">
-              <AccordionTrigger className="text-2xl font-bold hover:no-underline">
-                {t('past_incidents')}
-              </AccordionTrigger>
-              <AccordionContent>
-                <IncidentHistory incidents={resolvedIncidents} />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 flex-grow">
+        <div className="flex flex-col gap-8">
+          <ServicesStatus services={services} />
+          <UptimeHistory 
+            services={services}
+            selectedServiceId={selectedServiceId}
+            onServiceChange={setSelectedServiceId}
+          />
         </div>
-      )}
+        
+        <IncidentHistory incidents={incidents} />
+      </div>
     </motion.div>
   );
 };
