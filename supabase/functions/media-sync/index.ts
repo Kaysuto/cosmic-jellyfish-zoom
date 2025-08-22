@@ -68,7 +68,7 @@ async function fetchJellyfinItemsByPage(startIndex = 0, limit = 200) {
       parent_id: it.SeriesId || it.ParentId || null,
       tmdb_id: !isNaN(tmdbIdInt) ? tmdbIdInt : null,
       thumbnail: it?.ImageTags?.Primary ? `${JELLYFIN_BASE_URL}/Items/${it.Id}/Images/Primary?api_key=${JELLYFIN_API_KEY}` : null,
-      direct_stream_url: playableItemId ? `${JELLYFIN_BASE_URL}/Videos/${playableItemId}/hls1/main.m3u8?api_key=${JELLYFIN_API_KEY}` : null,
+      direct_stream_url: playableItemId ? `${JELLYFIN_BASE_URL}/hls/${playableItemId}/main.m3u8?api_key=${JELLYFIN_API_KEY}` : null,
       raw: it,
     });
   }
