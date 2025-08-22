@@ -10,26 +10,6 @@ const corsHeaders = {
   'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges',
 }
 
-// Helper to get a session-based access token
-async function getJellyfinSession(baseUrl, apiKey) {
-    const response = await fetch(`${baseUrl}/Users/AuthenticateByKey`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Emby-Authorization': `MediaBrowser ApiKey="${apiKey}"`,
-        },
-        body: JSON.stringify({ ApiKey: apiKey }),
-    });
-
-    if (!response.ok) {
-        const errorBody = await response.text();
-        console.error("Jellyfin AuthenticateByKey failed:", { status: response.status, body: errorBody });
-        throw new Error(`Jellyfin authentication failed: ${response.statusText}`);
-    }
-
-    return await response.json();
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -57,39 +37,58 @@ serve(async (req) => {
       throw new Error('Jellyfin settings are not configured.');
     }
 
-    // 1. Authenticate to get a session token
-    const session = await getJellyfinSession(settings.url, settings.api_key);
-    const accessToken = session.AccessToken;
-    if (!accessToken) {
-        throw new Error("Could not retrieve AccessToken from Jellyfin.");
-    }
-
-    // 2. Construct stream URL and headers for the authenticated request
-    const streamUrl = `${settings.url}/Videos/${itemId}/stream?Container=mp4`;
-    const jellyfinHeaders = new Headers();
-    
-    // Use the full X-Emby-Authorization header with the session token
-    jellyfinHeaders.set('X-Emby-Authorization', `MediaBrowser Client="SupabaseProxy", Device="Proxy", DeviceId="supabase-proxy-streamer", Version="1.0", Token="${accessToken}"`);
-
-    // Proxy the Range header for seeking
     const range = req.headers.get('range');
-    if (range) {
-      jellyfinHeaders.set('range', range);
-    }
+    let jellyfinResponse;
 
-    // 3. Fetch the stream
-    const jellyfinResponse = await fetch(streamUrl, { headers: jellyfinHeaders });
+    // --- Multi-Method Authentication Logic ---
 
-    if (!jellyfinResponse.ok) {
-      const errorBody = await jellyfinResponse.text();
-      console.error(`Jellyfin server returned an error: ${jellyfinResponse.status}`, {
-        url: streamUrl,
-        body: errorBody,
+    // Method 1: Session-based authentication (most robust)
+    try {
+      const authResponse = await fetch(`${settings.url}/Users/AuthenticateByKey`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Emby-Authorization': `MediaBrowser ApiKey="${settings.api_key}"` },
+        body: JSON.stringify({ ApiKey: settings.api_key }),
       });
-      throw new Error(`Jellyfin server error: ${jellyfinResponse.status} ${jellyfinResponse.statusText}.`);
+      if (authResponse.ok) {
+        const session = await authResponse.json();
+        const accessToken = session.AccessToken;
+        if (accessToken) {
+          const sessionHeaders = new Headers();
+          sessionHeaders.set('X-Emby-Authorization', `MediaBrowser Client="SupabaseProxy", Device="Proxy", DeviceId="supabase-proxy-streamer", Version="1.0", Token="${accessToken}"`);
+          if (range) sessionHeaders.set('range', range);
+          jellyfinResponse = await fetch(`${settings.url}/Videos/${itemId}/stream?Container=mp4`, { headers: sessionHeaders });
+        }
+      }
+    } catch (e) {
+      console.warn("Session auth failed, trying next method.", e.message);
     }
 
-    // 4. Proxy the response back to the client
+    // Method 2: Direct token authentication (if method 1 failed)
+    if (!jellyfinResponse || !jellyfinResponse.ok) {
+      console.log("Trying direct token (X-Emby-Token) authentication.");
+      const directTokenHeaders = new Headers();
+      directTokenHeaders.set('X-Emby-Token', settings.api_key);
+      if (range) directTokenHeaders.set('range', range);
+      jellyfinResponse = await fetch(`${settings.url}/Videos/${itemId}/stream?Container=mp4`, { headers: directTokenHeaders });
+    }
+
+    // Method 3: Static API key in URL (if method 2 also failed)
+    if (!jellyfinResponse || !jellyfinResponse.ok) {
+      console.log("Trying static API key in URL authentication.");
+      const staticUrl = `${settings.url}/Videos/${itemId}/stream?api_key=${settings.api_key}&Static=true&Container=mp4`;
+      const staticHeaders = new Headers();
+      if (range) staticHeaders.set('range', range);
+      jellyfinResponse = await fetch(staticUrl, { headers: staticHeaders });
+    }
+
+    // --- End of Multi-Method Logic ---
+
+    if (!jellyfinResponse || !jellyfinResponse.ok) {
+      const status = jellyfinResponse?.status || 500;
+      throw new Error(`Jellyfin server error: ${status}. All authentication methods failed. Please check your API key permissions and Jellyfin server logs.`);
+    }
+
+    // Proxy the successful response back to the client
     const responseHeaders = new Headers(corsHeaders);
     responseHeaders.set('Content-Type', jellyfinResponse.headers.get('Content-Type') || 'video/mp4');
     responseHeaders.set('Content-Length', jellyfinResponse.headers.get('Content-Length') || '0');
