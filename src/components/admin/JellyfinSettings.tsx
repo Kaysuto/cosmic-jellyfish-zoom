@@ -58,7 +58,7 @@ const JellyfinSettings = () => {
       .upsert({ id: 1, ...values, updated_at: new Date().toISOString() }, { onConflict: 'id' });
 
     if (error) {
-      showError(t('error_saving_settings'));
+      showError(t('error_saving_jellyfin_settings') || t('error_saving_settings'));
     } else {
       showSuccess(t('settings_saved_successfully'));
     }
@@ -73,6 +73,11 @@ const JellyfinSettings = () => {
       // 1. Get the list of libraries (views)
       const { data: viewsResponse, error: viewsError } = await supabase.functions.invoke('sync-jellyfin', { body: {} });
       if (viewsError) throw viewsError;
+      // The function now returns structured { ok: boolean, ... }
+      if (!viewsResponse || viewsResponse.ok === false) {
+        const msg = (viewsResponse && viewsResponse.error) ? viewsResponse.error : 'Unknown error while listing views';
+        throw new Error(msg);
+      }
       const views = viewsResponse.views;
 
       // 2. Loop through each library
@@ -88,10 +93,14 @@ const JellyfinSettings = () => {
             body: { viewId: view.id, startIndex: startIndex }
           });
           if (pageError) throw pageError;
+          if (!pageResponse || pageResponse.ok === false) {
+            const msg = (pageResponse && pageResponse.error) ? pageResponse.error : 'Unknown error while fetching page';
+            throw new Error(msg);
+          }
 
-          totalItemsProcessed += pageResponse.itemsProcessed;
-          startIndex = pageResponse.nextStartIndex;
-          isViewDone = pageResponse.isViewDone;
+          totalItemsProcessed += pageResponse.itemsProcessed || 0;
+          startIndex = pageResponse.nextStartIndex || 0;
+          isViewDone = !!pageResponse.isViewDone;
         }
       }
 
@@ -100,8 +109,8 @@ const JellyfinSettings = () => {
 
     } catch (error: any) {
       dismissToast(toastId);
-      showError(`Erreur de synchronisation: ${error.message}`);
-      console.error(error);
+      console.error('Sync error:', error);
+      showError(`Erreur de synchronisation: ${error.message || String(error)}`);
     } finally {
       setIsSyncing(false);
     }

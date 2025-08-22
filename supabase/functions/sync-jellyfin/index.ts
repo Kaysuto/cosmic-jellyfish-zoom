@@ -30,7 +30,7 @@ class JellyfinClient {
     });
 
     if (!authResponse.ok) {
-      const errorText = await authResponse.text();
+      const errorText = await authResponse.text().catch(() => authResponse.statusText);
       throw new Error(`Jellyfin authentication failed: ${authResponse.status} ${errorText}`);
     }
     
@@ -51,7 +51,10 @@ class JellyfinClient {
     const response = await fetch(`${this.baseUrl}/Users/${this.userId}/Views`, {
       headers: await this.getAuthHeaders(),
     });
-    if (!response.ok) throw new Error('Failed to fetch Jellyfin views.');
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      throw new Error(`Failed to fetch Jellyfin views: ${response.status} ${body}`);
+    }
     return await response.json();
   }
 
@@ -61,7 +64,10 @@ class JellyfinClient {
     const response = await fetch(url, {
       headers: await this.getAuthHeaders(),
     });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      throw new Error(`Failed to fetch items for view ${viewId} at index ${startIndex}: ${response.status} ${body}`);
+    }
     return await response.json();
   }
 }
@@ -82,69 +88,105 @@ serve(async (req) => {
       .select('url, api_key')
       .single();
 
-    if (settingsError) throw new Error(`Failed to fetch Jellyfin settings: ${settingsError.message}`);
+    if (settingsError) {
+      // Return structured response so client can surface the cause without a raw 500
+      const message = `Failed to fetch Jellyfin settings: ${settingsError.message || settingsError}`;
+      console.error(message);
+      return new Response(JSON.stringify({ ok: false, error: message }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
     if (!settings || !settings.url || !settings.api_key) {
-      throw new Error('Jellyfin URL or API key is not configured in settings.');
+      const message = 'Jellyfin URL or API key is not configured in settings.';
+      console.error(message);
+      return new Response(JSON.stringify({ ok: false, error: message }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
     }
 
     const jellyfin = new JellyfinClient(settings.url, settings.api_key);
-    await jellyfin.authenticate();
 
-    const { viewId, startIndex = 0 } = await req.json();
-    const limit = 200;
-
-    if (!viewId) {
-      const viewsData = await jellyfin.getViews();
-      const views = viewsData.Items.map(v => ({
-        id: v.Id,
-        name: v.Name,
-        totalItems: v.TotalRecordCount || 0,
-      }));
-      return new Response(JSON.stringify({ views }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      });
+    try {
+      await jellyfin.authenticate();
+    } catch (authErr) {
+      console.error('Jellyfin auth error:', authErr.message || authErr);
+      return new Response(JSON.stringify({ ok: false, error: `Jellyfin authentication failed: ${authErr.message || authErr}` }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
     }
 
-    const pageData = await jellyfin.getLibraryItemsPage(viewId, startIndex, limit);
+    const reqBody = await req.json().catch(() => ({}));
+    const viewId = reqBody.viewId;
+    const startIndex = Number(reqBody.startIndex || 0);
+    const limit = 200;
 
-    if (!pageData || pageData.Items.length === 0) {
-      return new Response(JSON.stringify({ itemsProcessed: 0, isViewDone: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      });
+    // If no viewId provided, return the list of views (libraries)
+    if (!viewId) {
+      try {
+        const viewsData = await jellyfin.getViews();
+        const views = (viewsData.Items || []).map((v: any) => ({
+          id: v.Id,
+          name: v.Name,
+          totalItems: v.TotalRecordCount || 0,
+        }));
+        return new Response(JSON.stringify({ ok: true, views }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+      } catch (viewsErr) {
+        console.error('Error fetching views:', viewsErr.message || viewsErr);
+        return new Response(JSON.stringify({ ok: false, error: `Error fetching views: ${viewsErr.message || viewsErr}` }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+      }
+    }
+
+    // Otherwise, process a single page for the provided viewId/startIndex
+    let pageData;
+    try {
+      pageData = await jellyfin.getLibraryItemsPage(viewId, startIndex, limit);
+    } catch (pageErr) {
+      console.error('Error fetching library page:', pageErr.message || pageErr);
+      return new Response(JSON.stringify({ ok: false, error: `Error fetching library page: ${pageErr.message || pageErr}` }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
+
+    if (!pageData || !pageData.Items || pageData.Items.length === 0) {
+      return new Response(JSON.stringify({ ok: true, itemsProcessed: 0, isViewDone: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
     }
 
     const excludedName = "kaï";
-    const filteredItems = pageData.Items.filter(item => 
-      !(item.Name && item.Name.toLowerCase().includes(excludedName))
-    );
+    const filteredItems = (pageData.Items || []).filter((item: any) => !(item.Name && item.Name.toLowerCase().includes(excludedName)));
 
-    const catalogItems = filteredItems.map(item => ({
-      jellyfin_id: item.Id,
-      media_type: item.Type === 'Series' ? 'tv' : 'movie',
-      title: item.Name,
-      overview: item.Overview,
-      poster_path: item.ImageTags?.Primary ? `/Items/${item.Id}/Images/Primary?tag=${item.ImageTags.Primary}` : null,
-      backdrop_path: item.ImageTags?.Backdrop ? `/Items/${item.Id}/Images/Backdrop?tag=${item.ImageTags.Backdrop}` : null,
-      release_date: item.PremiereDate ? new Date(item.PremiereDate).toISOString().split('T')[0] : null,
-      tmdb_id: item.ProviderIds?.Tmdb ? parseInt(item.ProviderIds.Tmdb, 10) : null,
-      tvdb_id: item.ProviderIds?.Tvdb ? parseInt(item.ProviderIds.Tvdb, 10) : null,
-      genres: item.Genres,
-      vote_average: item.CommunityRating,
-    })).filter(item => item.jellyfin_id && item.title);
+    const catalogItems = filteredItems.map((item: any) => {
+      const releaseDate = item.PremiereDate ? new Date(item.PremiereDate).toISOString().split('T')[0] : null;
+      const posterPath = item.ImageTags?.Primary ? `/Items/${item.Id}/Images/Primary?tag=${item.ImageTags.Primary}` : null;
+      const backdropPath = item.ImageTags?.Backdrop ? `/Items/${item.Id}/Images/Backdrop?tag=${item.ImageTags.Backdrop}` : null;
+
+      return {
+        jellyfin_id: item.Id,
+        media_type: item.Type === 'Series' ? 'tv' : 'movie',
+        title: item.Name,
+        overview: item.Overview,
+        poster_path: posterPath,
+        backdrop_path: backdropPath,
+        release_date: releaseDate,
+        tmdb_id: item.ProviderIds?.Tmdb ? parseInt(item.ProviderIds.Tmdb, 10) : null,
+        tvdb_id: item.ProviderIds?.Tvdb ? parseInt(item.ProviderIds.Tvdb, 10) : null,
+        genres: item.Genres,
+        vote_average: item.CommunityRating,
+      };
+    }).filter((it: any) => it.jellyfin_id && it.title);
 
     if (catalogItems.length > 0) {
-      const { error: upsertError } = await supabaseAdmin
-        .from('catalog_items')
-        .upsert(catalogItems, { onConflict: 'jellyfin_id' });
-      if (upsertError) throw upsertError;
+      try {
+        const { error: upsertError } = await supabaseAdmin
+          .from('catalog_items')
+          .upsert(catalogItems, { onConflict: 'jellyfin_id' });
+
+        if (upsertError) {
+          console.error('Supabase upsert error:', upsertError);
+          return new Response(JSON.stringify({ ok: false, error: `Failed to save items: ${upsertError.message || upsertError}` }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+        }
+      } catch (dbErr) {
+        console.error('Unexpected DB error:', dbErr);
+        return new Response(JSON.stringify({ ok: false, error: `Unexpected DB error: ${dbErr.message || dbErr}` }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+      }
     }
 
-    const newStartIndex = startIndex + pageData.Items.length;
-    const isViewDone = newStartIndex >= pageData.TotalRecordCount;
+    const newStartIndex = startIndex + (pageData.Items?.length || 0);
+    const isViewDone = newStartIndex >= (pageData.TotalRecordCount || 0);
 
     return new Response(JSON.stringify({
+      ok: true,
       itemsProcessed: catalogItems.length,
       nextStartIndex: isViewDone ? 0 : newStartIndex,
       isViewDone: isViewDone,
@@ -154,10 +196,11 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in sync-jellyfin function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('Unhandled error in sync-jellyfin function:', error);
+    // Always return a 200 with ok:false so the client receives the structured error
+    return new Response(JSON.stringify({ ok: false, error: error?.message || String(error) }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
+      status: 200,
     });
   }
 })
