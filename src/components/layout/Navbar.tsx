@@ -145,7 +145,7 @@ const Navbar = () => {
                   {item.label}
                 </NavLink>
               ))}
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className={cn(navLinkClasses({isActive: false}), "flex items-center")}>
                     {t('more')}
