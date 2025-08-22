@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { subDays, format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -35,9 +35,9 @@ const NextUpdateTimer = () => {
   }, []);
 
   return (
-    <CardDescription>
+    <div className="text-sm text-muted-foreground">
       {t('next_update_in')} <span className="font-mono font-semibold text-foreground">{timeLeft}</span>
-    </CardDescription>
+    </div>
   );
 };
 
@@ -104,15 +104,21 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
       <div className="relative h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <defs>
+              <linearGradient id="uptimeGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
+                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
             <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
             <YAxis yAxisId="left" stroke="hsl(var(--primary))" fontSize={12} tickLine={false} axisLine={false} domain={[80, 100]} tickFormatter={(value) => `${value}%`} />
             <YAxis yAxisId="right" orientation="right" hide={true} />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
             {chartData.length > 0 && (
               <>
-                <Bar yAxisId="right" dataKey="avg_response_time_ms" fill="hsla(var(--muted-foreground), 0.3)" barSize={20} />
-                <Line yAxisId="left" type="monotone" dataKey="uptime_percentage" stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
+                <Bar yAxisId="right" dataKey="avg_response_time_ms" fill="hsla(var(--muted-foreground), 0.2)" barSize={15} radius={[4, 4, 0, 0]} />
+                <Area yAxisId="left" type="monotone" dataKey="uptime_percentage" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#uptimeGradient)" />
               </>
             )}
           </ComposedChart>
@@ -128,29 +134,39 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
 
   return (
     <Card>
-      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex-grow">
+      <CardHeader>
+        <div className="flex flex-col md:flex-row justify-between md:items-start mb-4">
+          <div>
             <CardTitle>{t('uptime_history')}</CardTitle>
-            <NextUpdateTimer />
-            <div className="mt-2">
-              <Select value={selectedServiceId ?? ''} onValueChange={onServiceChange}>
-                <SelectTrigger className="w-full sm:w-[250px]">
-                  <SelectValue placeholder={t('select_service')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {services.map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {t(service.name.toLowerCase().replace(/ /g, '_'))}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <CardDescription>
+              {t('uptime_history_desc', { 
+                serviceName: selectedService ? t(selectedService.name.toLowerCase().replace(/ /g, '_')) : '', 
+                timeRange: t(`time_range_${timeRange}`) 
+              })}
+            </CardDescription>
+          </div>
+          <NextUpdateTimer />
         </div>
-        <div className="flex items-center gap-1 self-start sm:self-center shrink-0">
-          <Button size="sm" variant={timeRange === 'day' ? 'secondary' : 'ghost'} onClick={() => setTimeRange('day')}>{t('time_range_day')}</Button>
-          <Button size="sm" variant={timeRange === 'week' ? 'secondary' : 'ghost'} onClick={() => setTimeRange('week')}>{t('time_range_week')}</Button>
-          <Button size="sm" variant={timeRange === 'month' ? 'secondary' : 'ghost'} onClick={() => setTimeRange('month')}>{t('time_range_month')}</Button>
+        <div className="flex flex-col sm:flex-row items-center gap-2">
+          <div className="w-full sm:w-auto sm:flex-grow">
+            <Select value={selectedServiceId ?? ''} onValueChange={onServiceChange}>
+              <SelectTrigger className="w-full sm:w-[250px]">
+                <SelectValue placeholder={t('select_service')} />
+              </SelectTrigger>
+              <SelectContent>
+                {services.map((service) => (
+                  <SelectItem key={service.id} value={service.id}>
+                    {t(service.name.toLowerCase().replace(/ /g, '_'))}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <Button size="sm" variant={timeRange === 'day' ? 'secondary' : 'ghost'} onClick={() => setTimeRange('day')}>{t('time_range_day_short')}</Button>
+            <Button size="sm" variant={timeRange === 'week' ? 'secondary' : 'ghost'} onClick={() => setTimeRange('week')}>{t('time_range_week_short')}</Button>
+            <Button size="sm" variant={timeRange === 'month' ? 'secondary' : 'ghost'} onClick={() => setTimeRange('month')}>{t('time_range_month_short')}</Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
