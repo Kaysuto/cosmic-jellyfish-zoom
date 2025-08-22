@@ -233,17 +233,17 @@ const MediaDetailPage = () => {
         <div className="md:flex gap-8">
           <motion.div 
             className="w-full md:w-1/3 lg:w-1/4 -mt-24 flex-shrink-0"
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
           >
             <img src={`https://image.tmdb.org/t/p/w500${details.poster_path}`} alt={title} className="w-full rounded-lg shadow-2xl" />
           </motion.div>
           <motion.div 
             className="mt-8 md:mt-0 flex-grow"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeInOut" }}
           >
             <h1 className="text-5xl font-bold">{title}</h1>
             <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-2 text-muted-foreground">

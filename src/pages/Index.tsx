@@ -39,9 +39,9 @@ const Index = () => {
       {/* Contenu principal */}
       <div className="relative z-10 flex flex-col items-center justify-center flex-grow text-center px-4 pt-24 pb-16">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 1, ease: "easeInOut" }}
           className="max-w-4xl"
         >
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
@@ -73,9 +73,9 @@ const Index = () => {
             {features.map((feature, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.8, delay: index * 0.2, ease: "easeInOut" }}
               >
                 <Card className="bg-gray-800/50 border-gray-700/50 text-center h-full">
                   <CardHeader>

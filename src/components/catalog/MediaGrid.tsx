@@ -40,10 +40,10 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, 
           <motion.div
             key={`${item.id}-${item.media_type}`}
             layout
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, delay: index * 0.02 }}
+            transition={{ duration: 0.5, delay: index * 0.03, ease: "easeInOut" }}
           >
             <Card className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-card">
               <Link to={`/media/${item.media_type}/${item.id}`} className="block" aria-label={title}>
