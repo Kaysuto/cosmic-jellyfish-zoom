@@ -6,7 +6,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getGravatarURL } from '@/lib/gravatar';
-import { BarChart2, Wrench, AlertTriangle, Calendar, Users, Settings, LogOut, User, ArrowLeft, FileText } from 'lucide-react';
+import { BarChart2, Wrench, AlertTriangle, Calendar, Users, Settings, LogOut, User, ArrowLeft, FileText, MailQuestion } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
@@ -50,6 +50,7 @@ const Admin = () => {
     { to: '/admin/incidents', label: t('manage_incidents'), icon: AlertTriangle },
     { to: '/admin/maintenance', label: t('manage_maintenance'), icon: Calendar },
     { to: '/admin/users', label: t('manage_users'), icon: Users },
+    { to: '/admin/requests', label: t('requests'), icon: MailQuestion },
     { to: '/admin/settings', label: t('settings'), icon: Settings },
     { to: '/admin/logs', label: t('logs'), icon: FileText },
   ];
