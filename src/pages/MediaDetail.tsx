@@ -278,25 +278,37 @@ const MediaDetailPage = () => {
                   </Select>
                 </div>
                 {seasonLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
+                    {[...Array(8)].map((_, i) => (
+                      <div key={i} className="space-y-2">
+                        <Skeleton className="aspect-video w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-5 w-1/2" />
+                        <Skeleton className="h-12 w-full" />
+                      </div>
+                    ))}
                   </div>
                 ) : selectedSeason && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
                     {selectedSeason.episodes.map(episode => (
-                      <div key={episode.id} className="bg-muted/20 rounded-lg overflow-hidden border border-border transition-transform hover:scale-105">
-                        <div className="aspect-video bg-muted">
+                      <div key={episode.id}>
+                        <div className="aspect-video bg-muted rounded-lg overflow-hidden mb-3">
                           {episode.still_path ? (
                             <img src={`https://image.tmdb.org/t/p/w500${episode.still_path}`} alt={episode.name} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                              <Tv className="h-8 w-8" />
+                              <Tv className="h-12 w-12" />
                             </div>
                           )}
                         </div>
-                        <div className="p-3">
-                          <p className="text-xs text-muted-foreground">Épisode {episode.episode_number}</p>
-                          <h4 className="font-semibold text-sm truncate">{episode.name}</h4>
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            {`Épisode ${episode.episode_number}`}
+                            {episode.runtime && ` - ${t('minutes', { count: episode.runtime })}`}
+                            {episode.air_date && ` - ${new Date(episode.air_date).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long', year: 'numeric' })}`}
+                          </p>
+                          <h4 className="font-semibold text-lg mt-1">{episode.name}</h4>
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-3">{episode.overview || t('no_description_available')}</p>
                         </div>
                       </div>
                     ))}
