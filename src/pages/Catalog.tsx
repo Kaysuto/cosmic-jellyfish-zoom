@@ -43,7 +43,12 @@ const CatalogPage = () => {
       showError(error.message);
       setMedia([]);
     } else {
-      setMedia(data as MediaItem[]);
+      const formattedData = data.map(item => ({
+        ...item,
+        id: item.tmdb_id,
+        name: item.title,
+      })) as MediaItem[];
+      setMedia(formattedData);
     }
     setLoading(false);
   }, [debouncedSearchTerm]);

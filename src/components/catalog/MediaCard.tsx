@@ -29,16 +29,16 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
 
   const getImageUrl = (path: string | null | undefined) => {
     if (!path) return null;
+    // TMDB paths always start with a slash
     if (path.startsWith('/')) {
-      // TMDB path
       return `https://image.tmdb.org/t/p/w500${path}`;
     }
-    if (jellyfinUrl && path.includes('/Items/')) {
-      // Jellyfin relative path
-      return `${jellyfinUrl}${path}`;
+    // Jellyfin paths are relative, e.g., "Items/..."
+    if (jellyfinUrl && path.startsWith('Items/')) {
+      return `${jellyfinUrl}/${path}`;
     }
-    // Fallback for other cases or if jellyfinUrl is not ready
-    return null;
+    // It might be a full URL already, or we can't construct it
+    return path;
   };
 
   const imageUrl = getImageUrl(item.poster_path);

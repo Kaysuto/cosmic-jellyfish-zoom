@@ -156,8 +156,8 @@ serve(async (req) => {
 
     const catalogItems = filteredItems.map((item: any) => {
       const releaseDate = item.PremiereDate ? new Date(item.PremiereDate).toISOString().split('T')[0] : null;
-      const posterPath = item.ImageTags?.Primary ? `/Items/${item.Id}/Images/Primary?tag=${item.ImageTags.Primary}` : null;
-      const backdropPath = item.ImageTags?.Backdrop ? `/Items/${item.Id}/Images/Backdrop?tag=${item.ImageTags.Backdrop}` : null;
+      const posterPath = item.ImageTags?.Primary ? `Items/${item.Id}/Images/Primary?tag=${item.ImageTags.Primary}` : null;
+      const backdropPath = item.ImageTags?.Backdrop ? `Items/${item.Id}/Images/Backdrop?tag=${item.ImageTags.Backdrop}` : null;
 
       return {
         jellyfin_id: item.Id,
