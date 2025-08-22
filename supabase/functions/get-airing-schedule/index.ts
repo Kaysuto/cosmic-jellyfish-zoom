@@ -61,7 +61,7 @@ serve(async (req) => {
       allResults = allResults.concat(resultsWithMediaType);
       totalPages = data.total_pages;
       page++;
-    } while (page <= totalPages && page < 20); // Safety break after 20 pages
+    } while (page <= totalPages && page < 50); // Increased safety break to 50 pages
 
     return new Response(JSON.stringify(allResults), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
