@@ -13,6 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import MediaGrid from '@/components/catalog/MediaGrid';
+import { motion } from 'framer-motion';
 
 interface MediaDetails {
   id: number;
@@ -100,7 +101,6 @@ const MediaDetailPage = () => {
         const tmdbDetails = detailsResult.data;
         setDetails(tmdbDetails);
 
-        // Check availability in our media table
         const { data: mediaMatch, error: mediaError } = await supabase
           .from('media')
           .select('jellyfin_id, available')
@@ -167,15 +167,12 @@ const MediaDetailPage = () => {
     }
   };
 
-  // Player functionality removed: Jellyfin playback disabled in UI
   const handlePlay = () => {
-    // Previously navigated to a local player route. That functionality is removed.
     showError("La lecture Jellyfin a été désactivée dans cette instance.");
   };
 
   const renderActionButton = () => {
     if (requestStatus === 'available') {
-      // Show disabled play button to indicate playback is not available in-app
       return (
         <Button size="lg" disabled className="bg-gray-700 text-gray-300 cursor-not-allowed">
           <Play className="mr-2 h-4 w-4" /> {t('play')} (désactivé)
@@ -226,12 +223,22 @@ const MediaDetailPage = () => {
           <ArrowLeft className="mr-2 h-4 w-4" /> {t('back')}
         </Button>
         <div className="md:flex gap-8">
-          <div className="w-full md:w-1/3 lg:w-1/4 -mt-24 flex-shrink-0">
+          <motion.div 
+            className="w-full md:w-1/3 lg:w-1/4 -mt-24 flex-shrink-0"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
             <img src={`https://image.tmdb.org/t/p/w500${details.poster_path}`} alt={title} className="w-full rounded-lg shadow-2xl" />
-          </div>
-          <div className="mt-8 md:mt-0 flex-grow">
-            <h1 className="text-4xl font-bold">{title}</h1>
-            <div className="flex items-center flex-wrap gap-4 mt-2 text-muted-foreground">
+          </motion.div>
+          <motion.div 
+            className="mt-8 md:mt-0 flex-grow"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <h1 className="text-5xl font-bold">{title}</h1>
+            <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-2 text-muted-foreground">
               {releaseDate && <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" /> {new Date(releaseDate).getFullYear()}</span>}
               <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-yellow-400" /> {details.vote_average.toFixed(1)} / 10</span>
               {runtime && <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {runtime} min</span>}
@@ -242,7 +249,7 @@ const MediaDetailPage = () => {
             </div>
             <p className="mt-6 text-lg text-muted-foreground">{details.overview}</p>
             <div className="mt-8">{renderActionButton()}</div>
-          </div>
+          </motion.div>
         </div>
 
         <div className="mt-12">
@@ -271,27 +278,25 @@ const MediaDetailPage = () => {
                   </Select>
                 </div>
                 {seasonLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[...Array(6)].map((_, i) => (
-                      <div key={i} className="space-y-2 border border-border rounded-lg p-4 bg-muted/20">
-                        <Skeleton className="aspect-video w-full" /><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2" /><Skeleton className="h-10 w-full" />
-                      </div>
-                    ))}
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
                   </div>
                 ) : selectedSeason && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="space-y-4">
                     {selectedSeason.episodes.map(episode => (
-                      <Card key={episode.id} className="overflow-hidden bg-muted/20 border-border flex flex-col">
-                        {episode.still_path ? <img src={`https://image.tmdb.org/t/p/w500${episode.still_path}`} alt={`Still from ${episode.name}`} className="w-full h-auto object-cover aspect-video" /> : <div className="w-full aspect-video flex items-center justify-center bg-muted text-muted-foreground"><Tv className="h-12 w-12" /></div>}
-                        <div className="p-4 flex flex-col flex-grow">
-                          <h3 className="font-semibold truncate">{episode.episode_number}. {episode.name}</h3>
-                          <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
+                      <div key={episode.id} className="flex gap-4 bg-muted/20 p-4 rounded-lg border border-border">
+                        <div className="w-48 flex-shrink-0">
+                          {episode.still_path ? <img src={`https://image.tmdb.org/t/p/w500${episode.still_path}`} alt={`Still from ${episode.name}`} className="w-full h-auto object-cover aspect-video rounded" /> : <div className="w-full aspect-video flex items-center justify-center bg-muted text-muted-foreground rounded"><Tv className="h-8 w-8" /></div>}
+                        </div>
+                        <div className="flex-grow">
+                          <h3 className="font-semibold">{episode.episode_number}. {episode.name}</h3>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
                             {episode.runtime ? <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {t('minutes', { count: episode.runtime })}</span> : <span />}
                             {episode.air_date && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(episode.air_date).toLocaleDateString(i18n.language)}</span>}
                           </div>
-                          <p className="text-sm text-muted-foreground mt-3 line-clamp-3 flex-grow">{episode.overview || t('no_description_available')}</p>
+                          <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{episode.overview || t('no_description_available')}</p>
                         </div>
-                      </Card>
+                      </div>
                     ))}
                   </div>
                 )}
