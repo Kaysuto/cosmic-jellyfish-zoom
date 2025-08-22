@@ -6,6 +6,8 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "user_not_found": "Utilisateur non trouvé.",
+      "media_requests": "Demandes de médias",
       "schedule": "Planning",
       "today": "Aujourd'hui",
       "previous_week": "Semaine précédente",
@@ -132,7 +134,6 @@ const resources = {
       "seasons_6": "saisons",
       "seasons_other": "saisons",
       "requests": "Demandes",
-      "media_requests": "Demandes de médias",
       "new_request": "Nouvelle demande",
       "my_requests": "Mes demandes",
       "admin_manage_requests": "Gérer les demandes",
@@ -461,6 +462,8 @@ const resources = {
   },
   en: {
     translation: {
+      "user_not_found": "User not found.",
+      "media_requests": "Media Requests",
       "schedule": "Schedule",
       "today": "Today",
       "previous_week": "Previous Week",
@@ -582,7 +585,6 @@ const resources = {
       "seasons_1": "season",
       "seasons_other": "seasons",
       "requests": "Requests",
-      "media_requests": "Media Requests",
       "new_request": "New Request",
       "my_requests": "My Requests",
       "admin_manage_requests": "Manage Requests",
@@ -709,6 +711,7 @@ const resources = {
       "maintenance": "Under Maintenance",
       "uptime": "Uptime:",
       "uptime_legend": "Uptime",
+      "ping_legend": "Ping (ms)",
       "incident_history": "Incident History",
       "uptime_history": "Uptime History",
       "no_incidents": "No incidents reported in the past 90 days.",
@@ -736,6 +739,11 @@ const resources = {
       "system_wide_incident": "System-wide incident",
       "url_monitoring": "Monitoring URL",
       "no_url_provided": "No URL provided",
+      "scheduled_maintenance": "Scheduled Maintenance",
+      "all_services": "All services",
+      "page": "Page",
+      "previous": "Previous",
+      "next": "Next",
       "page_not_found": "Oops! Page not found",
       "return_home": "Return to Home",
       "admin_login": "Admin Login",
@@ -809,6 +817,7 @@ const resources = {
       "admin_role": "Administrator",
       "user_role": "User",
       "member_since": "Member since",
+      "last_update": "Last update",
       "assign_to": "Assign to",
       "select_admin": "Select an administrator",
       "total_services": "Total Services",
@@ -817,9 +826,7 @@ const resources = {
       "actions": "Actions",
       "edit": "Edit",
       "edit_service_desc": "Edit the details of this service below.",
-      "create_service_desc": "Fill in the details to create a new service.",
-      "edit_incident_desc": "Edit the details of this incident below.",
-      "create_incident_desc": "Fill in the details to create a new incident."
+      "create_service_desc": "Fill in the details to create a new service."
     }
   }
 };

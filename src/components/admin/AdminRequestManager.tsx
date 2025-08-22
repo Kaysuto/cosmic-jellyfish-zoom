@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getGravatarURL } from '@/lib/gravatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 interface MediaRequest {
   id: string;
@@ -122,13 +123,13 @@ const AdminRequestManager = () => {
               <TableCell className="font-medium">{req.title}</TableCell>
               <TableCell>
                 {req.profiles ? (
-                  <div className="flex items-center gap-2">
+                  <Link to={`/users/${req.user_id}`} className="flex items-center gap-2 hover:underline">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={req.profiles.avatar_url || getGravatarURL(req.profiles.email)} />
                       <AvatarFallback>{req.profiles.first_name?.[0] || 'U'}</AvatarFallback>
                     </Avatar>
                     <span>{req.profiles.first_name} {req.profiles.last_name}</span>
-                  </div>
+                  </Link>
                 ) : (
                   <span>{t('unknown_user')}</span>
                 )}
