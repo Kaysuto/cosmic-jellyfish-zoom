@@ -6,7 +6,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, range',
+  'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges',
 }
 
 serve(async (req) => {
@@ -15,7 +16,9 @@ serve(async (req) => {
   }
 
   try {
-    const { itemId } = await req.json();
+    const url = new URL(req.url);
+    const itemId = url.searchParams.get('itemId');
+
     if (!itemId) {
       throw new Error("itemId is required");
     }
@@ -36,9 +39,27 @@ serve(async (req) => {
 
     const streamUrl = `${settings.url}/Videos/${itemId}/stream?api_key=${settings.api_key}&Container=mp4`;
 
-    return new Response(JSON.stringify({ streamUrl }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
+    // Proxy the request, including the Range header for seeking
+    const range = req.headers.get('range');
+    const headers = new Headers();
+    if (range) {
+      headers.set('range', range);
+    }
+
+    const jellyfinResponse = await fetch(streamUrl, { headers });
+
+    // Create a new response that streams the body from Jellyfin
+    const responseHeaders = new Headers(corsHeaders);
+    responseHeaders.set('Content-Type', jellyfinResponse.headers.get('Content-Type') || 'video/mp4');
+    responseHeaders.set('Content-Length', jellyfinResponse.headers.get('Content-Length') || '0');
+    responseHeaders.set('Accept-Ranges', 'bytes');
+    if (jellyfinResponse.headers.get('Content-Range')) {
+        responseHeaders.set('Content-Range', jellyfinResponse.headers.get('Content-Range'));
+    }
+
+    return new Response(jellyfinResponse.body, {
+      status: jellyfinResponse.status,
+      headers: responseHeaders,
     });
 
   } catch (error) {
