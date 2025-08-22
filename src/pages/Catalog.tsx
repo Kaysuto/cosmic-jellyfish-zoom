@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
 import MediaGrid, { MediaItem } from '../components/catalog/MediaGrid';
@@ -18,7 +19,9 @@ import { useSession } from '@/contexts/AuthContext';
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
   const { session } = useSession();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
   const debouncedSearchTerm = useDebounce(searchTerm, 450);
   
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -35,6 +38,15 @@ const CatalogPage = () => {
 
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
+
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      setSearchParams({ q: debouncedSearchTerm });
+    } else {
+      searchParams.delete('q');
+      setSearchParams(searchParams);
+    }
+  }, [debouncedSearchTerm, setSearchParams]);
 
   const fetchGenres = useCallback(async () => {
     const apiMediaType = mediaType === 'anime' ? 'tv' : mediaType;
@@ -223,7 +235,7 @@ const CatalogPage = () => {
                 <h2 className="text-2xl font-semibold">{t('search_results')}</h2>
                 <Button variant="ghost" size="sm" onClick={() => setSearchTerm('')}><X className="h-4 w-4" /> Reset</Button>
               </div>
-              {searchLoading && searchResults.length === 0 ? <LoadingSkeleton /> : searchResults.length > 0 ? <MediaGrid items={searchResults} onRequest={openRequestModal} showRequestButton={!!session} /> : <Card><CardContent><p className="text-center text-muted-foreground py-8">{t('no_results_found')}</p></CardContent></Card>}
+              {searchLoading && searchResults.length === 0 ? <LoadingSkeleton /> : searchResults.length > 0 ? <MediaGrid items={searchResults} onRequest={openRequestModal} showRequestButton={!!session} searchTerm={debouncedSearchTerm} /> : <Card><CardContent><p className="text-center text-muted-foreground py-8">{t('no_results_found')}</p></CardContent></Card>}
             </>
           ) : (
             <>

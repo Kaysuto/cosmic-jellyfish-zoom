@@ -20,9 +20,10 @@ interface MediaGridProps {
   items: MediaItem[];
   showRequestButton?: boolean;
   onRequest?: (item: MediaItem) => void;
+  searchTerm?: string;
 }
 
-const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, onRequest }) => {
+const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, onRequest, searchTerm }) => {
   const { t } = useTranslation();
 
   return (
@@ -35,6 +36,10 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, 
         const releaseDate = item.release_date || item.first_air_date;
         const year = releaseDate ? new Date(releaseDate).getFullYear() : '';
         const rating = item.vote_average ?? null;
+        
+        const linkTo = searchTerm
+          ? `/media/${item.media_type}/${item.id}?fromSearch=${encodeURIComponent(searchTerm)}`
+          : `/media/${item.media_type}/${item.id}`;
 
         return (
           <motion.div
@@ -46,7 +51,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, 
             transition={{ duration: 0.5, delay: index * 0.03, ease: "easeInOut" }}
           >
             <Card className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-card">
-              <Link to={`/media/${item.media_type}/${item.id}`} className="block" aria-label={title}>
+              <Link to={linkTo} className="block" aria-label={title}>
                 <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden">
                   {item.poster_path ? (
                     <img

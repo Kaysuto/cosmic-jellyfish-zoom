@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/AuthContext';
@@ -51,6 +51,7 @@ type RequestStatus = 'available' | 'pending' | 'approved' | 'rejected' | null;
 
 const MediaDetailPage = () => {
   const { type, id } = useParams<{ type: 'movie' | 'tv' | 'anime'; id: string }>();
+  const [searchParams] = useSearchParams();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { session } = useSession();
@@ -66,6 +67,8 @@ const MediaDetailPage = () => {
   const [credits, setCredits] = useState<{ cast: any[], crew: any[] }>({ cast: [], crew: [] });
   const [videoPage, setVideoPage] = useState(1);
   const [jellyfinId, setJellyfinId] = useState<string | null>(null);
+
+  const fromSearch = searchParams.get('fromSearch');
 
   const fetchSeasonDetails = async (seasonNumber: number) => {
     if (!type || !id) return;
@@ -220,6 +223,8 @@ const MediaDetailPage = () => {
     videoPage * VIDEOS_PER_PAGE
   );
 
+  const backLink = fromSearch ? `/catalog?q=${encodeURIComponent(fromSearch)}` : '/catalog';
+
   return (
     <div className="relative -mt-16">
       <div className="absolute inset-0 h-[60vh] overflow-hidden">
@@ -243,7 +248,7 @@ const MediaDetailPage = () => {
             transition={{ duration: 0.8, delay: 0.2, ease: "easeInOut" }}
           >
             <Button asChild variant="outline" className="mb-6">
-              <Link to="/catalog">
+              <Link to={backLink}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_catalog')}
               </Link>
             </Button>
