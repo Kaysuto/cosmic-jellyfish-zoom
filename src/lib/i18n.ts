@@ -6,6 +6,8 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "more": "Plus",
+      "donate": "Faire un don",
       "navigation": "Navigation",
       "legal": "Légal",
       "language": "Langue",
@@ -437,6 +439,8 @@ const resources = {
   },
   en: {
     translation: {
+      "more": "More",
+      "donate": "Donate",
       "navigation": "Navigation",
       "legal": "Legal",
       "language": "Language",

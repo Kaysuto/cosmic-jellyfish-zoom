@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown, Package } from "lucide-react";
+import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -45,11 +45,7 @@ const Navbar = () => {
 
   const navItems = [
     { to: "/", label: t('home') },
-    { to: "/status", label: t('status') },
     { to: "/catalog", label: t('catalog') },
-  ];
-
-  const protectedNavItems: { to: string, label: string }[] = [
   ];
 
   const handleLogoutClick = () => {
@@ -149,11 +145,29 @@ const Navbar = () => {
                   {item.label}
                 </NavLink>
               ))}
-              {session && protectedNavItems.map((item) => (
-                <NavLink key={item.to} to={item.to} className={navLinkClasses}>
-                  {item.label}
-                </NavLink>
-              ))}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className={cn(navLinkClasses({isActive: false}), "flex items-center")}>
+                    {t('more')}
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link to="/status">{t('status')}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/about">{t('about_us')}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <a href="https://ko-fi.com/playjelly" target="_blank" rel="noopener noreferrer" className="text-red-400 focus:text-red-400 focus:bg-red-500/10">
+                      <Heart className="mr-2 h-4 w-4" />
+                      {t('donate')}
+                    </a>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -179,11 +193,12 @@ const Navbar = () => {
                           {item.label}
                         </NavLink>
                       ))}
-                      {session && protectedNavItems.map((item) => (
-                        <NavLink key={item.to} to={item.to} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
-                          {item.label}
-                        </NavLink>
-                      ))}
+                      <NavLink to="/status" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('status')}</NavLink>
+                      <NavLink to="/about" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('about_us')}</NavLink>
+                      <a href="https://ko-fi.com/playjelly" target="_blank" rel="noopener noreferrer" className={cn(mobileNavLinkClasses({isActive: false}), "text-red-400")}>
+                        <Heart className="mr-3 h-5 w-5" />
+                        {t('donate')}
+                      </a>
                     </div>
                     <div className="flex-shrink-0 border-t pt-4 pb-6">
                       {session && profile ? (
