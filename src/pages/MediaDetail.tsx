@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/AuthContext';
@@ -227,8 +227,10 @@ const MediaDetailPage = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
       </div>
       <div className="relative container mx-auto px-4 pt-[40vh] pb-16">
-        <Button variant="outline" onClick={() => navigate(-1)} className="absolute top-20 left-4 z-10 bg-background/50">
-          <ArrowLeft className="mr-2 h-4 w-4" /> {t('back')}
+        <Button asChild variant="outline" className="absolute top-20 left-4 z-10 bg-background/50">
+          <Link to="/catalog">
+            <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_catalog')}
+          </Link>
         </Button>
         <div className="md:flex gap-8">
           <motion.div 
