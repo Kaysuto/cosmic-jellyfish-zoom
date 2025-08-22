@@ -30,7 +30,6 @@ const CatalogPage = () => {
 
   const [genres, setGenres] = useState<any[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
-  const [sortBy, setSortBy] = useState('popularity.desc');
 
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
@@ -57,7 +56,6 @@ const CatalogPage = () => {
           mediaType,
           language: i18n.language,
           page,
-          sortBy,
           genres: selectedGenres.join(','),
         },
       });
@@ -72,7 +70,7 @@ const CatalogPage = () => {
     } finally {
       setDiscoverLoading(false);
     }
-  }, [debouncedSearchTerm, mediaType, i18n.language, page, sortBy, selectedGenres]);
+  }, [debouncedSearchTerm, mediaType, i18n.language, page, selectedGenres]);
 
   useEffect(() => {
     if (debouncedSearchTerm) {
@@ -112,7 +110,6 @@ const CatalogPage = () => {
   const handleMediaTypeChange = (value: 'movie' | 'tv' | 'anime') => {
     setMediaType(value);
     setSelectedGenres([]);
-    setSortBy('popularity.desc');
     resetAndFetch();
   };
 
@@ -125,14 +122,8 @@ const CatalogPage = () => {
     resetAndFetch();
   };
   
-  const handleSortByChange = (value: string) => {
-    setSortBy(value);
-    resetAndFetch();
-  };
-
   const handleResetFilters = () => {
     setSelectedGenres([]);
-    setSortBy('popularity.desc');
     resetAndFetch();
   };
 
@@ -181,7 +172,7 @@ const CatalogPage = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[320px]">
               <SheetHeader><SheetTitle>Filtres</SheetTitle><SheetDescription>Affinez votre recherche</SheetDescription></SheetHeader>
-              <div className="py-4"><CatalogFilters genres={genres} selectedGenres={selectedGenres} onGenreToggle={handleGenreToggle} sortBy={sortBy} onSortByChange={handleSortByChange} onReset={handleResetFilters} /></div>
+              <div className="py-4"><CatalogFilters genres={genres} selectedGenres={selectedGenres} onGenreToggle={handleGenreToggle} onReset={handleResetFilters} /></div>
             </SheetContent>
           </Sheet>
           <div className="hidden sm:flex items-center gap-2">
@@ -206,7 +197,7 @@ const CatalogPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         <aside className="hidden lg:block lg:col-span-1">
-          <CatalogFilters genres={genres} selectedGenres={selectedGenres} onGenreToggle={handleGenreToggle} sortBy={sortBy} onSortByChange={handleSortByChange} onReset={handleResetFilters} />
+          <CatalogFilters genres={genres} selectedGenres={selectedGenres} onGenreToggle={handleGenreToggle} onReset={handleResetFilters} />
         </aside>
 
         <main className="lg:col-span-3">
@@ -220,9 +211,7 @@ const CatalogPage = () => {
             </>
           ) : (
             <>
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-2xl font-semibold">{t('discover')}</h2>
-              </div>
+              {/* H2 'Discover' removed per request */}
               {discoverLoading && discoverMedia.length === 0 ? <LoadingSkeleton /> : <MediaGrid items={discoverMedia} onRequest={openRequestModal} />}
               
               {!discoverLoading && totalPages > 1 && (

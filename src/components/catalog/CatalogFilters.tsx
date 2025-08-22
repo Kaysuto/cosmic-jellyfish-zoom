@@ -14,19 +14,11 @@ interface CatalogFiltersProps {
   genres: Genre[];
   selectedGenres: number[];
   onGenreToggle: (genreId: number) => void;
-  sortBy: string;
-  onSortByChange: (value: string) => void;
   onReset: () => void;
 }
 
-const CatalogFilters = ({ genres, selectedGenres, onGenreToggle, sortBy, onSortByChange, onReset }: CatalogFiltersProps) => {
+const CatalogFilters = ({ genres, selectedGenres, onGenreToggle, onReset }: CatalogFiltersProps) => {
   const { t } = useTranslation();
-
-  const sortOptions = [
-    { value: 'popularity.desc', label: t('sort_popularity_desc') },
-    { value: 'release_date.desc', label: t('sort_release_date_desc') },
-    { value: 'vote_average.desc', label: t('sort_rating_desc') },
-  ];
 
   return (
     <Card className="sticky top-24">
@@ -36,24 +28,6 @@ const CatalogFilters = ({ genres, selectedGenres, onGenreToggle, sortBy, onSortB
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <div>
-          <h4 className="font-medium mb-2">{t('sort_by')}</h4>
-          <div className="flex flex-col gap-2">
-            {sortOptions.map(option => (
-              <Button
-                key={option.value}
-                variant={sortBy === option.value ? "secondary" : "ghost"}
-                onClick={() => onSortByChange(option.value)}
-                className="justify-start w-full text-sm"
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        <Separator />
-
         <div>
           <div className="flex items-center justify-between mb-2">
             <h4 className="font-medium">{t('genres')}</h4>
