@@ -227,11 +227,6 @@ const MediaDetailPage = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
       </div>
       <div className="relative container mx-auto px-4 pt-[40vh] pb-16">
-        <Button asChild variant="outline" className="absolute top-20 left-4 z-50 bg-background/50">
-          <Link to="/catalog">
-            <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_catalog')}
-          </Link>
-        </Button>
         <div className="md:flex gap-8">
           <motion.div 
             className="w-full md:w-1/3 lg:w-1/4 -mt-24 flex-shrink-0"
@@ -247,6 +242,11 @@ const MediaDetailPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeInOut" }}
           >
+            <Button asChild variant="outline" className="mb-6">
+              <Link to="/catalog">
+                <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_catalog')}
+              </Link>
+            </Button>
             <h1 className="text-5xl font-bold">{title}</h1>
             <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-2 text-muted-foreground">
               {releaseDate && <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" /> {new Date(releaseDate).getFullYear()}</span>}
