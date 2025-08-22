@@ -43,7 +43,61 @@ class JellyfinClient {
     console.log(`Successfully authenticated with Jellyfin as user ${authData.User.Name}.`);
   }
 
-  // We will add more methods here later, like getLibraryItems()
+  private async getAuthHeaders() {
+    if (!this.accessToken) {
+      throw new Error('Not authenticated. Call authenticate() first.');
+    }
+    return {
+      'Content-Type': 'application/json',
+      'X-Emby-Authorization': `MediaBrowser ApiKey="${this.apiKey}", Token="${this.accessToken}"`,
+    };
+  }
+
+  async getViews() {
+    console.log('Fetching user views/libraries...');
+    const response = await fetch(`${this.baseUrl}/Users/${this.userId}/Views`, {
+      headers: await this.getAuthHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch Jellyfin views.');
+    }
+    const data = await response.json();
+    console.log(`Found ${data.Items.length} views.`);
+    return data.Items;
+  }
+
+  async getLibraryItems(viewId: string) {
+    console.log(`Fetching items for view ${viewId}...`);
+    let allItems: any[] = [];
+    let startIndex = 0;
+    const limit = 200; // Number of items to fetch per request
+
+    while (true) {
+      const url = `${this.baseUrl}/Users/${this.userId}/Items?ParentId=${viewId}&Recursive=true&IncludeItemTypes=Movie,Series&fields=ProviderIds&StartIndex=${startIndex}&Limit=${limit}`;
+      const response = await fetch(url, {
+        headers: await this.getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        console.error(`Failed to fetch items for view ${viewId} at index ${startIndex}`);
+        break;
+      }
+
+      const data = await response.json();
+      if (data.Items.length === 0) {
+        break; // No more items
+      }
+
+      allItems = allItems.concat(data.Items);
+      startIndex += data.Items.length;
+
+      if (startIndex >= data.TotalRecordCount) {
+        break;
+      }
+    }
+    console.log(`Fetched ${allItems.length} total items for view ${viewId}.`);
+    return allItems;
+  }
 }
 
 serve(async (req) => {
@@ -67,19 +121,41 @@ serve(async (req) => {
       throw new Error('Jellyfin URL or API key is not configured in settings.');
     }
 
-    console.log('Jellyfin settings loaded. Initializing client...');
     const jellyfin = new JellyfinClient(settings.url, settings.api_key);
     await jellyfin.authenticate();
 
+    const views = await jellyfin.getViews();
+    let allLibraryItems: any[] = [];
+
+    for (const view of views) {
+      const items = await jellyfin.getLibraryItems(view.Id);
+      allLibraryItems = allLibraryItems.concat(items);
+    }
+
+    console.log(`Total items fetched from all libraries: ${allLibraryItems.length}`);
+
+    // Filter out any series with "Kaï" in the name
+    const excludedName = "kaï";
+    const filteredItems = allLibraryItems.filter(item => 
+      !(item.Name && item.Name.toLowerCase().includes(excludedName))
+    );
+
+    const excludedCount = allLibraryItems.length - filteredItems.length;
+    console.log(`Excluded ${excludedCount} items containing '${excludedName}'.`);
+    console.log(`Items to be processed: ${filteredItems.length}`);
+
+    // For now, we just log the first few items to see the structure
+    console.log('Sample of items to be processed:', filteredItems.slice(0, 3));
+
     // TODO:
-    // 2. Fetch library items from Jellyfin
-    // 3. Filter out excluded items (e.g., "Kaï")
-    // 4. Process each item to get TMDB/TVDB IDs
-    // 5. Upsert items into the `catalog_items` table in Supabase
+    // 1. Process each item to get TMDB/TVDB IDs
+    // 2. Upsert items into the `catalog_items` table in Supabase
 
     const response = {
-      message: "Jellyfin sync started. Authentication successful. Library sync not yet implemented.",
-      details: "This is a placeholder response. The full synchronization logic will be built in the next steps."
+      message: "Jellyfin sync step 2 complete. Fetched and filtered library items.",
+      totalItemsFetched: allLibraryItems.length,
+      itemsExcluded: excludedCount,
+      itemsToProcess: filteredItems.length,
     };
 
     return new Response(JSON.stringify(response), {
