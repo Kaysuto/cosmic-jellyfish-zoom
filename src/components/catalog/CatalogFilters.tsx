@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Film, Tv, Flame, X } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface Genre { id: number; name: string; }
 interface Studio { id: number; name: string; }
@@ -54,11 +54,24 @@ const CatalogFilters = ({
       <CardContent className="space-y-4">
         <div>
           <h4 className="font-semibold text-sm mb-2">{t('media_type')}</h4>
-          <div className="grid grid-cols-3 gap-2">
-            <Button variant={mediaType === 'movie' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('movie')}><Film className="mr-2 h-4 w-4" />{t('movie')}</Button>
-            <Button variant={mediaType === 'tv' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('tv')}><Tv className="mr-2 h-4 w-4" />{t('tv_show')}</Button>
-            <Button variant={mediaType === 'anime' ? 'secondary' : 'ghost'} onClick={() => onMediaTypeChange('anime')}><Flame className="mr-2 h-4 w-4" />{t('anime')}</Button>
-          </div>
+          <ToggleGroup
+            type="single"
+            value={mediaType}
+            onValueChange={(value: 'movie' | 'tv' | 'anime') => {
+              if (value) onMediaTypeChange(value);
+            }}
+            className="grid grid-cols-3 gap-2"
+          >
+            <ToggleGroupItem value="movie" aria-label={t('movie')}>
+              <Film className="mr-2 h-4 w-4" />{t('movie')}
+            </ToggleGroupItem>
+            <ToggleGroupItem value="tv" aria-label={t('tv_show')}>
+              <Tv className="mr-2 h-4 w-4" />{t('tv_show')}
+            </ToggleGroupItem>
+            <ToggleGroupItem value="anime" aria-label={t('anime')}>
+              <Flame className="mr-2 h-4 w-4" />{t('anime')}
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
         <Separator />
         <div>
