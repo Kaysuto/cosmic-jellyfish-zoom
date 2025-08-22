@@ -278,29 +278,31 @@ const MediaDetailPage = () => {
                   </Select>
                 </div>
                 {seasonLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {[...Array(10)].map((_, i) => (
+                      <div key={i} className="space-y-2">
+                        <Skeleton className="aspect-video w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                      </div>
+                    ))}
                   </div>
                 ) : selectedSeason && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {selectedSeason.episodes.map(episode => (
-                      <Card key={episode.id} className="overflow-hidden">
+                      <Card key={episode.id} className="overflow-hidden transition-transform hover:scale-105">
                         <div className="aspect-video bg-muted">
                           {episode.still_path ? (
                             <img src={`https://image.tmdb.org/t/p/w500${episode.still_path}`} alt={episode.name} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                              <Tv className="h-12 w-12" />
+                              <Tv className="h-8 w-8" />
                             </div>
                           )}
                         </div>
-                        <CardContent className="p-4">
-                          <p className="text-xs text-muted-foreground">
-                            {`Épisode ${episode.episode_number}`}
-                            {episode.runtime && ` - ${t('minutes', { count: episode.runtime })}`}
-                          </p>
-                          <h4 className="font-semibold text-lg mt-1">{episode.name}</h4>
-                          <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{episode.overview || t('no_description_available')}</p>
+                        <CardContent className="p-3">
+                          <p className="text-xs text-muted-foreground">Épisode {episode.episode_number}</p>
+                          <h4 className="font-semibold text-sm truncate">{episode.name}</h4>
                         </CardContent>
                       </Card>
                     ))}
