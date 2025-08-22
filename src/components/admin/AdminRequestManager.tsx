@@ -35,7 +35,7 @@ const AdminRequestManager = () => {
   const { t, i18n } = useTranslation();
   const [requests, setRequests] = useState<MediaRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'available'>('pending');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'available'>('all');
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
   useEffect(() => {
