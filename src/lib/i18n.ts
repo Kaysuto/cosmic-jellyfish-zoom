@@ -6,6 +6,16 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "jellyfin_settings": "Paramètres Jellyfin",
+      "jellyfin_settings_desc": "Configurez l'URL et la clé API de votre serveur Jellyfin.",
+      "jellyfin_url": "URL de Jellyfin",
+      "jellyfin_api_key": "Clé API de Jellyfin",
+      "jellyfin_url_placeholder": "ex: http://192.168.1.10:8096",
+      "jellyfin_api_key_placeholder": "Votre clé API générée dans Jellyfin",
+      "save_jellyfin_settings": "Enregistrer les paramètres",
+      "settings_saved_successfully": "Paramètres enregistrés avec succès.",
+      "error_saving_settings": "Erreur lors de l'enregistrement des paramètres.",
+      "error_loading_jellyfin_settings": "Erreur lors du chargement des paramètres Jellyfin.",
       "episodes": "Épisodes",
       "videos_and_trailers": "Vidéos & Bande-Annonces",
       "similar_content": "Contenu similaire",
@@ -408,6 +418,16 @@ const resources = {
   },
   en: {
     translation: {
+      "jellyfin_settings": "Jellyfin Settings",
+      "jellyfin_settings_desc": "Configure your Jellyfin server URL and API key.",
+      "jellyfin_url": "Jellyfin URL",
+      "jellyfin_api_key": "Jellyfin API Key",
+      "jellyfin_url_placeholder": "e.g. http://192.168.1.10:8096",
+      "jellyfin_api_key_placeholder": "Your API key generated in Jellyfin",
+      "save_jellyfin_settings": "Save Settings",
+      "settings_saved_successfully": "Settings saved successfully.",
+      "error_saving_settings": "Error saving settings.",
+      "error_loading_jellyfin_settings": "Error loading Jellyfin settings.",
       "episodes": "Episodes",
       "videos_and_trailers": "Videos & Trailers",
       "similar_content": "Similar Content",

@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Server, CheckCircle, XCircle, Zap, Copy, TestTube2, AlertTriangle } from 'lucide-react';
@@ -9,6 +12,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import WebhookInstructions from '@/components/admin/WebhookInstructions';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const jellyfinSettingsSchema = z.object({
+  url: z.string().url({ message: "L'URL doit être valide." }).min(1, { message: "L'URL est requise." }),
+  api_key: z.string().min(1, { message: "La clé API est requise." }),
+});
 
 const JellyfinSettings = () => {
   const { t } = useTranslation();
@@ -18,7 +28,46 @@ const JellyfinSettings = () => {
   const [debugLog, setDebugLog] = useState<any[]>([]);
   const [isTestingConn, setIsTestingConn] = useState(false);
   const [connStatus, setConnStatus] = useState<{ success: boolean; message: string; data?: any } | null>(null);
+  const [loadingSettings, setLoadingSettings] = useState(true);
   const appUrl = window.location.origin;
+
+  const form = useForm<z.infer<typeof jellyfinSettingsSchema>>({
+    resolver: zodResolver(jellyfinSettingsSchema),
+    defaultValues: { url: '', api_key: '' },
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      setLoadingSettings(true);
+      const { data, error } = await supabase
+        .from('jellyfin_settings')
+        .select('url, api_key')
+        .eq('id', 1)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // Ignore "no rows found"
+        showError(t('error_loading_jellyfin_settings'));
+      }
+      
+      if (data) {
+        form.reset({ url: data.url || '', api_key: data.api_key || '' });
+      }
+      setLoadingSettings(false);
+    };
+    fetchSettings();
+  }, [form, t]);
+
+  const onSubmit = async (values: z.infer<typeof jellyfinSettingsSchema>) => {
+    const { error } = await supabase
+      .from('jellyfin_settings')
+      .upsert({ id: 1, ...values, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+
+    if (error) {
+      showError(t('error_saving_settings'));
+    } else {
+      showSuccess(t('settings_saved_successfully'));
+    }
+  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -32,9 +81,7 @@ const JellyfinSettings = () => {
     try {
       const { data, error } = await supabase.functions.invoke('test-jellyfin-connection');
       
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       setConnStatus(data);
       if (data.success) {
@@ -102,6 +149,24 @@ const JellyfinSettings = () => {
         <h1 className="text-3xl font-bold tracking-tight">Jellyfin</h1>
         <p className="text-muted-foreground">Gérez la connexion, la synchronisation et les webhooks pour votre serveur Jellyfin.</p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('jellyfin_settings')}</CardTitle>
+          <CardDescription>{t('jellyfin_settings_desc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loadingSettings ? <Skeleton className="h-40 w-full" /> : (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField control={form.control} name="url" render={({ field }) => (<FormItem><FormLabel>{t('jellyfin_url')}</FormLabel><FormControl><Input {...field} placeholder={t('jellyfin_url_placeholder')} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="api_key" render={({ field }) => (<FormItem><FormLabel>{t('jellyfin_api_key')}</FormLabel><FormControl><Input type="password" {...field} placeholder={t('jellyfin_api_key_placeholder')} /></FormControl><FormMessage /></FormItem>)} />
+                <Button type="submit" disabled={form.formState.isSubmitting}>{t('save_jellyfin_settings')}</Button>
+              </form>
+            </Form>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
