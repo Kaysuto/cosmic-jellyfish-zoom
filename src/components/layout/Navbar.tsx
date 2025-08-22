@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown, Package } from "lucide-react";
@@ -47,9 +47,7 @@ const Navbar = () => {
     { to: "/status", label: t('status') },
   ];
 
-  const protectedNavItems = [
-    { to: "/catalog", label: t('catalog') },
-  ];
+  const protectedNavItems: { to: string, label: string }[] = [];
 
   const handleLogoutClick = () => {
     setIsLogoutDialogOpen(true);
