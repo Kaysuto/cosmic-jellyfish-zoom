@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,36 +81,29 @@ async function upsertBatchToSupabase(items) {
   if (!items || items.length === 0) return 0;
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing");
 
-  const url = `${SUPABASE_URL}/rest/v1/media`;
-  const res = await fetch(url + "?on_conflict=jellyfin_id", {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "resolution=merge-duplicates",
-    },
-    body: JSON.stringify(
-      items.map((it) => ({
-        jellyfin_id: it.jellyfin_id,
-        title: it.name,
-        media_type: it.type?.toLowerCase(),
-        production_year: it.year,
-        overview: it.overview,
-        genres: it.genres,
-        duration: it.duration,
-        thumbnail: it.thumbnail,
-        direct_stream_url: it.direct_stream_url,
-        raw: it.raw,
-        available: true,
-        tmdb_id: it.tmdb_id,
-      }))
-    ),
-  });
+  const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`Supabase upsert failed: ${res.status} ${txt}`);
+  const recordsToUpsert = items.map((it) => ({
+    jellyfin_id: it.jellyfin_id,
+    title: it.name,
+    media_type: it.type?.toLowerCase(),
+    production_year: it.year,
+    overview: it.overview,
+    genres: it.genres,
+    duration: it.duration,
+    thumbnail: it.thumbnail,
+    direct_stream_url: it.direct_stream_url,
+    raw: it.raw,
+    available: true,
+    tmdb_id: it.tmdb_id,
+  }));
+
+  const { error } = await supabaseAdmin
+    .from('media')
+    .upsert(recordsToUpsert, { onConflict: 'jellyfin_id' });
+
+  if (error) {
+    throw new Error(`Supabase upsert failed: ${error.message}`);
   }
   return items.length;
 }
@@ -120,23 +114,23 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
-    const path = body?._path;
+    const body = await req.json().catch(() => ({}));
+    const { _path, startIndex = 0, limit = 50 } = body;
 
-    if (path === '/sync') {
+    if (_path === '/sync') {
       let totalUpserted = 0;
-      let startIndex = 0;
-      const limit = 200;
+      let currentStartIndex = 0;
+      const batchLimit = 200;
       let hasMore = true;
 
       while (hasMore) {
-        const { items, total } = await fetchJellyfinItemsByPage(startIndex, limit);
+        const { items, total } = await fetchJellyfinItemsByPage(currentStartIndex, batchLimit);
         if (items.length > 0) {
           const upsertedCount = await upsertBatchToSupabase(items);
           totalUpserted += upsertedCount;
         }
-        startIndex += items.length;
-        if (items.length < limit || (total > 0 && startIndex >= total)) {
+        currentStartIndex += items.length;
+        if (items.length < batchLimit || (total > 0 && currentStartIndex >= total)) {
           hasMore = false;
         }
       }
@@ -146,7 +140,6 @@ serve(async (req) => {
       });
     }
     
-    const { startIndex = 0, limit = 50 } = body;
     const log = { request: { startIndex, limit }, fetch: {}, upsert: {} };
     let fetchedItems;
     try {
