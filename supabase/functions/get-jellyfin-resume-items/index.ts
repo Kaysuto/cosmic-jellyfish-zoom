@@ -63,7 +63,7 @@ class JellyfinClient {
 
   async getResumeItems() {
     if (!this.userId) await this.authenticate();
-    const fields = 'ProviderIds,PremiereDate,Overview,Genres,ImageTags,VoteAverage,RunTimeTicks,Type,SeriesProviderIds';
+    const fields = 'ProviderIds,PremiereDate,Overview,Genres,ImageTags,VoteAverage,RunTimeTicks,Type,SeriesProviderIds,SeriesName,SeriesId,SeriesPrimaryImageTag';
     const url = `${this.baseUrl}/Users/${this.userId}/Items/Resume?Recursive=true&Fields=${fields}&Limit=20&IncludeItemTypes=Movie,Episode`;
     const response = await fetch(url, { headers: await this.getAuthHeaders() });
     if (!response.ok) {
@@ -102,49 +102,41 @@ serve(async (req) => {
       return new Response(JSON.stringify([]), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
     }
 
-    const tmdbIds = resumeItems.map((item: any) => {
+    const formattedItems = resumeItems.map((item: any) => {
+      let tmdbId, mediaType, title, posterPath;
+
       if (item.Type === 'Movie') {
-        return item.ProviderIds?.Tmdb ? parseInt(item.ProviderIds.Tmdb, 10) : null;
+        tmdbId = item.ProviderIds?.Tmdb ? parseInt(item.ProviderIds.Tmdb, 10) : null;
+        mediaType = 'movie';
+        title = item.Name;
+        if (item.ImageTags?.Primary) {
+          posterPath = `${settings.url}/Items/${item.Id}/Images/Primary?tag=${item.ImageTags.Primary}`;
+        }
+      } else if (item.Type === 'Episode') {
+        tmdbId = item.SeriesProviderIds?.Tmdb ? parseInt(item.SeriesProviderIds.Tmdb, 10) : null;
+        mediaType = 'tv';
+        title = item.SeriesName;
+        if (item.SeriesPrimaryImageTag) {
+          posterPath = `${settings.url}/Items/${item.SeriesId}/Images/Primary?tag=${item.SeriesPrimaryImageTag}`;
+        }
+      } else {
+        return null;
       }
-      if (item.Type === 'Episode') {
-        return item.SeriesProviderIds?.Tmdb ? parseInt(item.SeriesProviderIds.Tmdb, 10) : null;
-      }
-      return null;
-    }).filter(Boolean);
-
-    if (tmdbIds.length === 0) {
-      return new Response(JSON.stringify([]), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
-    }
-
-    const { data: catalogItems, error: catalogError } = await supabaseAdmin
-      .from('catalog_items')
-      .select('tmdb_id, media_type, title, poster_path')
-      .in('tmdb_id', [...new Set(tmdbIds)]);
-
-    if (catalogError) throw catalogError;
-
-    const catalogMap = new Map(catalogItems.map(item => [item.tmdb_id, item]));
-
-    const mergedItems = resumeItems.map((jellyfinItem: any) => {
-      const tmdbId = jellyfinItem.Type === 'Movie' 
-        ? (jellyfinItem.ProviderIds?.Tmdb ? parseInt(jellyfinItem.ProviderIds.Tmdb, 10) : null)
-        : (jellyfinItem.SeriesProviderIds?.Tmdb ? parseInt(jellyfinItem.SeriesProviderIds.Tmdb, 10) : null);
 
       if (!tmdbId) return null;
 
-      const catalogItem = catalogMap.get(tmdbId);
-      if (!catalogItem) return null;
-
       return {
-        ...catalogItem,
-        id: catalogItem.tmdb_id,
-        name: catalogItem.title,
-        playback_position_ticks: jellyfinItem.UserData.PlaybackPositionTicks,
-        runtime_ticks: jellyfinItem.RunTimeTicks,
+        id: tmdbId,
+        title: title,
+        name: title,
+        media_type: mediaType,
+        poster_path: posterPath || null,
+        playback_position_ticks: item.UserData.PlaybackPositionTicks,
+        runtime_ticks: item.RunTimeTicks,
       };
     }).filter(Boolean);
 
-    return new Response(JSON.stringify(mergedItems), {
+    return new Response(JSON.stringify(formattedItems), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
