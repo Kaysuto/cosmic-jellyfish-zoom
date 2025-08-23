@@ -21,6 +21,12 @@ const PlayerPage = () => {
 
   useEffect(() => {
     const fetchStreamUrl = async () => {
+      if (!id || !type) {
+        setError("ID de média ou type manquant.");
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
@@ -29,12 +35,16 @@ const PlayerPage = () => {
         const { data: catalogItem, error: catalogError } = await supabase
           .from('catalog_items')
           .select('jellyfin_id, title')
-          .eq('tmdb_id', id)
+          .eq('tmdb_id', Number(id))
           .eq('media_type', type === 'anime' ? 'tv' : type)
           .single();
 
         if (catalogError || !catalogItem) {
           throw new Error("Ce média n'a pas été trouvé dans votre catalogue Jellyfin.");
+        }
+        
+        if (!catalogItem.jellyfin_id) {
+          throw new Error("L'ID Jellyfin pour ce média est manquant dans le catalogue.");
         }
 
         setMediaTitle(catalogItem.title);
@@ -51,7 +61,9 @@ const PlayerPage = () => {
 
       } catch (err: any) {
         console.error("Error fetching stream URL:", err);
-        setError(err.message || "Une erreur est survenue lors du chargement de la vidéo.");
+        const baseMessage = "Une erreur est survenue lors du chargement de la vidéo.";
+        const details = err.message || "";
+        setError(`${baseMessage} Détails: ${details}`);
       } finally {
         setLoading(false);
       }

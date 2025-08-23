@@ -3,6 +3,7 @@ import 'vidstack/styles/community-skin/video.css';
 
 import { MediaPlayer, MediaOutlet, MediaCommunitySkin } from '@vidstack/react';
 import type { MediaCanPlayEvent, MediaErrorEvent } from 'vidstack';
+import { showError } from '@/utils/toast';
 
 interface VideoPlayerProps {
   src: string;
@@ -18,7 +19,7 @@ const VideoPlayer = ({ src, title }: VideoPlayerProps) => {
 
   function onError(event: MediaErrorEvent) {
     console.error('Vidstack: Erreur du lecteur. Event:', event);
-    alert(`Erreur du lecteur vidéo. Vérifiez la console (F12) pour les détails techniques. Cela est souvent dû à un problème de CORS sur votre serveur Jellyfin. Assurez-vous que l'URL de cette application est ajoutée aux domaines autorisés dans les paramètres réseau de Jellyfin.`);
+    showError(`Erreur du lecteur vidéo. Vérifiez que CORS est bien configuré sur votre serveur Jellyfin.`);
   }
 
   return (

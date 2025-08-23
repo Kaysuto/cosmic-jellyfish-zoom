@@ -111,7 +111,7 @@ const MediaDetailPage = () => {
         const catalogPromise = supabase
           .from('catalog_items')
           .select('jellyfin_id')
-          .eq('tmdb_id', id)
+          .eq('tmdb_id', Number(id))
           .eq('media_type', apiMediaType)
           .maybeSingle();
         
