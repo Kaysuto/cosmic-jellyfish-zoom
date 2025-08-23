@@ -6,41 +6,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Plus } from 'lucide-react';
 import { startOfWeek, endOfWeek, add, sub, format, eachDayOfInterval } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
-import { Link } from 'react-router-dom';
 import { MediaItem } from '@/components/catalog/MediaGrid';
-
-interface ScheduleCardProps {
-  item: MediaItem;
-}
-
-const ScheduleCard: React.FC<ScheduleCardProps> = ({ item }) => {
-  const title = item.title || item.name;
-  return (
-    <Link to={`/media/${item.media_type}/${item.id}`} className="block group">
-      <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/50">
-        <div className="flex items-start gap-3 p-3">
-          {item.poster_path ? (
-            <img
-              src={`https://image.tmdb.org/t/p/w200${item.poster_path}`}
-              alt={title}
-              className="w-16 h-24 object-cover rounded-md flex-shrink-0"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-16 h-24 bg-muted rounded-md flex-shrink-0" />
-          )}
-          <div className="flex-grow">
-            <h4 className="font-semibold text-sm line-clamp-2 group-hover:text-primary">{title}</h4>
-            <p className="text-xs text-muted-foreground mt-1">{item.networks?.[0]?.name}</p>
-          </div>
-        </div>
-      </Card>
-    </Link>
-  );
-};
+import ScheduleCard from '@/components/schedule/ScheduleCard';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const SchedulePage = () => {
   const { t, i18n } = useTranslation();
@@ -50,6 +21,7 @@ const SchedulePage = () => {
   const [mediaType, setMediaType] = useState<'tv' | 'anime'>('tv');
 
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
+  const ITEMS_PER_DAY_LIMIT = 3;
 
   const fetchSchedule = useCallback(async () => {
     setLoading(true);
@@ -67,11 +39,30 @@ const SchedulePage = () => {
       });
       if (error) throw error;
 
-      const groupedByDay = (data as MediaItem[]).reduce((acc, item) => {
-        const airDate = item.first_air_date ? format(new Date(item.first_air_date), 'yyyy-MM-dd') : '';
-        if (!acc[airDate]) {
-          acc[airDate] = [];
+      const tmdbItems = data as MediaItem[];
+      const tmdbIds = tmdbItems.map(item => item.id);
+      let itemsWithAvailability = tmdbItems;
+
+      if (tmdbIds.length > 0) {
+        const { data: catalogData, error: catalogError } = await supabase
+          .from('catalog_items')
+          .select('tmdb_id')
+          .in('tmdb_id', tmdbIds);
+        
+        if (catalogError) {
+          console.error("Error checking catalog availability", catalogError);
+        } else {
+          const availableIds = new Set(catalogData.map(item => item.tmdb_id));
+          itemsWithAvailability = tmdbItems.map(item => ({
+            ...item,
+            isAvailable: availableIds.has(item.id),
+          }));
         }
+      }
+
+      const groupedByDay = itemsWithAvailability.reduce((acc, item) => {
+        const airDate = item.first_air_date ? format(new Date(item.first_air_date), 'yyyy-MM-dd') : '';
+        if (!acc[airDate]) acc[airDate] = [];
         acc[airDate].push(item);
         return acc;
       }, {} as Record<string, MediaItem[]>);
@@ -120,31 +111,45 @@ const SchedulePage = () => {
       </Card>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
           {[...Array(7)].map((_, i) => (
             <div key={i} className="space-y-3">
               <Skeleton className="h-8 w-32" />
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
+              {[...Array(3)].map((_, j) => <Skeleton key={j} className="h-[88px] w-full" />)}
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
           {weekDays.map(day => {
             const dayKey = format(day, 'yyyy-MM-dd');
             const itemsForDay = schedule[dayKey] || [];
+            const initialItems = itemsForDay.slice(0, ITEMS_PER_DAY_LIMIT);
+            const remainingItems = itemsForDay.slice(ITEMS_PER_DAY_LIMIT);
             return (
               <div key={dayKey}>
                 <h3 className="text-lg font-bold mb-3 capitalize flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-muted-foreground" />
                   {format(day, 'EEEE d', { locale: currentLocale })}
                 </h3>
-                <div className="space-y-3">
-                  {itemsForDay.length > 0 ? (
-                    itemsForDay.map(item => <ScheduleCard key={item.id} item={item} />)
+                <div className="space-y-2">
+                  {initialItems.length > 0 ? (
+                    initialItems.map(item => <ScheduleCard key={item.id} item={item} />)
                   ) : (
                     <p className="text-sm text-muted-foreground h-24 flex items-center justify-center">{t('no_releases_on_this_day')}</p>
+                  )}
+                  {remainingItems.length > 0 && (
+                    <Collapsible>
+                      <CollapsibleContent className="space-y-2">
+                        {remainingItems.map(item => <ScheduleCard key={item.id} item={item} />)}
+                      </CollapsibleContent>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" className="w-full mt-2">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Voir plus ({remainingItems.length})
+                        </Button>
+                      </CollapsibleTrigger>
+                    </Collapsible>
                   )}
                 </div>
               </div>
