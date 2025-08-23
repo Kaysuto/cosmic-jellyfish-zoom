@@ -1,35 +1,49 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
-import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Film } from 'lucide-react';
-
-interface Media {
-  id: number;
-  title?: string;
-  name?: string;
-  poster_path: string;
-  media_type: 'movie' | 'tv';
-}
+import MediaCard from '@/components/catalog/MediaCard';
+import { MediaItem } from '@/components/catalog/MediaGrid';
 
 const FeaturedMedia = () => {
   const { t, i18n } = useTranslation();
-  const [media, setMedia] = useState<Media[]>([]);
+  const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchFeatured = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('get-featured-media', {
+        const { data: trendingData, error } = await supabase.functions.invoke('get-featured-media', {
           body: { language: i18n.language },
         });
         if (error) throw error;
-        setMedia(data);
+
+        const tmdbItems = trendingData as MediaItem[];
+        const tmdbIds = tmdbItems.map((item) => item.id);
+
+        if (tmdbIds.length > 0) {
+          const { data: catalogData, error: catalogError } = await supabase
+            .from('catalog_items')
+            .select('tmdb_id')
+            .in('tmdb_id', tmdbIds);
+
+          if (catalogError) {
+            console.error("Error checking catalog availability", catalogError);
+            setMedia(tmdbItems);
+          } else {
+            const availableIds = new Set(catalogData.map(item => item.tmdb_id));
+            const itemsWithAvailability = tmdbItems.map((item) => ({
+              ...item,
+              isAvailable: availableIds.has(item.id),
+            }));
+            setMedia(itemsWithAvailability);
+          }
+        } else {
+          setMedia(tmdbItems);
+        }
       } catch (error: any) {
         showError(error.message);
       } finally {
@@ -44,26 +58,18 @@ const FeaturedMedia = () => {
       <h2 className="text-3xl font-bold mb-6">{t('weekly_trends')}</h2>
       {loading ? (
         <div className="flex space-x-4">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-[300px] w-[200px]" />)}
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="w-full basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/6">
+              <Skeleton className="aspect-[2/3] w-full" />
+            </div>
+          ))}
         </div>
       ) : (
         <Carousel opts={{ align: "start", loop: true }} className="w-full">
-          <CarouselContent>
+          <CarouselContent className="-ml-4">
             {media.map((item) => (
-              <CarouselItem key={item.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/6">
-                <Link to={`/media/${item.media_type}/${item.id}`}>
-                  <Card className="overflow-hidden transition-transform hover:scale-105">
-                    <CardContent className="p-0 aspect-[2/3]">
-                      {item.poster_path ? (
-                        <img src={`https://image.tmdb.org/t/p/w500${item.poster_path}`} alt={item.title || item.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
-                          <Film className="h-12 w-12" />
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Link>
+              <CarouselItem key={item.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/6 pl-4">
+                <MediaCard item={item} showRequestButton={false} />
               </CarouselItem>
             ))}
           </CarouselContent>
