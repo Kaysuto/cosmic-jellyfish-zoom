@@ -27,8 +27,8 @@ const VideoPlayer = ({ src, title, startTime, onTimeUpdate, onDurationChange }: 
 
   function onCanPlay(event: MediaCanPlayEvent) {
     console.log('Vidstack: Média prêt à être lu. Event:', event);
-    if (player.current && startTime && player.current.currentTime === 0) {
-      player.current.currentTime = startTime;
+    if (player.current && startTime && (player.current as any).currentTime === 0) {
+      (player.current as any).currentTime = startTime;
     }
   }
 
