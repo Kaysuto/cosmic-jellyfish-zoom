@@ -63,10 +63,16 @@ class JellyfinClient {
 
   async getResumeItems() {
     if (!this.userId) await this.authenticate();
-    const url = `${this.baseUrl}/Users/${this.userId}/Items/Latest?IncludeItemTypes=Movie,Episode&Limit=20&IsPlayed=false`;
+    const fields = 'ProviderIds,PremiereDate,Overview,Genres,ImageTags,VoteAverage,RunTimeTicks';
+    const url = `${this.baseUrl}/Users/${this.userId}/Items/Resume?Recursive=true&Fields=${fields}&Limit=20&IncludeItemTypes=Movie,Episode`;
     const response = await fetch(url, { headers: await this.getAuthHeaders() });
-    if (!response.ok) throw new Error(`Failed to fetch resume items from Jellyfin: ${response.status}`);
-    return await response.json();
+    if (!response.ok) {
+        const errorBody = await response.text().catch(() => 'Could not read error body');
+        console.error("Jellyfin API Error on /Items/Resume:", response.status, errorBody);
+        throw new Error(`Failed to fetch resume items from Jellyfin: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.Items || [];
   }
 }
 
