@@ -13,7 +13,7 @@ const TMDB_API_URL = 'https://api.themoviedb.org/3';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders, status: 200 })
   }
 
   if (!TMDB_API_KEY) {

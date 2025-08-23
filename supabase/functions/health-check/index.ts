@@ -39,7 +39,7 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders, status: 200 })
   }
 
   try {
