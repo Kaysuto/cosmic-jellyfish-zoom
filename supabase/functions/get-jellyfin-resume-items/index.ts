@@ -61,14 +61,25 @@ class JellyfinClient {
     };
   }
 
-  async getResumeItems() {
-    if (!this.userId) await this.authenticate();
+  async getAllUsers() {
+    if (!this.userId) await this.authenticate(); // Needs admin auth
+    const response = await fetch(`${this.baseUrl}/Users`, {
+      headers: await this.getAuthHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Jellyfin users: ${response.status}`);
+    }
+    return await response.json();
+  }
+
+  async getResumeItems(jellyfinUserId: string) {
+    if (!jellyfinUserId) throw new Error("Jellyfin User ID is required.");
     const fields = 'ProviderIds,PremiereDate,Overview,Genres,ImageTags,VoteAverage,RunTimeTicks,Type,SeriesProviderIds,SeriesName,SeriesId,SeriesPrimaryImageTag';
-    const url = `${this.baseUrl}/Users/${this.userId}/Items/Resume?Recursive=true&Fields=${fields}&Limit=20&IncludeItemTypes=Movie,Episode`;
+    const url = `${this.baseUrl}/Users/${jellyfinUserId}/Items/Resume?Recursive=true&Fields=${fields}&Limit=20&IncludeItemTypes=Movie,Episode`;
     const response = await fetch(url, { headers: await this.getAuthHeaders() });
     if (!response.ok) {
         const errorBody = await response.text().catch(() => 'Could not read error body');
-        console.error("Jellyfin API Error on /Items/Resume:", response.status, errorBody);
+        console.error(`Jellyfin API Error on /Items/Resume for user ${jellyfinUserId}:`, response.status, errorBody);
         throw new Error(`Failed to fetch resume items from Jellyfin: ${response.status}`);
     }
     const data = await response.json();
@@ -82,21 +93,53 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    // Create a Supabase client with the user's auth token to identify the caller
+    const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
-    const { data: settings, error: settingsError } = await supabaseAdmin
-      .from('jellyfin_settings')
-      .select('url, api_key')
-      .single();
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) {
+        // Not an error, just means no one is logged in. Return empty list.
+        return new Response(JSON.stringify([]), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
+
+    // Use admin client for privileged operations
+    const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .select('first_name')
+        .eq('id', user.id)
+        .single();
+
+    if (profileError || !profile || !profile.first_name) {
+        // User has no profile or first name, so we can't match.
+        return new Response(JSON.stringify([]), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
+    const appUsername = profile.first_name;
+
+    const { data: settings, error: settingsError } = await supabaseAdmin.from('jellyfin_settings').select('url, api_key').single();
     if (settingsError || !settings || !settings.url || !settings.api_key) {
-      throw new Error('Jellyfin settings are not configured.');
+        throw new Error('Jellyfin settings are not configured.');
     }
 
     const jellyfin = new JellyfinClient(settings.url, settings.api_key);
-    const resumeItems = await jellyfin.getResumeItems();
+    await jellyfin.authenticate(); // Authenticate as admin
+    const jellyfinUsers = await jellyfin.getAllUsers();
+    const jellyfinUser = jellyfinUsers.find(u => u.Name.toLowerCase() === appUsername.toLowerCase());
+
+    if (!jellyfinUser) {
+        // No matching user found in Jellyfin, return empty list
+        return new Response(JSON.stringify([]), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
+
+    const resumeItems = await jellyfin.getResumeItems(jellyfinUser.Id);
 
     if (resumeItems.length === 0) {
       return new Response(JSON.stringify([]), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
