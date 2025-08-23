@@ -180,9 +180,9 @@ const MediaDetailPage = () => {
           </Button>
         );
       }
-      // For TV shows, if it's in the catalog, we show it's available.
-      // The play buttons are on the episodes themselves.
-      return <Badge variant="secondary" className="text-base p-3"><Check className="mr-2 h-4 w-4" />{t('available_on_jellyfin')}</Badge>;
+      // For TV shows, the play buttons are on the episodes themselves.
+      // So we don't show a main action button here.
+      return null;
     }
 
     if (!session) {
