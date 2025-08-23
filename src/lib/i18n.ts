@@ -6,6 +6,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "available": "Disponible",
       "resume_s_e": "Reprendre S{{season}} E{{episode}}",
       "play_s01e01": "Commencer S01 E01",
       "finding_next_episode": "Recherche du prochain épisode...",
@@ -477,6 +478,7 @@ const resources = {
   },
   en: {
     translation: {
+      "available": "Available",
       "resume_s_e": "Resume S{{season}} E{{episode}}",
       "play_s01e01": "Start S01 E01",
       "finding_next_episode": "Finding next episode...",

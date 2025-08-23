@@ -39,7 +39,30 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, sortBy = 
           },
         });
         if (error) throw error;
-        setItems(data.results.slice(0, 15)); // Limit to 15 items for the section
+        
+        const tmdbItems = data.results.slice(0, 15);
+        const tmdbIds = tmdbItems.map((item: MediaItem) => item.id);
+
+        if (tmdbIds.length > 0) {
+          const { data: catalogData, error: catalogError } = await supabase
+            .from('catalog_items')
+            .select('tmdb_id')
+            .in('tmdb_id', tmdbIds);
+          
+          if (catalogError) {
+            console.error("Error checking catalog availability", catalogError);
+            setItems(tmdbItems); // Fallback to showing items without availability
+          } else {
+            const availableIds = new Set(catalogData.map(item => item.tmdb_id));
+            const itemsWithAvailability = tmdbItems.map((item: MediaItem) => ({
+              ...item,
+              isAvailable: availableIds.has(item.id),
+            }));
+            setItems(itemsWithAvailability);
+          }
+        } else {
+          setItems(tmdbItems);
+        }
       } catch (error: any) {
         showError(error.message);
       } finally {

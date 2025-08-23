@@ -12,6 +12,7 @@ export interface MediaItem {
   media_type: 'movie' | 'tv' | 'anime';
   vote_average?: number;
   networks?: { name: string }[];
+  isAvailable?: boolean;
 }
 
 interface MediaGridProps {

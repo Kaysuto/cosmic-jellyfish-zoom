@@ -48,7 +48,30 @@ const FullSectionPage = () => {
       });
       if (error) throw error;
       
-      setMedia(data.results);
+      const tmdbItems = data.results;
+      const tmdbIds = tmdbItems.map((item: MediaItem) => item.id);
+
+      if (tmdbIds.length > 0) {
+        const { data: catalogData, error: catalogError } = await supabase
+          .from('catalog_items')
+          .select('tmdb_id')
+          .in('tmdb_id', tmdbIds);
+        
+        if (catalogError) {
+          console.error("Error checking catalog availability", catalogError);
+          setMedia(tmdbItems);
+        } else {
+          const availableIds = new Set(catalogData.map(item => item.tmdb_id));
+          const itemsWithAvailability = tmdbItems.map((item: MediaItem) => ({
+            ...item,
+            isAvailable: availableIds.has(item.id),
+          }));
+          setMedia(itemsWithAvailability);
+        }
+      } else {
+        setMedia(tmdbItems);
+      }
+
       const totalApiPages = Math.min(data.total_pages ?? 1, 500);
       setTotalPages(totalApiPages);
     } catch (error: any) {

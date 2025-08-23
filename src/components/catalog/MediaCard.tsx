@@ -2,10 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { Film, Star, Plus } from 'lucide-react';
+import { Film, Star, Plus, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { MediaItem } from './MediaGrid';
 import { useJellyfin } from '@/contexts/JellyfinContext';
+import { Badge } from '@/components/ui/badge';
 
 interface MediaCardProps {
   item: MediaItem;
@@ -24,6 +25,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
   const releaseDate = item.release_date || item.first_air_date;
   const year = releaseDate ? new Date(releaseDate).getFullYear() : '';
   const rating = item.vote_average ?? null;
+  const isAvailable = item.isAvailable;
   
   const linkTo = playUrl || (searchTerm
     ? `/media/${item.media_type}/${item.id}?fromSearch=${encodeURIComponent(searchTerm)}`
@@ -60,6 +62,15 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
             </div>
           )}
           
+          {isAvailable && (
+            <div className="absolute top-2 left-2 z-10">
+              <Badge className="bg-green-600 hover:bg-green-700 text-white border-transparent">
+                <Check className="h-3 w-3 mr-1" />
+                {t('available')}
+              </Badge>
+            </div>
+          )}
+
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
           <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
@@ -82,7 +93,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
         </div>
       </Link>
       
-      {showRequestButton && (
+      {showRequestButton && !isAvailable && (
         <button
           onClick={(e) => {
             e.preventDefault();

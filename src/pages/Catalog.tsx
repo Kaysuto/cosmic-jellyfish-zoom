@@ -40,7 +40,30 @@ const CatalogPage = () => {
         body: { query: debouncedSearchTerm, language: i18n.language },
       });
       if (error) throw error;
-      setSearchResults(data);
+
+      const tmdbItems = data;
+      const tmdbIds = tmdbItems.map((item: MediaItem) => item.id);
+
+      if (tmdbIds.length > 0) {
+        const { data: catalogData, error: catalogError } = await supabase
+          .from('catalog_items')
+          .select('tmdb_id')
+          .in('tmdb_id', tmdbIds);
+        
+        if (catalogError) {
+          console.error("Error checking catalog availability", catalogError);
+          setSearchResults(tmdbItems);
+        } else {
+          const availableIds = new Set(catalogData.map(item => item.tmdb_id));
+          const itemsWithAvailability = tmdbItems.map((item: MediaItem) => ({
+            ...item,
+            isAvailable: availableIds.has(item.id),
+          }));
+          setSearchResults(itemsWithAvailability);
+        }
+      } else {
+        setSearchResults(tmdbItems);
+      }
     } catch (error: any) {
       showError(error.message);
     } finally {
