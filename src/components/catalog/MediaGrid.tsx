@@ -3,8 +3,7 @@ import { motion } from 'framer-motion';
 import MediaCard from './MediaCard';
 
 export interface MediaItem {
-  id: number | string; // Can be TMDB ID (number) or Catalog UUID (string)
-  tmdb_id?: number; // Present for catalog items
+  id: number;
   title?: string;
   name?: string;
   poster_path?: string | null;

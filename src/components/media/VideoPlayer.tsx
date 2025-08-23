@@ -27,9 +27,8 @@ const VideoPlayer = ({ src, title, startTime, onTimeUpdate, onDurationChange }: 
 
   function onCanPlay(event: MediaCanPlayEvent) {
     console.log('Vidstack: Média prêt à être lu. Event:', event);
-    // Use type assertion to access currentTime, as the type definition seems to be missing it.
-    if (player.current && startTime && (player.current as any).currentTime === 0) {
-      (player.current as any).currentTime = startTime;
+    if (player.current && startTime && player.current.currentTime === 0) {
+      player.current.currentTime = startTime;
     }
   }
 
