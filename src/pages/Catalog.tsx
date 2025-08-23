@@ -111,9 +111,9 @@ const CatalogPage = () => {
         ) : (
           <div className="space-y-12">
             <ContinueWatching />
-            <MediaSection title={t('popular_movies')} mediaType="movie" />
-            <MediaSection title={t('popular_tv_shows')} mediaType="tv" />
-            <MediaSection title={t('popular_animes')} mediaType="anime" />
+            <MediaSection title={t('available_movies')} mediaType="movie" source="catalog" sortBy="created_at.desc" />
+            <MediaSection title={t('available_tv_shows')} mediaType="tv" source="catalog" sortBy="created_at.desc" />
+            <MediaSection title={t('available_animes')} mediaType="anime" source="catalog" sortBy="created_at.desc" />
           </div>
         )}
       </main>

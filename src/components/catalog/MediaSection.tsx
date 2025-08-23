@@ -16,9 +16,10 @@ interface MediaSectionProps {
   title: string;
   mediaType: 'movie' | 'tv' | 'anime';
   sortBy?: string;
+  source: 'tmdb' | 'catalog'; // New prop
 }
 
-const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, sortBy = 'popularity.desc' }) => {
+const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, sortBy = 'popularity.desc', source }) => {
   const { t, i18n } = useTranslation();
   const { session } = useSession();
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -30,16 +31,31 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, sortBy = 
     const fetchMedia = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('discover-media', {
-          body: {
-            mediaType,
-            language: i18n.language,
-            page: 1,
-            sortBy,
-          },
-        });
-        if (error) throw error;
-        setItems(data.results.slice(0, 15)); // Limit to 15 items for the section
+        let responseData;
+        if (source === 'catalog') {
+          const { data, error } = await supabase.functions.invoke('get-available-media', {
+            body: {
+              mediaType,
+              limit: 15, // Limit to 15 items for the section
+              sortBy: sortBy,
+            },
+          });
+          if (error) throw error;
+          responseData = data;
+        } else { // source === 'tmdb'
+          const { data, error } = await supabase.functions.invoke('discover-media', {
+            body: {
+              mediaType,
+              language: i18n.language,
+              page: 1,
+              sortBy,
+            },
+          });
+          if (error) throw error;
+          responseData = data;
+        }
+        
+        setItems(responseData.results.slice(0, 15)); // Ensure consistent slicing
       } catch (error: any) {
         showError(error.message);
       } finally {
@@ -47,7 +63,7 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, sortBy = 
       }
     };
     fetchMedia();
-  }, [mediaType, sortBy, i18n.language]);
+  }, [mediaType, sortBy, i18n.language, source]);
 
   const openRequestModal = (item: MediaItem) => {
     setSelectedItemForRequest(item);

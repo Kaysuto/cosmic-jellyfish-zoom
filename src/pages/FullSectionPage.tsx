@@ -23,34 +23,36 @@ const FullSectionPage = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [sortBy, setSortBy] = useState('popularity.desc');
+  const [sortBy, setSortBy] = useState('created_at.desc'); // Default sort for catalog items
   
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
 
   const sortOptions = {
-    'popularity.desc': t('sort_popularity_desc'),
+    'created_at.desc': t('sort_most_recent'), // New sort option
+    'title.asc': t('sort_title_asc'), // New sort option
     'release_date.desc': t('sort_release_date_desc'),
     'vote_average.desc': t('sort_vote_average_desc'),
   };
+
+  const ITEMS_PER_PAGE = 18; // Define items per page for consistency
 
   const fetchMedia = useCallback(async () => {
     if (!mediaType) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('discover-media', {
+      const { data, error } = await supabase.functions.invoke('get-available-media', {
         body: {
           mediaType,
-          language: i18n.language,
           page,
+          limit: ITEMS_PER_PAGE,
           sortBy,
         },
       });
       if (error) throw error;
       
       setMedia(data.results);
-      const totalApiPages = Math.min(data.total_pages ?? 1, 500);
-      setTotalPages(totalApiPages);
+      setTotalPages(data.total_pages);
     } catch (error: any) {
       showError(error.message);
     } finally {
@@ -75,9 +77,9 @@ const FullSectionPage = () => {
 
   const pageTitle = useMemo(() => {
     switch (mediaType) {
-      case 'movie': return t('popular_movies');
-      case 'tv': return t('popular_tv_shows');
-      case 'anime': return t('popular_animes');
+      case 'movie': return t('available_movies');
+      case 'tv': return t('available_tv_shows');
+      case 'anime': return t('available_animes');
       default: return t('catalog');
     }
   }, [mediaType, t]);
