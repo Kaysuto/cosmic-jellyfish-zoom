@@ -6,6 +6,9 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "resume_s_e": "Reprendre S{{season}} E{{episode}}",
+      "play_s01e01": "Commencer S01 E01",
+      "finding_next_episode": "Recherche du prochain épisode...",
       "continue_watching": "Reprendre la lecture",
       "available_on_jellyfin": "Disponible sur Jellyfin",
       "no_requests_to_display": "Aucune demande à afficher",
@@ -474,6 +477,9 @@ const resources = {
   },
   en: {
     translation: {
+      "resume_s_e": "Resume S{{season}} E{{episode}}",
+      "play_s01e01": "Start S01 E01",
+      "finding_next_episode": "Finding next episode...",
       "continue_watching": "Continue Watching",
       "available_on_jellyfin": "Available on Jellyfin",
       "no_requests_to_display": "No Requests to Display",

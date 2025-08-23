@@ -50,6 +50,12 @@ interface SeasonDetails {
   episodes: Episode[];
 }
 
+interface NextUpEpisode {
+  seasonNumber: number;
+  episodeNumber: number;
+  title: string;
+}
+
 type RequestStatus = 'available' | 'pending' | 'approved' | 'rejected' | null;
 
 const MediaDetailPage = () => {
@@ -72,6 +78,8 @@ const MediaDetailPage = () => {
   const [jellyfinId, setJellyfinId] = useState<string | null>(null);
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
+  const [nextUpEpisode, setNextUpEpisode] = useState<NextUpEpisode | null>(null);
+  const [loadingNextUp, setLoadingNextUp] = useState(false);
 
   const fromSearch = searchParams.get('fromSearch');
 
@@ -101,6 +109,7 @@ const MediaDetailPage = () => {
     const fetchAllDetails = async () => {
       if (!type || !id) return;
       setLoading(true);
+      setLoadingNextUp(true);
       try {
         const apiMediaType = type === 'anime' ? 'tv' : type;
         
@@ -123,9 +132,16 @@ const MediaDetailPage = () => {
 
         if (catalogResult.error) {
           console.error("Error fetching from catalog:", catalogResult.error);
-        } else if (catalogResult.data) {
-          setJellyfinId(catalogResult.data.jellyfin_id);
+        } else if (catalogResult.data?.jellyfin_id) {
+          const jfId = catalogResult.data.jellyfin_id;
+          setJellyfinId(jfId);
+          if (apiMediaType === 'tv') {
+            const { data: nextUpData, error: nextUpError } = await supabase.functions.invoke('get-jellyfin-next-up', { body: { seriesJellyfinId: jfId } });
+            if (nextUpError) console.error("Error fetching next up:", nextUpError);
+            else setNextUpEpisode(nextUpData);
+          }
         }
+        setLoadingNextUp(false);
 
         fetchRequestStatus();
 
@@ -166,43 +182,42 @@ const MediaDetailPage = () => {
     setRequestModalOpen(true);
   };
 
-  const handlePlay = () => {
+  const handlePlay = (season?: number, episode?: number) => {
     if (!type || !id) return;
-    navigate(`/media/${type}/${id}/play`);
+    let url = `/media/${type}/${id}/play`;
+    if (season !== undefined && episode !== undefined) {
+      url += `?season=${season}&episode=${episode}`;
+    }
+    navigate(url);
   };
 
   const renderActionButton = () => {
     if (jellyfinId) {
       if (type === 'movie') {
-        return (
-          <Button size="lg" onClick={handlePlay}>
-            <Play className="mr-2 h-4 w-4" /> {t('play')}
-          </Button>
-        );
+        return <Button size="lg" onClick={() => handlePlay()}><Play className="mr-2 h-4 w-4" /> {t('play')}</Button>;
       }
-      // For TV shows, the play buttons are on the episodes themselves.
-      // So we don't show a main action button here.
-      return null;
+      if (type === 'tv' || type === 'anime') {
+        if (loadingNextUp) {
+          return <Button size="lg" disabled><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('finding_next_episode')}</Button>;
+        }
+        if (nextUpEpisode) {
+          const buttonText = nextUpEpisode.seasonNumber === 1 && nextUpEpisode.episodeNumber === 1
+            ? t('play_s01e01')
+            : t('resume_s_e', { season: nextUpEpisode.seasonNumber, episode: nextUpEpisode.episodeNumber });
+          return <Button size="lg" onClick={() => handlePlay(nextUpEpisode.seasonNumber, nextUpEpisode.episodeNumber)}><Play className="mr-2 h-4 w-4" /> {buttonText}</Button>;
+        }
+      }
     }
 
     if (!session) {
-      return (
-        <Button size="lg" onClick={() => navigate('/login')}>
-          <User className="mr-2 h-4 w-4" /> {t('login_to_request')}
-        </Button>
-      );
+      return <Button size="lg" onClick={() => navigate('/login')}><User className="mr-2 h-4 w-4" /> {t('login_to_request')}</Button>;
     }
 
     if (requestStatus === 'pending' || requestStatus === 'approved') {
       return <Button size="lg" disabled><Check className="mr-2 h-4 w-4" /> {t('requested')}</Button>;
     }
     
-    return (
-      <Button size="lg" onClick={handleRequest}>
-        <Film className="mr-2 h-4 w-4" />
-        {t('request')}
-      </Button>
-    );
+    return <Button size="lg" onClick={handleRequest}><Film className="mr-2 h-4 w-4" /> {t('request')}</Button>;
   };
 
   if (loading) {
@@ -333,7 +348,7 @@ const MediaDetailPage = () => {
                             )}
                             {jellyfinId && (
                               <button
-                                onClick={() => navigate(`/media/${type}/${id}/play?season=${selectedSeasonNumber}&episode=${episode.episode_number}`)}
+                                onClick={() => handlePlay(selectedSeasonNumber!, episode.episode_number)}
                                 className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                               >
                                 <Play className="h-10 w-10 text-white" />
