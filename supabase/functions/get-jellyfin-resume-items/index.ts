@@ -63,7 +63,7 @@ class JellyfinClient {
 
   async getResumeItems() {
     if (!this.userId) await this.authenticate();
-    const fields = 'ProviderIds,PremiereDate,Overview,Genres,ImageTags,VoteAverage,RunTimeTicks';
+    const fields = 'ProviderIds,PremiereDate,Overview,Genres,ImageTags,VoteAverage,RunTimeTicks,Type,SeriesProviderIds';
     const url = `${this.baseUrl}/Users/${this.userId}/Items/Resume?Recursive=true&Fields=${fields}&Limit=20&IncludeItemTypes=Movie,Episode`;
     const response = await fetch(url, { headers: await this.getAuthHeaders() });
     if (!response.ok) {
@@ -98,27 +98,46 @@ serve(async (req) => {
     const jellyfin = new JellyfinClient(settings.url, settings.api_key);
     const resumeItems = await jellyfin.getResumeItems();
 
-    const jellyfinIds = resumeItems.map((item: any) => item.Id);
-    if (jellyfinIds.length === 0) {
+    if (resumeItems.length === 0) {
+      return new Response(JSON.stringify([]), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
+
+    const tmdbIds = resumeItems.map((item: any) => {
+      if (item.Type === 'Movie') {
+        return item.ProviderIds?.Tmdb ? parseInt(item.ProviderIds.Tmdb, 10) : null;
+      }
+      if (item.Type === 'Episode') {
+        return item.SeriesProviderIds?.Tmdb ? parseInt(item.SeriesProviderIds.Tmdb, 10) : null;
+      }
+      return null;
+    }).filter(Boolean);
+
+    if (tmdbIds.length === 0) {
       return new Response(JSON.stringify([]), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
     }
 
     const { data: catalogItems, error: catalogError } = await supabaseAdmin
       .from('catalog_items')
-      .select('jellyfin_id, tmdb_id, media_type, title, poster_path')
-      .in('jellyfin_id', jellyfinIds);
+      .select('tmdb_id, media_type, title, poster_path')
+      .in('tmdb_id', [...new Set(tmdbIds)]);
 
     if (catalogError) throw catalogError;
 
-    const catalogMap = new Map(catalogItems.map(item => [item.jellyfin_id, item]));
+    const catalogMap = new Map(catalogItems.map(item => [item.tmdb_id, item]));
 
     const mergedItems = resumeItems.map((jellyfinItem: any) => {
-      const catalogItem = catalogMap.get(jellyfinItem.Id);
+      const tmdbId = jellyfinItem.Type === 'Movie' 
+        ? (jellyfinItem.ProviderIds?.Tmdb ? parseInt(jellyfinItem.ProviderIds.Tmdb, 10) : null)
+        : (jellyfinItem.SeriesProviderIds?.Tmdb ? parseInt(jellyfinItem.SeriesProviderIds.Tmdb, 10) : null);
+
+      if (!tmdbId) return null;
+
+      const catalogItem = catalogMap.get(tmdbId);
       if (!catalogItem) return null;
 
       return {
         ...catalogItem,
-        id: catalogItem.tmdb_id, // Use tmdb_id as the primary ID for the frontend
+        id: catalogItem.tmdb_id,
         name: catalogItem.title,
         playback_position_ticks: jellyfinItem.UserData.PlaybackPositionTicks,
         runtime_ticks: jellyfinItem.RunTimeTicks,
