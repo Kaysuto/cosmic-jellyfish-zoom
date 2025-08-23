@@ -2,15 +2,22 @@ import 'vidstack/styles/defaults.css';
 import 'vidstack/styles/community-skin/video.css';
 
 import { MediaPlayer, MediaOutlet, MediaCommunitySkin } from '@vidstack/react';
-import type { MediaCanPlayEvent, MediaErrorEvent } from 'vidstack';
+import type { 
+  MediaCanPlayEvent, 
+  MediaErrorEvent, 
+  TimeUpdateEventDetail,
+  DurationChangeEventDetail
+} from 'vidstack';
 import { showError } from '@/utils/toast';
 
 interface VideoPlayerProps {
   src: string;
   title: string;
+  onTimeUpdate?: (time: number) => void;
+  onDurationChange?: (duration: number) => void;
 }
 
-const VideoPlayer = ({ src, title }: VideoPlayerProps) => {
+const VideoPlayer = ({ src, title, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
   if (!src) return null;
 
   function onCanPlay(event: MediaCanPlayEvent) {
@@ -22,6 +29,19 @@ const VideoPlayer = ({ src, title }: VideoPlayerProps) => {
     showError(`Erreur du lecteur vidéo. Vérifiez que CORS est bien configuré sur votre serveur Jellyfin.`);
   }
 
+  function onTimeUpdateEvent(detail: TimeUpdateEventDetail) {
+    const time = detail.currentTime;
+    if (onTimeUpdate) {
+      onTimeUpdate(time);
+    }
+  }
+
+  function onDurationChangeEvent(duration: DurationChangeEventDetail) {
+    if (onDurationChange && !isNaN(duration) && duration > 0) {
+      onDurationChange(duration);
+    }
+  }
+
   return (
     <MediaPlayer
       className="w-full max-h-screen"
@@ -30,6 +50,8 @@ const VideoPlayer = ({ src, title }: VideoPlayerProps) => {
       playsInline
       onCanPlay={onCanPlay}
       onError={onError}
+      onTimeUpdate={onTimeUpdateEvent}
+      onDurationChange={onDurationChangeEvent}
       aspectRatio="16/9"
     >
       <MediaOutlet />
