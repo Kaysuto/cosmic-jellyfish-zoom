@@ -25,9 +25,11 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
   const year = releaseDate ? new Date(releaseDate).getFullYear() : '';
   const rating = item.vote_average ?? null;
   
+  const tmdbId = 'tmdb_id' in item && item.tmdb_id ? item.tmdb_id : item.id;
+
   const linkTo = playUrl || (searchTerm
-    ? `/media/${item.media_type}/${item.id}?fromSearch=${encodeURIComponent(searchTerm)}`
-    : `/media/${item.media_type}/${item.id}`);
+    ? `/media/${item.media_type}/${tmdbId}?fromSearch=${encodeURIComponent(searchTerm)}`
+    : `/media/${item.media_type}/${tmdbId}`);
 
   const getImageUrl = (path: string | null | undefined) => {
     if (!path) return null;
@@ -35,7 +37,8 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
       return `https://image.tmdb.org/t/p/w500${path}`;
     }
     if (jellyfinUrl && path.startsWith('Items/')) {
-      return `${jellyfinUrl}/${path}`;
+      const baseUrl = jellyfinUrl.endsWith('/') ? jellyfinUrl.slice(0, -1) : jellyfinUrl;
+      return `${baseUrl}/${path}`;
     }
     return path;
   };
