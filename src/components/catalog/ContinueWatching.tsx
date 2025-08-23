@@ -5,6 +5,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Skeleton } from '@/components/ui/skeleton';
 import MediaCard from './MediaCard';
 import { useSession } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
 
 const ContinueWatching = () => {
   const { t } = useTranslation();
@@ -29,11 +30,15 @@ const ContinueWatching = () => {
       ) : (
         <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
           <CarouselContent className="-ml-4">
-            {items.map((item) => (
-              <CarouselItem key={item.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 pl-4">
-                <MediaCard item={item} showRequestButton={false} progress={item.progress} />
-              </CarouselItem>
-            ))}
+            {items.map((item) => {
+              const progressInSeconds = item.playback_position_ticks / 10000000;
+              const resumeUrl = `/media/${item.media_type}/${item.id}/play?t=${progressInSeconds}`;
+              return (
+                <CarouselItem key={item.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 pl-4">
+                  <MediaCard item={item} showRequestButton={false} progress={item.progress} playUrl={resumeUrl} />
+                </CarouselItem>
+              );
+            })}
           </CarouselContent>
           <CarouselPrevious className="hidden sm:flex" />
           <CarouselNext className="hidden sm:flex" />

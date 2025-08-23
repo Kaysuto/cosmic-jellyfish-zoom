@@ -3,25 +3,33 @@ import 'vidstack/styles/community-skin/video.css';
 
 import { MediaPlayer, MediaOutlet, MediaCommunitySkin } from '@vidstack/react';
 import type { 
+  MediaPlayerElement,
   MediaCanPlayEvent, 
   MediaErrorEvent, 
-  TimeUpdateEventDetail,
-  DurationChangeEventDetail
+  MediaTimeUpdateEvent,
+  MediaDurationChangeEvent
 } from 'vidstack';
 import { showError } from '@/utils/toast';
+import { useRef } from 'react';
 
 interface VideoPlayerProps {
   src: string;
   title: string;
+  startTime?: number | null;
   onTimeUpdate?: (time: number) => void;
   onDurationChange?: (duration: number) => void;
 }
 
-const VideoPlayer = ({ src, title, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
+const VideoPlayer = ({ src, title, startTime, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
+  const player = useRef<MediaPlayerElement>(null);
+  
   if (!src) return null;
 
   function onCanPlay(event: MediaCanPlayEvent) {
     console.log('Vidstack: Média prêt à être lu. Event:', event);
+    if (player.current && startTime && player.current.currentTime === 0) {
+      player.current.currentTime = startTime;
+    }
   }
 
   function onError(event: MediaErrorEvent) {
@@ -29,14 +37,16 @@ const VideoPlayer = ({ src, title, onTimeUpdate, onDurationChange }: VideoPlayer
     showError(`Erreur du lecteur vidéo. Vérifiez que CORS est bien configuré sur votre serveur Jellyfin.`);
   }
 
-  function onTimeUpdateEvent(detail: TimeUpdateEventDetail) {
+  function onTimeUpdateEvent(event: MediaTimeUpdateEvent) {
+    const detail = (event as any).detail;
     const time = detail.currentTime;
     if (onTimeUpdate) {
       onTimeUpdate(time);
     }
   }
 
-  function onDurationChangeEvent(duration: DurationChangeEventDetail) {
+  function onDurationChangeEvent(event: MediaDurationChangeEvent) {
+    const duration = (event as any).detail;
     if (onDurationChange && !isNaN(duration) && duration > 0) {
       onDurationChange(duration);
     }
@@ -44,10 +54,12 @@ const VideoPlayer = ({ src, title, onTimeUpdate, onDurationChange }: VideoPlayer
 
   return (
     <MediaPlayer
+      ref={player}
       className="w-full max-h-screen"
       title={title}
       src={src}
       playsInline
+      autoPlay
       onCanPlay={onCanPlay}
       onError={onError}
       onTimeUpdate={onTimeUpdateEvent}

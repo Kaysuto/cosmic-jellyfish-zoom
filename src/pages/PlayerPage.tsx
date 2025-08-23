@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
@@ -15,6 +15,8 @@ const PlayerPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { session } = useSession();
+  const [searchParams] = useSearchParams();
+  const startTime = searchParams.get('t');
 
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
   const [mediaTitle, setMediaTitle] = useState<string>('');
@@ -44,11 +46,18 @@ const PlayerPage = () => {
   );
 
   useEffect(() => {
-    return () => {
+    const handleBeforeUnload = () => {
       if (currentTimeRef.current > 0 && !hasSavedOnUnmount.current) {
         updateProgress(currentTimeRef.current);
         hasSavedOnUnmount.current = true;
       }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      handleBeforeUnload(); // Also save on component unmount
     };
   }, [updateProgress]);
 
@@ -134,6 +143,7 @@ const PlayerPage = () => {
             title={mediaTitle} 
             onTimeUpdate={handleTimeUpdate}
             onDurationChange={handleDurationChange}
+            startTime={startTime ? Number(startTime) : null}
           />
         )}
       </main>
@@ -144,14 +154,12 @@ const PlayerPage = () => {
 function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
-  return (...args: Parameters<F>): Promise<ReturnType<F>> =>
-    new Promise(resolve => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-
-      timeout = setTimeout(() => resolve(func(...args)), waitFor);
-    });
+  return (...args: Parameters<F>): void => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(() => func(...args), waitFor);
+  };
 }
 
 export default PlayerPage;

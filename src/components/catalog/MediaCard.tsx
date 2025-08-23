@@ -13,9 +13,10 @@ interface MediaCardProps {
   onRequest?: (item: MediaItem) => void;
   searchTerm?: string;
   progress?: number;
+  playUrl?: string;
 }
 
-const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, onRequest, searchTerm, progress }) => {
+const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, onRequest, searchTerm, progress, playUrl }) => {
   const { t } = useTranslation();
   const { jellyfinUrl } = useJellyfin();
 
@@ -24,9 +25,9 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
   const year = releaseDate ? new Date(releaseDate).getFullYear() : '';
   const rating = item.vote_average ?? null;
   
-  const linkTo = searchTerm
+  const linkTo = playUrl || (searchTerm
     ? `/media/${item.media_type}/${item.id}?fromSearch=${encodeURIComponent(searchTerm)}`
-    : `/media/${item.media_type}/${item.id}`;
+    : `/media/${item.media_type}/${item.id}`);
 
   const getImageUrl = (path: string | null | undefined) => {
     if (!path) return null;
