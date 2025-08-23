@@ -9,6 +9,7 @@ import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import VideoPlayer from '@/components/media/VideoPlayer';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSession } from '@/contexts/AuthContext';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 
 const PlayerPage = () => {
   const { type, id } = useParams<{ type: string; id: string }>();
@@ -126,7 +127,17 @@ const PlayerPage = () => {
       } catch (err: any) {
         console.error("Error fetching stream URL:", err);
         const baseMessage = "Une erreur est survenue lors du chargement de la vidéo.";
-        const details = err.message || "";
+        let details = err.message || "";
+        if (err instanceof FunctionsHttpError) {
+          try {
+            const errorJson = await err.context.json();
+            if (errorJson.error) {
+              details = errorJson.error;
+            }
+          } catch (e) {
+            // Ignore if context is not valid JSON
+          }
+        }
         setError(`${baseMessage} Détails: ${details}`);
       } finally {
         setLoading(false);

@@ -63,12 +63,15 @@ class JellyfinClient {
 
   async findEpisode(seriesJellyfinId: string, seasonNumber: number, episodeNumber: number) {
     if (!this.userId) await this.authenticate();
-    const url = `${this.baseUrl}/Users/${this.userId}/Items?ParentId=${seriesJellyfinId}&Recursive=true&IncludeItemTypes=Episode&fields=ParentIndexNumber,IndexNumber`;
+    const url = `${this.baseUrl}/Shows/${seriesJellyfinId}/Episodes?season=${seasonNumber}&userId=${this.userId}&fields=ParentIndexNumber,IndexNumber`;
     const response = await fetch(url, { headers: await this.getAuthHeaders() });
-    if (!response.ok) throw new Error(`Failed to fetch episodes from Jellyfin: ${response.status}`);
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => '');
+      throw new Error(`Failed to fetch episodes from Jellyfin for season ${seasonNumber}: ${response.status}. ${errorBody}`);
+    }
     const data = await response.json();
     
-    const episode = data.Items.find(ep => ep.ParentIndexNumber === seasonNumber && ep.IndexNumber === episodeNumber);
+    const episode = data.Items.find(ep => ep.IndexNumber === episodeNumber);
     return episode;
   }
 }
