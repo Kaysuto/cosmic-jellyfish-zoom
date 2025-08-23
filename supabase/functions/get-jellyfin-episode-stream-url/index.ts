@@ -119,7 +119,7 @@ serve(async (req) => {
     }
     const episodeJellyfinId = episode.Id;
 
-    const streamUrl = `${settings.url}/Videos/${episodeJellyfinId}/stream?api_key=${settings.api_key}&Container=mp4&static=true`;
+    const streamUrl = `${settings.url}/Videos/${episodeJellyfinId}/stream?api_key=${settings.api_key}&Container=webm&static=true`;
 
     return new Response(JSON.stringify({ streamUrl, title: episode.Name }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
