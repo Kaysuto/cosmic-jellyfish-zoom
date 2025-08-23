@@ -96,9 +96,13 @@ const App = () => (
                       </Route>
                       <Route element={<ProtectedRoute />}>
                         <Route path="/requests" element={<MyRequestsPage />} />
-                        <Route path="/media/:type/:id/play" element={<PlayerPage />} />
                       </Route>
                     </Route>
+                    
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="/media/:type/:id/play" element={<PlayerPage />} />
+                    </Route>
+
                     <Route element={<AdminRoute />}>
                       <Route path="/admin" element={<Admin />}>
                         <Route index element={<AdminDashboard />} />
@@ -112,6 +116,7 @@ const App = () => (
                         <Route path="logs" element={<LogsPage />} />
                       </Route>
                     </Route>
+                    
                     <Route path="/login" element={<Login />} />
                     <Route path="/update-password" element={<UpdatePassword />} />
                     <Route path="*" element={<NotFound />} />
