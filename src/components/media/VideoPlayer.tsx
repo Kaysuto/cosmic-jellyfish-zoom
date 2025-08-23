@@ -24,12 +24,13 @@ const VideoPlayer = ({ src, title }: VideoPlayerProps) => {
 
   return (
     <MediaPlayer
-      className="w-full h-full"
+      className="w-full max-h-screen"
       title={title}
       src={src}
       playsInline
       onCanPlay={onCanPlay}
       onError={onError}
+      aspectRatio="16/9"
     >
       <MediaOutlet />
       <MediaCommunitySkin />
