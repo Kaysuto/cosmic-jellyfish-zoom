@@ -20,7 +20,7 @@ const PlayerPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchMediaAndSetUrl = async () => {
+    const fetchStreamUrl = async () => {
       setLoading(true);
       setError(null);
 
@@ -39,19 +39,25 @@ const PlayerPage = () => {
 
         setMediaTitle(catalogItem.title);
 
-        // 2. Construct the URL to our new proxy function
-        const proxyUrl = `https://tgffkwoekuaetahrwioo.supabase.co/functions/v1/stream-jellyfin-video?itemId=${catalogItem.jellyfin_id}`;
-        setStreamUrl(proxyUrl);
+        // 2. Get the stream URL from our secure edge function
+        const { data: streamData, error: functionError } = await supabase.functions.invoke('get-jellyfin-stream-url', {
+          body: { itemId: catalogItem.jellyfin_id },
+        });
+
+        if (functionError) throw functionError;
+        if (streamData.error) throw new Error(streamData.error);
+
+        setStreamUrl(streamData.streamUrl);
 
       } catch (err: any) {
-        console.error("Error setting up stream URL:", err);
+        console.error("Error fetching stream URL:", err);
         setError(err.message || "Une erreur est survenue lors du chargement de la vidéo.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMediaAndSetUrl();
+    fetchStreamUrl();
   }, [id, type]);
 
   return (
