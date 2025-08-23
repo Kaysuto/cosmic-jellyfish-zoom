@@ -34,8 +34,8 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({ item }) => {
           )}
           <div className="flex-grow min-w-0">
             <h4 className="font-semibold text-sm line-clamp-2 group-hover:text-primary">{title}</h4>
-            <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mt-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1 shrink-0">
                 <Clock className="h-3 w-3" />
                 {airTime}
               </span>
