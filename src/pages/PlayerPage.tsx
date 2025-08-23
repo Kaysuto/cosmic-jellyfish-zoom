@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
@@ -11,8 +11,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const PlayerPage = () => {
   const { type, id } = useParams<{ type: string; id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const season = searchParams.get('season');
+  const episode = searchParams.get('episode');
+  const isEpisodePlayback = type !== 'movie' && season && episode;
 
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
   const [mediaTitle, setMediaTitle] = useState<string>('');
@@ -31,28 +36,40 @@ const PlayerPage = () => {
       setError(null);
 
       try {
-        // 1. Get Jellyfin ID from our catalog using TMDB ID
-        const { data: catalogItem, error: catalogError } = await supabase
-          .from('catalog_items')
-          .select('jellyfin_id, title')
-          .eq('tmdb_id', Number(id))
-          .eq('media_type', type === 'anime' ? 'tv' : type)
-          .single();
+        let streamData;
+        let functionError;
 
-        if (catalogError || !catalogItem) {
-          throw new Error("Ce média n'a pas été trouvé dans votre catalogue Jellyfin.");
+        if (isEpisodePlayback) {
+          const result = await supabase.functions.invoke('get-jellyfin-episode-stream-url', {
+            body: { 
+              seriesTmdbId: Number(id), 
+              seasonNumber: Number(season), 
+              episodeNumber: Number(episode) 
+            },
+          });
+          streamData = result.data;
+          functionError = result.error;
+          if (!functionError) setMediaTitle(streamData.title);
+        } else {
+          // Movie logic
+          const { data: catalogItem, error: catalogError } = await supabase
+            .from('catalog_items')
+            .select('jellyfin_id, title')
+            .eq('tmdb_id', Number(id))
+            .eq('media_type', 'movie')
+            .single();
+
+          if (catalogError || !catalogItem || !catalogItem.jellyfin_id) {
+            throw new Error("Ce film n'a pas été trouvé dans votre catalogue Jellyfin.");
+          }
+          
+          const result = await supabase.functions.invoke('get-jellyfin-stream-url', {
+            body: { itemId: catalogItem.jellyfin_id },
+          });
+          streamData = result.data;
+          functionError = result.error;
+          if (!functionError) setMediaTitle(catalogItem.title);
         }
-        
-        if (!catalogItem.jellyfin_id) {
-          throw new Error("L'ID Jellyfin pour ce média est manquant dans le catalogue.");
-        }
-
-        setMediaTitle(catalogItem.title);
-
-        // 2. Get the stream URL from our secure edge function
-        const { data: streamData, error: functionError } = await supabase.functions.invoke('get-jellyfin-stream-url', {
-          body: { itemId: catalogItem.jellyfin_id },
-        });
 
         if (functionError) throw functionError;
         if (streamData.error) throw new Error(streamData.error);
@@ -70,7 +87,7 @@ const PlayerPage = () => {
     };
 
     fetchStreamUrl();
-  }, [id, type]);
+  }, [id, type, season, episode, isEpisodePlayback]);
 
   return (
     <div className="bg-black h-screen w-screen flex flex-col">

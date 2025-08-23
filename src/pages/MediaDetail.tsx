@@ -172,7 +172,7 @@ const MediaDetailPage = () => {
   };
 
   const renderActionButton = () => {
-    if (jellyfinId) {
+    if (jellyfinId && type === 'movie') {
       return (
         <Button size="lg" onClick={handlePlay}>
           <Play className="mr-2 h-4 w-4" /> {t('play')}
@@ -192,6 +192,14 @@ const MediaDetailPage = () => {
       return <Button size="lg" disabled><Check className="mr-2 h-4 w-4" /> {t('requested')}</Button>;
     }
     
+    if (requestStatus === 'available' && type === 'movie') {
+       return (
+        <Button size="lg" onClick={handlePlay}>
+          <Play className="mr-2 h-4 w-4" /> {t('play')}
+        </Button>
+      );
+    }
+
     return (
       <Button size="lg" onClick={handleRequest}>
         <Film className="mr-2 h-4 w-4" />
@@ -317,14 +325,22 @@ const MediaDetailPage = () => {
                   ) : selectedSeason && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                       {selectedSeason.episodes.map(episode => (
-                        <Card key={episode.id} className="overflow-hidden transition-transform hover:scale-105">
-                          <div className="aspect-video bg-muted">
+                        <Card key={episode.id} className="overflow-hidden transition-transform hover:scale-105 group">
+                          <div className="relative aspect-video bg-muted">
                             {episode.still_path ? (
                               <img src={`https://image.tmdb.org/t/p/w500${episode.still_path}`} alt={episode.name} className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                                 <Tv className="h-8 w-8" />
                               </div>
+                            )}
+                            {jellyfinId && (
+                              <button
+                                onClick={() => navigate(`/media/${type}/${id}/play?season=${selectedSeasonNumber}&episode=${episode.episode_number}`)}
+                                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <Play className="h-10 w-10 text-white" />
+                              </button>
                             )}
                           </div>
                           <CardContent className="p-3">
