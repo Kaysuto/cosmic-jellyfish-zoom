@@ -12,9 +12,10 @@ interface MediaCardProps {
   showRequestButton?: boolean;
   onRequest?: (item: MediaItem) => void;
   searchTerm?: string;
+  progress?: number;
 }
 
-const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, onRequest, searchTerm }) => {
+const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, onRequest, searchTerm, progress }) => {
   const { t } = useTranslation();
   const { jellyfinUrl } = useJellyfin();
 
@@ -29,15 +30,12 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
 
   const getImageUrl = (path: string | null | undefined) => {
     if (!path) return null;
-    // TMDB paths always start with a slash
     if (path.startsWith('/')) {
       return `https://image.tmdb.org/t/p/w500${path}`;
     }
-    // Jellyfin paths are relative, e.g., "Items/..."
     if (jellyfinUrl && path.startsWith('Items/')) {
       return `${jellyfinUrl}/${path}`;
     }
-    // It might be a full URL already, or we can't construct it
     return path;
   };
 
@@ -75,6 +73,11 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
               )}
             </div>
           </div>
+          {progress !== undefined && progress > 0 && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-500/50">
+              <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
+            </div>
+          )}
         </div>
       </Link>
       

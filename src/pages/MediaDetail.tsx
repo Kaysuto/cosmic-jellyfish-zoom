@@ -172,12 +172,17 @@ const MediaDetailPage = () => {
   };
 
   const renderActionButton = () => {
-    if (jellyfinId && type === 'movie') {
-      return (
-        <Button size="lg" onClick={handlePlay}>
-          <Play className="mr-2 h-4 w-4" /> {t('play')}
-        </Button>
-      );
+    if (jellyfinId) {
+      if (type === 'movie') {
+        return (
+          <Button size="lg" onClick={handlePlay}>
+            <Play className="mr-2 h-4 w-4" /> {t('play')}
+          </Button>
+        );
+      }
+      // For TV shows, if it's in the catalog, we show it's available.
+      // The play buttons are on the episodes themselves.
+      return <Badge variant="secondary" className="text-base p-3"><Check className="mr-2 h-4 w-4" />{t('available_on_jellyfin')}</Badge>;
     }
 
     if (!session) {
@@ -192,14 +197,6 @@ const MediaDetailPage = () => {
       return <Button size="lg" disabled><Check className="mr-2 h-4 w-4" /> {t('requested')}</Button>;
     }
     
-    if (requestStatus === 'available' && type === 'movie') {
-       return (
-        <Button size="lg" onClick={handlePlay}>
-          <Play className="mr-2 h-4 w-4" /> {t('play')}
-        </Button>
-      );
-    }
-
     return (
       <Button size="lg" onClick={handleRequest}>
         <Film className="mr-2 h-4 w-4" />
