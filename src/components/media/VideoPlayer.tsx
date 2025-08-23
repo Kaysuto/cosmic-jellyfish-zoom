@@ -57,7 +57,7 @@ const VideoPlayer = ({ src, title, startTime, onTimeUpdate, onDurationChange }: 
       ref={player}
       className="w-full max-h-screen"
       title={title}
-      src={src}
+      src={{ src: src, type: 'video/mp4' }}
       playsInline
       autoPlay
       onCanPlay={onCanPlay}

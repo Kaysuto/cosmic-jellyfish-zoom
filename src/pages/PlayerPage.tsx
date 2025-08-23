@@ -82,28 +82,47 @@ const PlayerPage = () => {
       setError(null);
 
       try {
-        const { data: catalogItem, error: catalogError } = await supabase
-          .from('catalog_items')
-          .select('jellyfin_id, title')
-          .eq('tmdb_id', Number(id))
-          .eq('media_type', type)
-          .single();
+        const season = searchParams.get('season');
+        const episode = searchParams.get('episode');
+        const apiMediaType = type === 'anime' ? 'tv' : type;
 
-        if (catalogError || !catalogItem || !catalogItem.jellyfin_id) {
-          throw new Error("Ce média n'a pas été trouvé dans votre catalogue Jellyfin.");
+        if (apiMediaType === 'tv' && season && episode) {
+          const { data: streamData, error: functionError } = await supabase.functions.invoke('get-jellyfin-episode-stream-url', {
+            body: { 
+              seriesTmdbId: Number(id),
+              seasonNumber: Number(season),
+              episodeNumber: Number(episode)
+            },
+          });
+
+          if (functionError) throw functionError;
+          if (streamData.error) throw new Error(streamData.error);
+          
+          setMediaTitle(streamData.title || `S${season} E${episode}`);
+          setStreamUrl(streamData.streamUrl);
+        } else {
+          const { data: catalogItem, error: catalogError } = await supabase
+            .from('catalog_items')
+            .select('jellyfin_id, title')
+            .eq('tmdb_id', Number(id))
+            .eq('media_type', apiMediaType)
+            .single();
+
+          if (catalogError || !catalogItem || !catalogItem.jellyfin_id) {
+            throw new Error("Ce média n'a pas été trouvé dans votre catalogue Jellyfin.");
+          }
+          
+          setMediaTitle(catalogItem.title);
+
+          const { data: streamData, error: functionError } = await supabase.functions.invoke('get-jellyfin-stream-url', {
+            body: { itemId: catalogItem.jellyfin_id },
+          });
+
+          if (functionError) throw functionError;
+          if (streamData.error) throw new Error(streamData.error);
+
+          setStreamUrl(streamData.streamUrl);
         }
-        
-        setMediaTitle(catalogItem.title);
-
-        const { data: streamData, error: functionError } = await supabase.functions.invoke('get-jellyfin-stream-url', {
-          body: { itemId: catalogItem.jellyfin_id },
-        });
-
-        if (functionError) throw functionError;
-        if (streamData.error) throw new Error(streamData.error);
-
-        setStreamUrl(streamData.streamUrl);
-
       } catch (err: any) {
         console.error("Error fetching stream URL:", err);
         const baseMessage = "Une erreur est survenue lors du chargement de la vidéo.";
@@ -115,7 +134,7 @@ const PlayerPage = () => {
     };
 
     fetchStreamUrl();
-  }, [id, type]);
+  }, [id, type, searchParams]);
 
   return (
     <div className="bg-black h-screen w-screen flex flex-col">
