@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check } from 'lucide-react';
+import { Check, Hourglass } from 'lucide-react';
 import { MediaItem } from '@/components/catalog/MediaGrid';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ScheduleCardProps {
   item: MediaItem;
@@ -36,11 +37,23 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({ item }) => {
               </p>
             )}
             <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mt-1 text-xs text-muted-foreground">
-              {item.isAvailable && (
+              {item.isAvailable ? (
                 <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-none px-2 py-0.5">
                   <Check className="h-3 w-3 mr-1" />
-                  {t('series_available')}
+                  {t('available')}
                 </Badge>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-none px-2 py-0.5">
+                      <Hourglass className="h-3 w-3 mr-1" />
+                      {t('soon')}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t('soon_available')}</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           </div>

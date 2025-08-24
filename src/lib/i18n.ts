@@ -6,6 +6,8 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "soon": "Bientôt",
+      "soon_available": "Bientôt disponible",
       "series_available": "Série disponible",
       "jellyfin_tab_title": "Jellyfin",
       "jellyfin_tab_desc": "Gérez la connexion à votre instance Jellyfin et les intégrations associées.",
@@ -482,6 +484,8 @@ const resources = {
   },
   en: {
     translation: {
+      "soon": "Soon",
+      "soon_available": "Coming soon",
       "series_available": "Series available",
       "jellyfin_tab_title": "Jellyfin",
       "jellyfin_tab_desc": "Manage the connection to your Jellyfin instance and related integrations.",
