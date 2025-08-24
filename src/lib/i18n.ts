@@ -6,6 +6,9 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "series_available": "Série disponible",
+      "jellyfin_tab_title": "Jellyfin",
+      "jellyfin_tab_desc": "Gérez la connexion à votre instance Jellyfin et les intégrations associées.",
       "untitled_episode": "Épisode sans titre",
       "available": "Disponible",
       "resume_s_e": "Reprendre S{{season}} E{{episode}}",
@@ -479,6 +482,9 @@ const resources = {
   },
   en: {
     translation: {
+      "series_available": "Series available",
+      "jellyfin_tab_title": "Jellyfin",
+      "jellyfin_tab_desc": "Manage the connection to your Jellyfin instance and related integrations.",
       "untitled_episode": "Untitled Episode",
       "available": "Available",
       "resume_s_e": "Resume S{{season}} E{{episode}}",

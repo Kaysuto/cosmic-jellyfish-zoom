@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { useProfile } from '@/hooks/useProfile';
 import { useSettings } from '@/contexts/SettingsContext';
 import { motion } from 'framer-motion';
-import JellyfinSettings from '@/components/admin/JellyfinSettings';
 import GeneralSettingsForm from '@/components/admin/settings/GeneralSettingsForm';
 import RegistrationSettings from '@/components/admin/settings/RegistrationSettings';
 
@@ -16,7 +15,6 @@ const Settings = () => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
-      className="container mx-auto px-4 py-8"
     >
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="space-y-2">
@@ -31,7 +29,6 @@ const Settings = () => {
               loading={settingsLoading} 
               onUpdate={refreshSettings} 
             />
-            <JellyfinSettings />
             <RegistrationSettings 
               settings={settings} 
               loading={settingsLoading} 

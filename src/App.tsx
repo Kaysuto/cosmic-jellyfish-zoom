@@ -39,6 +39,7 @@ import ProfileOwnerRoute from './components/auth/ProfileOwnerRoute';
 import MyRequestsPage from './pages/MyRequests';
 import { JellyfinProvider } from "./contexts/JellyfinContext";
 import PlayerPage from "./pages/PlayerPage";
+import JellyfinAdminPage from "./pages/admin/Jellyfin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -111,6 +112,7 @@ const App = () => (
                         <Route path="users" element={<UserManager />} />
                         <Route path="users/:userId/edit" element={<EditUserPage />} />
                         <Route path="requests" element={<AdminRequestManager />} />
+                        <Route path="jellyfin" element={<JellyfinAdminPage />} />
                         <Route path="settings" element={<Settings />} />
                         <Route path="logs" element={<LogsPage />} />
                       </Route>

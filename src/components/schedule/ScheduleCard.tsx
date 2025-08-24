@@ -39,7 +39,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({ item }) => {
               {item.isAvailable && (
                 <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-none px-2 py-0.5">
                   <Check className="h-3 w-3 mr-1" />
-                  {t('available')}
+                  {t('series_available')}
                 </Badge>
               )}
             </div>
