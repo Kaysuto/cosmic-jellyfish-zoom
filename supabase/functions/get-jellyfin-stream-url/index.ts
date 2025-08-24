@@ -110,7 +110,12 @@ serve(async (req) => {
         throw new Error("No media sources found for this item on Jellyfin.");
     }
 
-    const streamUrl = `${settings.url}/Videos/${itemId}/master.m3u8?MediaSourceId=${mediaSource.Id}&api_key=${settings.api_key}`;
+    const playSessionId = playbackInfo.PlaySessionId;
+    if (!playSessionId) {
+        throw new Error("Could not obtain PlaySessionId from Jellyfin.");
+    }
+
+    const streamUrl = `${settings.url}/Videos/${itemId}/master.m3u8?MediaSourceId=${mediaSource.Id}&PlaySessionId=${playSessionId}&api_key=${settings.api_key}`;
 
     return new Response(JSON.stringify({ streamUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
