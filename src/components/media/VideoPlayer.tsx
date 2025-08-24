@@ -1,7 +1,11 @@
 import 'vidstack/styles/defaults.css';
 import 'vidstack/styles/community-skin/video.css';
 
-import { MediaPlayer, MediaOutlet, MediaCommunitySkin } from '@vidstack/react';
+import { 
+  MediaPlayer, 
+  MediaOutlet, 
+  MediaCommunitySkin
+} from '@vidstack/react';
 import { TextTrack } from 'vidstack';
 import type { 
   MediaPlayerElement,
@@ -13,6 +17,7 @@ import type {
 } from 'vidstack';
 import { showError } from '@/utils/toast';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface VideoPlayerProps {
   src: string;
@@ -28,6 +33,7 @@ interface VideoPlayerProps {
 
 const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTime, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
   const player = useRef<MediaPlayerElement>(null);
+  const { t } = useTranslation();
 
   const onLoadedMetadata = (event: MediaLoadedMetadataEvent) => {
     const playerRef = player.current as any;
