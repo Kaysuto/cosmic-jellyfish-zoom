@@ -1,11 +1,12 @@
 import { useSession } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const AdminRoute = () => {
   const { session, loading: sessionLoading } = useSession();
   const { profile, loading: profileLoading } = useProfile();
+  const location = useLocation();
 
   const loading = sessionLoading || profileLoading;
 
@@ -22,7 +23,7 @@ const AdminRoute = () => {
   }
 
   if (!session) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (profile?.role !== 'admin') {

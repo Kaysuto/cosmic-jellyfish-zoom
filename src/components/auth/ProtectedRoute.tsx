@@ -1,9 +1,10 @@
 import { useSession } from '@/contexts/AuthContext';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const ProtectedRoute = () => {
   const { session, loading } = useSession();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -18,7 +19,7 @@ const ProtectedRoute = () => {
   }
 
   if (!session) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return <Outlet />;

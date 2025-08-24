@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -25,6 +25,9 @@ const emailRegex = new RegExp(
 const Login = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || '/';
 
   const { session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
@@ -115,10 +118,9 @@ const Login = () => {
 
   useEffect(() => {
     if (session) {
-      console.log('Session detected, navigating to /admin');
-      navigate('/admin');
+      navigate(from, { replace: true });
     }
-  }, [session, navigate]);
+  }, [session, navigate, from]);
 
   const onLoginSubmit = async (values: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
@@ -153,7 +155,7 @@ const Login = () => {
         action: 'user_login_success',
         details: { email: data.user.email }
       });
-      navigate('/admin');
+      navigate(from, { replace: true });
     }
     setIsLoading(false);
   };
