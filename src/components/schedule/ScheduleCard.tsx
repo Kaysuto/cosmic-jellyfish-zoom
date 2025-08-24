@@ -32,7 +32,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({ item }) => {
             <h4 className="font-semibold text-sm line-clamp-2 group-hover:text-primary">{title}</h4>
             {item.seasonNumber !== undefined && item.episodeNumber !== undefined && (
               <p className="text-xs text-muted-foreground truncate">
-                S{String(item.seasonNumber).padStart(2, '0')} E{String(item.episodeNumber).padStart(2, '0')} - {item.episodeName || t('untitled_episode')}
+                S{String(item.seasonNumber).padStart(2, '0')} E{String(item.episodeNumber).padStart(2, '0')}
               </p>
             )}
             <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mt-1 text-xs text-muted-foreground">
