@@ -7,7 +7,8 @@ import type {
   MediaCanPlayEvent, 
   MediaErrorEvent, 
   MediaTimeUpdateEvent,
-  MediaDurationChangeEvent
+  MediaDurationChangeEvent,
+  MediaLoadedMetadataEvent
 } from 'vidstack';
 import { showError } from '@/utils/toast';
 import { useRef } from 'react';
@@ -26,45 +27,55 @@ const VideoPlayer = ({ src, title, startTime, onTimeUpdate, onDurationChange }: 
   if (!src) return null;
 
   function onCanPlay(event: MediaCanPlayEvent) {
-    console.log('Vidstack: Média prêt à être lu. Event:', event);
+    const detail = (event as any).detail;
+    console.log('Vidstack: Media can play.', detail);
     if (player.current && startTime && (player.current as any).currentTime === 0) {
       (player.current as any).currentTime = startTime;
     }
   }
 
   function onError(event: MediaErrorEvent) {
-    console.error('Vidstack: Erreur du lecteur. Event:', event);
-    showError(`Erreur du lecteur vidéo. Vérifiez que CORS est bien configuré sur votre serveur Jellyfin.`);
+    const detail = (event as any).detail;
+    console.error('Vidstack: Player error.', detail);
+    showError(`Video player error. Check Jellyfin CORS settings. Details: ${detail.message}`);
   }
 
   function onTimeUpdateEvent(event: MediaTimeUpdateEvent) {
-    const detail = (event as any).detail;
-    const time = detail.currentTime;
+    const { currentTime } = (event as any).detail;
     if (onTimeUpdate) {
-      onTimeUpdate(time);
+      onTimeUpdate(currentTime);
     }
   }
 
   function onDurationChangeEvent(event: MediaDurationChangeEvent) {
-    const duration = (event as any).detail;
+    const { duration } = (event as any).detail;
     if (onDurationChange && !isNaN(duration) && duration > 0) {
       onDurationChange(duration);
     }
   }
 
+  function onLoadedMetadata(event: MediaLoadedMetadataEvent) {
+    const detail = (event as any).detail;
+    console.log('Vidstack: Metadata loaded.', detail);
+  }
+
   return (
     <MediaPlayer
+      key={src} // Force re-mount when src changes
       ref={player}
       className="w-full max-h-screen"
       title={title}
       src={{ src: src, type: 'video/mp4' }}
       playsInline
       autoPlay
+      load="eager"
+      crossOrigin
       onCanPlay={onCanPlay}
       onError={onError}
       onTimeUpdate={onTimeUpdateEvent}
       onDurationChange={onDurationChangeEvent}
-      aspectRatio="16/9"
+      onLoadedMetadata={onLoadedMetadata}
+      aspectRatio={16 / 9} // Corrected to be a number
     >
       <MediaOutlet />
       <MediaCommunitySkin />
