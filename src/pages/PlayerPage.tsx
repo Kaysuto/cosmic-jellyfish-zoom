@@ -161,13 +161,6 @@ const PlayerPage = () => {
 
   return (
     <div className="bg-black h-screen w-screen flex flex-col">
-      <header className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="text-white hover:bg-white/10 hover:text-white">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t('back')}
-        </Button>
-        <h1 className="text-lg font-semibold text-white truncate">{mediaTitle}</h1>
-      </header>
       <main className="flex-grow flex items-center justify-center">
         {loading && <Skeleton className="w-full h-full" />}
         {error && !loading && (

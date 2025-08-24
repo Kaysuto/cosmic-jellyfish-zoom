@@ -1,48 +1,18 @@
 import 'vidstack/styles/defaults.css';
 import 'vidstack/styles/community-skin/video.css';
 
-import {
-  MediaPlayer,
-  MediaOutlet,
-  MediaPlayButton,
-  MediaMuteButton,
-  MediaVolumeSlider,
-  MediaTimeSlider,
-  MediaTime,
-  MediaPIPButton,
-  MediaFullscreenButton,
-  MediaMenu,
-  MediaMenuButton,
-  MediaMenuItems,
-  MediaChaptersMenuItems,
-  MediaCaptionButton,
-  useMediaPlayer,
-} from '@vidstack/react';
+import { MediaPlayer, MediaOutlet, MediaCommunitySkin } from '@vidstack/react';
 import { TextTrack } from 'vidstack';
-import type {
+import type { 
   MediaPlayerElement,
-  MediaCanPlayEvent,
-  MediaErrorEvent,
+  MediaCanPlayEvent, 
+  MediaErrorEvent, 
   MediaTimeUpdateEvent,
   MediaDurationChangeEvent,
   MediaLoadedMetadataEvent,
-  AudioTrack as IAudioTrack,
 } from 'vidstack';
 import { showError } from '@/utils/toast';
-import { useRef, useEffect, useState } from 'react';
-import {
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  Settings,
-  ListOrdered,
-  Check,
-  PictureInPicture,
-  Maximize,
-  Minimize,
-  Subtitles,
-} from 'lucide-react';
+import { useRef } from 'react';
 
 interface VideoPlayerProps {
   src: string;
@@ -56,49 +26,6 @@ interface VideoPlayerProps {
   onDurationChange?: (duration: number) => void;
 }
 
-const AudioMenu = () => {
-  const player = useMediaPlayer();
-  const [tracks, setTracks] = useState<IAudioTrack[]>([]);
-
-  useEffect(() => {
-    if (!player) return;
-    const onTracksChange = () => {
-      const newTracks = [...player.audioTracks];
-      setTracks(newTracks);
-    };
-    onTracksChange();
-    player.audioTracks.addEventListener('change', onTracksChange);
-    return () => {
-      player.audioTracks.removeEventListener('change', onTracksChange);
-    };
-  }, [player]);
-
-  const selectedTrack = tracks.find((t) => t.selected);
-
-  if (tracks.length <= 1) return null;
-
-  return (
-    <MediaMenu>
-      <MediaMenuButton className="vds-menu-button">
-        <Volume2 className="h-5 w-5 mr-2" />
-        <span>Audio ({selectedTrack?.label})</span>
-      </MediaMenuButton>
-      <MediaMenuItems className="vds-menu-items">
-        {tracks.map((track) => (
-          <MediaMenuButton
-            key={track.id}
-            className="vds-menu-button"
-            onClick={() => track.select()}
-          >
-            {track.selected && <Check className="h-4 w-4 mr-2" />}
-            <span>{track.label}</span>
-          </MediaMenuButton>
-        ))}
-      </MediaMenuItems>
-    </MediaMenu>
-  );
-};
-
 const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTime, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
   const player = useRef<MediaPlayerElement>(null);
 
@@ -106,6 +33,7 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
     const playerRef = player.current as any;
     if (!playerRef) return;
 
+    // Add Chapters
     if (chapters && chapters.length > 0) {
       const existingTracks = playerRef.textTracks.getByKind('chapters');
       for (const track of existingTracks) playerRef.textTracks.remove(track);
@@ -121,6 +49,7 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
       playerRef.textTracks.add(track);
     }
 
+    // Add Subtitles
     if (subtitleTracks && subtitleTracks.length > 0) {
       for (const sub of subtitleTracks) {
         const track = new TextTrack({
@@ -162,7 +91,7 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
     <MediaPlayer
       key={src}
       ref={player}
-      className="w-full max-h-screen group"
+      className="w-full max-h-screen"
       title={title}
       src={source}
       playsInline
@@ -177,56 +106,7 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
       aspectRatio={16 / 9}
     >
       <MediaOutlet />
-      <div className="absolute inset-0 z-10 flex h-full w-full flex-col justify-end bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity group-data-[controls]:opacity-100">
-        <div className="flex-1"></div>
-        <div className="p-2.5">
-          <MediaTimeSlider />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MediaPlayButton className="vds-button">
-                <Play className="vds-play-icon h-6 w-6" />
-                <Pause className="vds-pause-icon h-6 w-6" />
-              </MediaPlayButton>
-              <MediaMuteButton className="vds-button">
-                <Volume2 className="vds-mute-icon h-6 w-6" />
-                <VolumeX className="vds-unmute-icon h-6 w-6" />
-              </MediaMuteButton>
-              <MediaVolumeSlider />
-              <MediaTime />
-            </div>
-            <div className="flex items-center gap-2">
-              {chapters && chapters.length > 0 && (
-                <MediaMenu>
-                  <MediaMenuButton className="vds-button">
-                    <ListOrdered className="h-6 w-6" />
-                  </MediaMenuButton>
-                  <MediaMenuItems className="vds-menu-items">
-                    <MediaChaptersMenuItems />
-                  </MediaMenuItems>
-                </MediaMenu>
-              )}
-              <MediaMenu>
-                <MediaMenuButton className="vds-button">
-                  <Settings className="h-6 w-6" />
-                </MediaMenuButton>
-                <MediaMenuItems className="vds-menu-items">
-                  <AudioMenu />
-                </MediaMenuItems>
-              </MediaMenu>
-              <MediaCaptionButton className="vds-button">
-                <Subtitles className="h-6 w-6" />
-              </MediaCaptionButton>
-              <MediaPIPButton className="vds-button">
-                <PictureInPicture className="h-6 w-6" />
-              </MediaPIPButton>
-              <MediaFullscreenButton className="vds-button">
-                <Maximize className="vds-enter-fullscreen-icon h-6 w-6" />
-                <Minimize className="vds-exit-fullscreen-icon h-6 w-6" />
-              </MediaFullscreenButton>
-            </div>
-          </div>
-        </div>
-      </div>
+      <MediaCommunitySkin />
     </MediaPlayer>
   );
 };
