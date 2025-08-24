@@ -64,7 +64,7 @@ class JellyfinClient {
   async getLibraryItemsPage(viewId: string, startIndex: number, limit: number) {
     if (!this.userId) await this.authenticate();
     const fields = 'ProviderIds,PremiereDate,Overview,Genres,ImageTags,VoteAverage';
-    const url = `${this.baseUrl}/Users/${this.userId}/Items?ParentId=${viewId}&Recursive=true&IncludeItemTypes=Movie,Series&fields=${fields}&StartIndex=${startIndex}&Limit=${limit}`;
+    const url = `${this.baseUrl}/Items?ParentId=${viewId}&Recursive=true&IncludeItemTypes=Movie,Series&fields=${fields}&StartIndex=${startIndex}&Limit=${limit}&SortBy=DateCreated&SortOrder=Descending`;
     const response = await fetch(url, {
       headers: await this.getAuthHeaders(),
     });
