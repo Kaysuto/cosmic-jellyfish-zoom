@@ -13,6 +13,9 @@ export interface MediaItem {
   vote_average?: number;
   networks?: { name: string }[];
   isAvailable?: boolean;
+  seasonNumber?: number;
+  episodeNumber?: number;
+  episodeName?: string;
 }
 
 interface MediaGridProps {
