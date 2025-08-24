@@ -6,6 +6,8 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "view_more": "Voir plus ({{count}})",
+      "view_less": "Voir moins",
       "audio": "Audio",
       "subtitles": "Sous-titres",
       "soon": "Bientôt",
@@ -486,6 +488,8 @@ const resources = {
   },
   en: {
     translation: {
+      "view_more": "View more ({{count}})",
+      "view_less": "View less",
       "audio": "Audio",
       "subtitles": "Subtitles",
       "soon": "Soon",

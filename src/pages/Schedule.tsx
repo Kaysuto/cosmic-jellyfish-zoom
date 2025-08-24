@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChevronLeft, ChevronRight, Calendar, Plus, CalendarOff } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, CalendarOff, ChevronDown, ChevronUp } from 'lucide-react';
 import { startOfWeek, endOfWeek, add, sub, format, eachDayOfInterval, isToday } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { MediaItem } from '@/components/catalog/MediaGrid';
@@ -22,6 +22,7 @@ const SchedulePage = () => {
   const [schedule, setSchedule] = useState<Record<string, MediaItem[]>>({});
   const [loading, setLoading] = useState(true);
   const [mediaType, setMediaType] = useState<'tv' | 'anime'>('tv');
+  const [openStates, setOpenStates] = useState<Record<string, boolean>>({});
 
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
   const ITEMS_PER_DAY_LIMIT = 3;
@@ -195,6 +196,7 @@ const SchedulePage = () => {
             const initialItems = itemsForDay.slice(0, ITEMS_PER_DAY_LIMIT);
             const remainingItems = itemsForDay.slice(ITEMS_PER_DAY_LIMIT);
             const isCurrentDay = isToday(day);
+            const isOpen = openStates[dayKey] || false;
 
             return (
               <div key={dayKey} className={cn("rounded-lg p-3 transition-colors", isCurrentDay && "bg-primary/10")}>
@@ -212,14 +214,18 @@ const SchedulePage = () => {
                     </div>
                   )}
                   {remainingItems.length > 0 && (
-                    <Collapsible>
+                    <Collapsible open={isOpen} onOpenChange={(open) => setOpenStates(prev => ({...prev, [dayKey]: open}))}>
                       <CollapsibleContent className="space-y-2 animate-in fade-in-0">
                         {remainingItems.map(item => <ScheduleCard key={`${item.id}-${item.first_air_date}`} item={item} />)}
                       </CollapsibleContent>
                       <CollapsibleTrigger asChild>
                         <Button variant="ghost" className="w-full mt-2">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Voir plus ({remainingItems.length})
+                          {isOpen ? (
+                            <ChevronUp className="h-4 w-4 mr-2" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 mr-2" />
+                          )}
+                          {isOpen ? t('view_less') : t('view_more', { count: remainingItems.length })}
                         </Button>
                       </CollapsibleTrigger>
                     </Collapsible>
