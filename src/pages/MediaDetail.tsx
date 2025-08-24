@@ -8,8 +8,8 @@ import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight, Mic, Captions } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight, Mic, Captions, ChevronsUpDown } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -57,6 +57,11 @@ interface NextUpEpisode {
 }
 
 type RequestStatus = 'available' | 'pending' | 'approved' | 'rejected' | null;
+
+const getShortTrackName = (title: string | undefined) => {
+  if (!title) return 'Unknown';
+  return title.split(/[\(\-]/)[0].trim();
+};
 
 const MediaDetailPage = () => {
   const { type, id } = useParams<{ type: 'movie' | 'tv' | 'anime'; id: string }>();
@@ -271,6 +276,9 @@ const MediaDetailPage = () => {
 
   const backLink = fromSearch ? `/catalog?q=${encodeURIComponent(fromSearch)}` : '/catalog';
 
+  const selectedAudioTrack = audioTracks.find(t => t.Index.toString() === selectedAudio);
+  const selectedSubtitleTrack = subtitleTracks.find(t => t.Index.toString() === selectedSubtitle);
+
   if (jellyfinError) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -338,28 +346,52 @@ const MediaDetailPage = () => {
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 {renderActionButton()}
                 {jellyfinId && !loadingStreams && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {audioTracks.length > 1 && (
-                      <Select value={selectedAudio} onValueChange={setSelectedAudio}>
-                        <SelectTrigger className="w-[180px]">
-                          <div className="flex items-center gap-2"><Mic className="h-4 w-4" /> <SelectValue /></div>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="auto">Audio (Auto)</SelectItem>
-                          {audioTracks.map(track => <SelectItem key={track.Index} value={track.Index.toString()}>{track.DisplayTitle}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                      <DropdownMenu modal={false}>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="w-[180px] justify-between">
+                            <div className="flex items-center gap-2 truncate">
+                              <Mic className="h-4 w-4 flex-shrink-0" />
+                              <span className="truncate">
+                                {selectedAudioTrack ? getShortTrackName(selectedAudioTrack.DisplayTitle) : 'Audio (Auto)'}
+                              </span>
+                            </div>
+                            <ChevronsUpDown className="h-4 w-4 opacity-50 flex-shrink-0" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[180px]">
+                          <DropdownMenuItem onSelect={() => setSelectedAudio('auto')}>Audio (Auto)</DropdownMenuItem>
+                          {audioTracks.map(track => (
+                            <DropdownMenuItem key={track.Index} onSelect={() => setSelectedAudio(track.Index.toString())}>
+                              {track.DisplayTitle}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
                     {subtitleTracks.length > 0 && (
-                      <Select value={selectedSubtitle} onValueChange={setSelectedSubtitle}>
-                        <SelectTrigger className="w-[180px]">
-                          <div className="flex items-center gap-2"><Captions className="h-4 w-4" /> <SelectValue /></div>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="auto">Sous-titres (Aucun)</SelectItem>
-                          {subtitleTracks.map(track => <SelectItem key={track.Index} value={track.Index.toString()}>{track.DisplayTitle}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                      <DropdownMenu modal={false}>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="w-[180px] justify-between">
+                            <div className="flex items-center gap-2 truncate">
+                              <Captions className="h-4 w-4 flex-shrink-0" />
+                              <span className="truncate">
+                                {selectedSubtitleTrack ? getShortTrackName(selectedSubtitleTrack.DisplayTitle) : 'Sous-titres (Aucun)'}
+                              </span>
+                            </div>
+                            <ChevronsUpDown className="h-4 w-4 opacity-50 flex-shrink-0" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[180px]">
+                          <DropdownMenuItem onSelect={() => setSelectedSubtitle('auto')}>Sous-titres (Aucun)</DropdownMenuItem>
+                          {subtitleTracks.map(track => (
+                            <DropdownMenuItem key={track.Index} onSelect={() => setSelectedSubtitle(track.Index.toString())}>
+                              {track.DisplayTitle}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
                   </div>
                 )}
@@ -387,12 +419,21 @@ const MediaDetailPage = () => {
                     <AlertDescription>{t('tmdb_disclaimer_content')}</AlertDescription>
                   </Alert>
                   <div className="flex items-center gap-4 mb-6">
-                    <Select value={selectedSeasonNumber?.toString()} onValueChange={(value) => setSelectedSeasonNumber(Number(value))}>
-                      <SelectTrigger className="w-[250px]"><SelectValue placeholder="Select a season" /></SelectTrigger>
-                      <SelectContent>
-                        {details.seasons?.map(season => <SelectItem key={season.id} value={season.season_number.toString()}>{season.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <DropdownMenu modal={false}>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-[250px] justify-between">
+                          {details.seasons?.find(s => s.season_number === selectedSeasonNumber)?.name || "Sélectionner une saison"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-[250px]">
+                        {details.seasons?.map(season => (
+                          <DropdownMenuItem key={season.id} onSelect={() => setSelectedSeasonNumber(season.season_number)}>
+                            {season.name}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                   {seasonLoading ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
