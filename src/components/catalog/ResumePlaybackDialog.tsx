@@ -1,16 +1,16 @@
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ContinueWatchingItem } from "@/hooks/useContinueWatching";
 import { useTranslation } from "react-i18next";
+import { X } from 'lucide-react';
 
 interface ResumePlaybackDialogProps {
   open: boolean;
@@ -33,24 +33,30 @@ const ResumePlaybackDialog = ({ open, onOpenChange, item, onResume, onRestart }:
   const title = item.title || item.name;
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
             {t('resume_or_restart_description')}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="sm:justify-center gap-2">
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="sm:justify-center gap-2">
           <Button variant="outline" onClick={onRestart}>
             {t('restart_playback')}
           </Button>
-          <AlertDialogAction onClick={onResume}>
+          <Button onClick={onResume}>
             {t('resume_at', { time: resumeTimeString })}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+        <DialogClose asChild className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+          <Button variant="ghost" size="icon">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </Button>
+        </DialogClose>
+      </DialogContent>
+    </Dialog>
   );
 };
 
