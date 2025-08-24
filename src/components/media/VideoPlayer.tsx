@@ -1,8 +1,8 @@
 import 'vidstack/styles/defaults.css';
-import '@vidstack/react/layouts/default/styles.css';
+import '@vidstack/react/player/layouts/video/styles.css';
 
 import { MediaPlayer, MediaOutlet } from '@vidstack/react';
-import { DefaultVideoLayout, defaultLayoutIcons } from '@vidstack/react/layouts/default';
+import { VideoLayout, defaultVideoLayoutIcons } from '@vidstack/react/player/layouts/video';
 import { TextTrack } from 'vidstack';
 import type { 
   MediaPlayerElement,
@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 
 const customIcons = {
-  ...defaultLayoutIcons,
+  ...defaultVideoLayoutIcons,
   Play: Play,
   Pause: Pause,
   Mute: VolumeX,
@@ -143,7 +143,7 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
       aspectRatio={16 / 9}
     >
       <MediaOutlet />
-      <DefaultVideoLayout icons={customIcons} />
+      <VideoLayout icons={customIcons} />
     </MediaPlayer>
   );
 };
