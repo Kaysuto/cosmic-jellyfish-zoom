@@ -16,10 +16,10 @@ import {
   MediaPIPButton, 
   MediaFullscreenButton, 
   MediaCaptionButton,
+  // MediaGoogleCastButton, // Nécessite une version plus récente de vidstack
 } from '@vidstack/react';
 import { TextTrack } from 'vidstack';
-import { SettingsIcon, ChaptersIcon } from '@vidstack/react/icons';
-import { Volume2, Check } from 'lucide-react';
+import { Settings, ListOrdered, Volume2, Check } from 'lucide-react';
 import type { 
   MediaPlayerElement,
   MediaCanPlayEvent, 
@@ -144,7 +144,7 @@ const VideoPlayer = ({ src, title, container, chapters, audioTracks, subtitleTra
             <div className="flex items-center gap-2">
               <MediaMenu>
                 <MediaMenuButton className="vds-button">
-                  <SettingsIcon className="h-6 w-6" />
+                  <Settings className="h-6 w-6" />
                 </MediaMenuButton>
                 <MediaMenuItems className="vds-menu-items">
                   {playerState && (playerState as any).audioTracks.length > 1 && (
@@ -166,7 +166,7 @@ const VideoPlayer = ({ src, title, container, chapters, audioTracks, subtitleTra
                   {chapters && chapters.length > 0 && (
                     <MediaMenu>
                       <MediaMenuButton className="vds-menu-button">
-                        <ChaptersIcon className="w-5 h-5 mr-2" />
+                        <ListOrdered className="w-5 h-5 mr-2" />
                         <span>Chapitres</span>
                       </MediaMenuButton>
                       <MediaMenuItems>
