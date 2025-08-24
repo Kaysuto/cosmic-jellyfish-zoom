@@ -91,16 +91,43 @@ const PlayerPage = () => {
       setError(null);
 
       try {
-        const season = searchParams.get('season');
-        const episode = searchParams.get('episode');
+        const seasonStr = searchParams.get('season');
+        const episodeStr = searchParams.get('episode');
         const apiMediaType = type === 'anime' ? 'tv' : type;
 
-        if (apiMediaType === 'tv' && season && episode) {
+        let seasonNumber: number | null = seasonStr ? Number(seasonStr) : null;
+        let episodeNumber: number | null = episodeStr ? Number(episodeStr) : null;
+
+        if (apiMediaType === 'tv' && (seasonNumber === null || episodeNumber === null)) {
+          // TV show, but no specific episode. Find next up.
+          const { data: catalogItem, error: catalogError } = await supabase
+            .from('catalog_items')
+            .select('jellyfin_id')
+            .eq('tmdb_id', Number(id))
+            .eq('media_type', apiMediaType)
+            .single();
+
+          if (catalogError || !catalogItem || !catalogItem.jellyfin_id) {
+            throw new Error("Cette série n'a pas été trouvée dans votre catalogue Jellyfin.");
+          }
+
+          const { data: nextUpData, error: nextUpError } = await supabase.functions.invoke('get-jellyfin-next-up', {
+            body: { seriesJellyfinId: catalogItem.jellyfin_id },
+          });
+
+          if (nextUpError) throw nextUpError;
+          if (!nextUpData) throw new Error("Impossible de déterminer le prochain épisode à regarder.");
+
+          seasonNumber = nextUpData.seasonNumber;
+          episodeNumber = nextUpData.episodeNumber;
+        }
+
+        if (apiMediaType === 'tv' && seasonNumber !== null && episodeNumber !== null) {
           const { data: streamData, error: functionError } = await supabase.functions.invoke('get-jellyfin-episode-stream-url', {
             body: { 
               seriesTmdbId: Number(id),
-              seasonNumber: Number(season),
-              episodeNumber: Number(episode),
+              seasonNumber: seasonNumber,
+              episodeNumber: episodeNumber,
               audioStreamIndex,
               subtitleStreamIndex
             },
@@ -109,13 +136,13 @@ const PlayerPage = () => {
           if (functionError) throw functionError;
           if (streamData.error) throw new Error(streamData.error);
           
-          setMediaTitle(streamData.title || `S${season} E${episode}`);
+          setMediaTitle(streamData.title || `S${seasonNumber} E${episodeNumber}`);
           setStreamUrl(streamData.streamUrl);
           setContainer(streamData.container);
           setChapters(streamData.chapters);
           setAudioTracks(streamData.audioTracks || []);
           setSubtitleTracks(streamData.subtitleTracks || []);
-        } else {
+        } else { // This is for movies
           const { data: catalogItem, error: catalogError } = await supabase
             .from('catalog_items')
             .select('jellyfin_id, title')
