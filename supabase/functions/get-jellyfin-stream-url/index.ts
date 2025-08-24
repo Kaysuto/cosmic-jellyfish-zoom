@@ -76,10 +76,6 @@ class JellyfinClient {
       UserId: this.userId,
       DeviceProfile: {
         Name: "Supabase Web Player",
-        MaxStreamingBitrate: 140000000,
-        DirectPlayProfiles: [
-          { Container: "mp4,mkv,webm", Type: "Video" },
-        ],
         TranscodingProfiles: [
           { Container: "ts", Type: "Video", AudioCodec: "aac", VideoCodec: "h264", Protocol: "hls" },
         ],
