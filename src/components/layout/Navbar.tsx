@@ -9,9 +9,8 @@ import {
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator, // added import
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "@/contexts/AuthContext";
@@ -95,21 +94,6 @@ const Navbar = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end">
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{profile?.first_name} {profile?.last_name}</p>
-            <p className="text-xs leading-none text-muted-foreground">{profile?.email}</p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {profile?.role === 'admin' && (
-          <DropdownMenuItem asChild>
-            <Link to="/admin" className="cursor-pointer">
-              <LayoutDashboard className="mr-2 h-4 w-4" />
-              <span>{t('admin_dashboard')}</span>
-            </Link>
-          </DropdownMenuItem>
-        )}
         <DropdownMenuItem asChild>
           <Link to={`/users/${profile?.id}`} className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
@@ -124,12 +108,18 @@ const Navbar = () => {
         </DropdownMenuItem>
         {profile?.role === 'admin' && (
           <DropdownMenuItem asChild>
-            <Link to="/admin/settings" className="cursor-pointer">
-              <Settings className="mr-2 h-4 w-4" />
-              <span>{t('settings')}</span>
+            <Link to="/requests/manage" className="cursor-pointer">
+              <MailQuestion className="mr-2 h-4 w-4" />
+              <span>{t('requests')}</span>
             </Link>
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem asChild>
+          <Link to="/admin" className="cursor-pointer">
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            <span>{t('admin_dashboard')}</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogoutClick} className="text-destructive focus:text-destructive cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
@@ -153,6 +143,14 @@ const Navbar = () => {
                   {item.label}
                 </NavLink>
               ))}
+
+              {/* Public navbar: show admin-managed requests link only for admins */}
+              {profile?.role === 'admin' && (
+                <NavLink to="/requests/manage" className={navLinkClasses}>
+                  {t('requests')}
+                </NavLink>
+              )}
+
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className={cn(navLinkClasses({isActive: false}), "flex items-center")}>
@@ -201,6 +199,9 @@ const Navbar = () => {
                           {item.label}
                         </NavLink>
                       ))}
+                      {profile?.role === 'admin' && (
+                        <NavLink to="/requests/manage" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('requests')}</NavLink>
+                      )}
                       <NavLink to="/status" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('status')}</NavLink>
                       <NavLink to="/about" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('about_us')}</NavLink>
                       <a href="https://ko-fi.com/playjelly" target="_blank" rel="noopener noreferrer" className={cn(mobileNavLinkClasses({isActive: false}), "text-red-400")}>
@@ -218,7 +219,7 @@ const Navbar = () => {
                           {profile.role === 'admin' && (
                             <>
                               <NavLink to="/admin" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><LayoutDashboard className="mr-3 h-5 w-5" />{t('admin_dashboard')}</NavLink>
-                              <NavLink to="/admin/settings" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><Settings className="mr-3 h-5 w-5" />{t('settings')}</NavLink>
+                              <NavLink to="/requests/manage" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><MailQuestion className="mr-3 h-5 w-5" />{t('requests')}</NavLink>
                             </>
                           )}
                           <NavLink to={`/users/${profile.id}`} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>

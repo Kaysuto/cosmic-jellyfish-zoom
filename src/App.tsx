@@ -94,6 +94,12 @@ const App = () => (
                       <Route element={<ProfileOwnerRoute />}>
                         <Route path="/users/:userId/settings" element={<Profile />} />
                       </Route>
+
+                      {/* Public route for admin-managed requests moved out of /admin */}
+                      <Route element={<AdminRoute />}>
+                        <Route path="/requests/manage" element={<AdminRequestManager />} />
+                      </Route>
+
                       <Route element={<ProtectedRoute />}>
                         <Route path="/requests" element={<MyRequestsPage />} />
                       </Route>
@@ -111,7 +117,7 @@ const App = () => (
                         <Route path="maintenance" element={<MaintenanceManager />} />
                         <Route path="users" element={<UserManager />} />
                         <Route path="users/:userId/edit" element={<EditUserPage />} />
-                        <Route path="requests" element={<AdminRequestManager />} />
+                        {/* removed nested admin requests here intentionally */}
                         <Route path="jellyfin" element={<JellyfinAdminPage />} />
                         <Route path="settings" element={<Settings />} />
                         <Route path="logs" element={<LogsPage />} />

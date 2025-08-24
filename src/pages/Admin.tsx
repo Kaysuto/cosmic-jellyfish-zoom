@@ -50,7 +50,7 @@ const Admin = () => {
     { to: '/admin/incidents', label: t('manage_incidents'), icon: AlertTriangle },
     { to: '/admin/maintenance', label: t('manage_maintenance'), icon: Calendar },
     { to: '/admin/users', label: t('manage_users'), icon: Users },
-    { to: '/admin/requests', label: t('requests'), icon: MailQuestion },
+    // moved requests out of admin panel; accessible via public navbar for admins
     { to: '/admin/jellyfin', label: t('jellyfin_tab_title'), icon: Film },
     { to: '/admin/settings', label: t('settings'), icon: Settings },
     { to: '/admin/logs', label: t('logs'), icon: FileText },
