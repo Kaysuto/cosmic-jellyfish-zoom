@@ -34,7 +34,7 @@ serve(async (req) => {
       throw new Error('Jellyfin settings are not configured.');
     }
 
-    const streamUrl = `${settings.url}/Videos/${itemId}/stream.mp4?static=true&api_key=${settings.api_key}`;
+    const streamUrl = `${settings.url}/Videos/${itemId}/master.m3u8?static=true&api_key=${settings.api_key}`;
 
     return new Response(JSON.stringify({ streamUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
