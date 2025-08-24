@@ -100,7 +100,7 @@ serve(async (req) => {
     const viewsData = await jellyfin.getViews();
     const excludedName = "kaï";
     const libraries = (viewsData.Items || [])
-      .filter((v: any) => v.Name.toLowerCase() !== excludedName)
+      .filter((v: any) => v.Name.toLowerCase() !== excludedName && v.CollectionType !== 'playlists')
       .map((v: any) => ({
         id: v.Id,
         name: v.Name,
