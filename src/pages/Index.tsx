@@ -23,8 +23,8 @@ const Index = () => {
     },
     {
       icon: <Users className="h-8 w-8 text-blue-400" />,
-      title: "Une communauté active",
-      description: "Rejoignez notre Discord pour discuter, faire des demandes de contenu et participer à la vie du service. Votre avis compte !"
+      title: "Une communauté d'utilisateurs",
+      description: "Rejoignez la communauté sur Discord pour discuter, faire des demandes de contenu et participer à la vie du service. Votre avis compte !"
     }
   ];
 
