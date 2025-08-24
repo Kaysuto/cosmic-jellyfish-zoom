@@ -17,6 +17,7 @@ import MediaGrid, { MediaItem } from '@/components/catalog/MediaGrid';
 import { motion } from 'framer-motion';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import RequestModal from '@/components/catalog/RequestModal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 interface MediaDetails {
   id: number;
@@ -81,6 +82,12 @@ const MediaDetailPage = () => {
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
   const [nextUpEpisode, setNextUpEpisode] = useState<NextUpEpisode | null>(null);
   const [loadingNextUp, setLoadingNextUp] = useState(false);
+
+  // New: resume dialog state
+  const [resumeDialogOpen, setResumeDialogOpen] = useState(false);
+  const [pendingPlayParams, setPendingPlayParams] = useState<{ season?: number; episode?: number } | null>(null);
+  const [savedProgressSeconds, setSavedProgressSeconds] = useState<number | null>(null);
+  const [checkingProgress, setCheckingProgress] = useState(false);
 
   const fromSearch = searchParams.get('fromSearch');
 
@@ -183,19 +190,67 @@ const MediaDetailPage = () => {
     setRequestModalOpen(true);
   };
 
+  // New: open resume dialog - fetch saved progress (if any) and show options
+  const openResumeDialog = async (season?: number, episode?: number) => {
+    setPendingPlayParams({ season, episode });
+    setSavedProgressSeconds(null);
+    if (!session?.user) {
+      // Not logged in — just show dialog without saved progress
+      setResumeDialogOpen(true);
+      return;
+    }
+    setCheckingProgress(true);
+    try {
+      const { data, error } = await supabase
+        .from('playback_progress')
+        .select('progress_seconds,total_seconds')
+        .eq('user_id', session.user.id)
+        .eq('tmdb_id', Number(id))
+        .eq('media_type', type)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching playback_progress:', error);
+      } else if (data) {
+        setSavedProgressSeconds(data.progress_seconds ?? null);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCheckingProgress(false);
+      setResumeDialogOpen(true);
+    }
+  };
+
+  // Modified handlePlay to open resume dialog instead of direct navigation
   const handlePlay = (season?: number, episode?: number) => {
     if (!type || !id) return;
+    openResumeDialog(season, episode);
+  };
+
+  const confirmPlay = (useSaved: boolean) => {
+    if (!pendingPlayParams && !type) return;
+    const { season, episode } = pendingPlayParams || {};
     let url = `/media/${type}/${id}/play`;
+    const params: string[] = [];
     if (season !== undefined && episode !== undefined) {
-      url += `?season=${season}&episode=${episode}`;
+      params.push(`season=${season}`, `episode=${episode}`);
     }
+    if (useSaved && savedProgressSeconds && savedProgressSeconds > 0) {
+      params.push(`t=${Math.round(savedProgressSeconds)}`);
+    }
+    if (params.length > 0) url += `?${params.join('&')}`;
+    // Cleanup
+    setResumeDialogOpen(false);
+    setPendingPlayParams(null);
+    setSavedProgressSeconds(null);
     navigate(url);
   };
 
   const renderActionButton = () => {
     if (jellyfinId) {
       if (type === 'movie') {
-        return <Button size="lg" onClick={() => handlePlay()}><Play className="mr-2 h-4 w-4" /> {t('play')}</Button>;
+        return <Button size="lg" onClick={() => openResumeDialog()}><Play className="mr-2 h-4 w-4" /> {t('play')}</Button>;
       }
       if (type === 'tv' || type === 'anime') {
         if (loadingNextUp) {
@@ -205,7 +260,8 @@ const MediaDetailPage = () => {
           const buttonText = nextUpEpisode.seasonNumber === 1 && nextUpEpisode.episodeNumber === 1
             ? t('play_s01e01')
             : t('resume_s_e', { season: nextUpEpisode.seasonNumber, episode: nextUpEpisode.episodeNumber });
-          return <Button size="lg" onClick={() => handlePlay(nextUpEpisode.seasonNumber, nextUpEpisode.episodeNumber)}><Play className="mr-2 h-4 w-4" /> {buttonText}</Button>;
+          // Open resume dialog for that specific episode
+          return <Button size="lg" onClick={() => openResumeDialog(nextUpEpisode.seasonNumber, nextUpEpisode.episodeNumber)}><Play className="mr-2 h-4 w-4" /> {buttonText}</Button>;
         }
       }
     }
@@ -349,7 +405,7 @@ const MediaDetailPage = () => {
                             )}
                             {jellyfinId && (
                               <button
-                                onClick={() => handlePlay(selectedSeasonNumber!, episode.episode_number)}
+                                onClick={() => openResumeDialog(selectedSeasonNumber!, episode.episode_number)}
                                 className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                               >
                                 <Play className="h-10 w-10 text-white" />
@@ -443,6 +499,45 @@ const MediaDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Resume Dialog */}
+      <Dialog open={resumeDialogOpen} onOpenChange={setResumeDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('confirm_resume_title') || 'Reprendre la lecture'}</DialogTitle>
+            <DialogDescription>{t('confirm_resume_desc') || 'Souhaitez-vous reprendre là où vous vous étiez arrêté ou recommencer depuis le début ?'}</DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4">
+            {checkingProgress ? (
+              <div className="flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : savedProgressSeconds && savedProgressSeconds > 0 ? (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Progrès enregistré : <strong>{Math.round(savedProgressSeconds)}s</strong></p>
+                <div className="flex gap-2">
+                  <Button onClick={() => confirmPlay(true)} className="flex-1">Reprendre où vous êtes</Button>
+                  <Button variant="outline" onClick={() => confirmPlay(false)} className="flex-1">Recommencer</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Aucun progrès enregistré pour ce média.</p>
+                <div className="flex gap-2">
+                  <Button onClick={() => confirmPlay(false)} className="flex-1">Commencer la lecture</Button>
+                  <Button variant="outline" onClick={() => setResumeDialogOpen(false)} className="flex-1">Annuler</Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            {/* empty footer to keep layout consistent */}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <RequestModal open={requestModalOpen} onOpenChange={setRequestModalOpen} item={selectedItemForRequest} onSuccess={fetchRequestStatus} />
     </>
   );
