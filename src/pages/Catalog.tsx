@@ -12,8 +12,14 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent } from '@/components/ui/card';
 import RequestModal from '@/components/catalog/RequestModal';
 import { useSession } from '@/contexts/AuthContext';
-import MediaSection from '@/components/catalog/MediaSection';
 import ContinueWatching from '@/components/catalog/ContinueWatching';
+import JellyfinLibrarySection from '@/components/catalog/JellyfinLibrarySection';
+
+interface JellyfinLibrary {
+  id: string;
+  name: string;
+  collectionType: string;
+}
 
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
@@ -28,6 +34,25 @@ const CatalogPage = () => {
 
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
+
+  const [jellyfinLibraries, setJellyfinLibraries] = useState<JellyfinLibrary[]>([]);
+  const [librariesLoading, setLibrariesLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLibraries = async () => {
+      setLibrariesLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('get-jellyfin-libraries');
+        if (error) throw error;
+        setJellyfinLibraries(data);
+      } catch (error: any) {
+        showError(error.message);
+      } finally {
+        setLibrariesLoading(false);
+      }
+    };
+    fetchLibraries();
+  }, []);
 
   const fetchSearchResults = useCallback(async () => {
     if (!debouncedSearchTerm) {
@@ -134,9 +159,22 @@ const CatalogPage = () => {
         ) : (
           <div className="space-y-12">
             <ContinueWatching />
-            <MediaSection title={t('popular_movies')} mediaType="movie" />
-            <MediaSection title={t('popular_tv_shows')} mediaType="tv" />
-            <MediaSection title={t('popular_animes')} mediaType="anime" />
+            {librariesLoading ? (
+              <>
+                <Skeleton className="h-8 w-1/4 mb-4" />
+                <div className="flex space-x-4">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="w-[16.66%] flex-shrink-0">
+                      <Skeleton className="aspect-[2/3] w-full rounded-lg" />
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              jellyfinLibraries.map(library => (
+                <JellyfinLibrarySection key={library.id} library={library} />
+              ))
+            )}
           </div>
         )}
       </main>

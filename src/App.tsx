@@ -90,6 +90,7 @@ const App = () => (
                       <Route path="/person/:id" element={<PersonDetailPage />} />
                       <Route path="/catalog" element={<CatalogPage />} />
                       <Route path="/catalog/:mediaType" element={<FullSectionPage />} />
+                      <Route path="/catalog/jellyfin/:libraryId" element={<FullSectionPage />} />
                       <Route path="/users/:userId" element={<UserPublicProfile />} />
                       <Route element={<ProfileOwnerRoute />}>
                         <Route path="/users/:userId/settings" element={<Profile />} />
