@@ -155,7 +155,7 @@ serve(async (req) => {
       .filter((s: any) => s.Type === 'Subtitle')
       .map((s: any) => ({
         ...s,
-        src: `${settings.url}/Subtitles/${episodeJellyfinId}/${s.Index}/stream.vtt`
+        src: `${settings.url}/Videos/${episodeJellyfinId}/${mediaSource.Id}/Subtitles/${s.Index}/stream.vtt?api_key=${sessionToken}`
       }));
 
     return new Response(JSON.stringify({ 
