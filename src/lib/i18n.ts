@@ -6,6 +6,9 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "resume_or_restart_description": "Vous avez déjà commencé à regarder ce contenu. Voulez-vous reprendre là où vous vous étiez arrêté ou recommencer depuis le début ?",
+      "restart_playback": "Recommencer",
+      "resume_at": "Reprendre à {{time}}",
       "confirm_donation_title": "Soutenir le projet ?",
       "confirm_donation_description": "Vous allez être redirigé vers Ko-fi pour faire un don. Chaque contribution aide à maintenir et améliorer nos services. Merci pour votre soutien !",
       "continue_to_donation": "Continuer vers Ko-fi",
@@ -491,6 +494,9 @@ const resources = {
   },
   en: {
     translation: {
+      "resume_or_restart_description": "You've already started watching this. Would you like to resume where you left off or start over from the beginning?",
+      "restart_playback": "Start Over",
+      "resume_at": "Resume at {{time}}",
       "confirm_donation_title": "Support the project?",
       "confirm_donation_description": "You will be redirected to Ko-fi to make a donation. Every contribution helps maintain and improve our services. Thank you for your support!",
       "continue_to_donation": "Continue to Ko-fi",
