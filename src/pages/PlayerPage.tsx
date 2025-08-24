@@ -22,6 +22,8 @@ const PlayerPage = () => {
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
   const [container, setContainer] = useState<string | null>(null);
   const [chapters, setChapters] = useState<any[] | null>(null);
+  const [audioTracks, setAudioTracks] = useState<any[]>([]);
+  const [subtitleTracks, setSubtitleTracks] = useState<any[]>([]);
   const [mediaTitle, setMediaTitle] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,6 +107,8 @@ const PlayerPage = () => {
           setStreamUrl(streamData.streamUrl);
           setContainer(streamData.container);
           setChapters(streamData.chapters);
+          setAudioTracks(streamData.audioTracks || []);
+          setSubtitleTracks(streamData.subtitleTracks || []);
         } else {
           const { data: catalogItem, error: catalogError } = await supabase
             .from('catalog_items')
@@ -129,6 +133,8 @@ const PlayerPage = () => {
           setStreamUrl(streamData.streamUrl);
           setContainer(streamData.container);
           setChapters(streamData.chapters);
+          setAudioTracks(streamData.audioTracks || []);
+          setSubtitleTracks(streamData.subtitleTracks || []);
         }
       } catch (err: any) {
         console.error("Error fetching stream URL:", err);
@@ -155,7 +161,7 @@ const PlayerPage = () => {
 
   return (
     <div className="bg-black h-screen w-screen flex flex-col">
-      <header className="absolute top-0 left-0 right-0 z-10 p-4 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent">
+      <header className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent">
         <Button variant="ghost" onClick={() => navigate(-1)} className="text-white hover:bg-white/10 hover:text-white">
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}
@@ -179,6 +185,8 @@ const PlayerPage = () => {
             container={container}
             title={mediaTitle} 
             chapters={chapters}
+            audioTracks={audioTracks}
+            subtitleTracks={subtitleTracks}
             onTimeUpdate={handleTimeUpdate}
             onDurationChange={handleDurationChange}
             startTime={startTime ? Number(startTime) : null}

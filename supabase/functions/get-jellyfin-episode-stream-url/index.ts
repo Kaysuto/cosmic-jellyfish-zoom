@@ -84,7 +84,7 @@ class JellyfinClient {
 
   async findEpisode(seriesJellyfinId: string, seasonNumber: number, episodeNumber: number) {
     if (!this.userId) await this.authenticate();
-    const url = `${this.baseUrl}/Shows/${seriesJellyfinId}/Episodes?season=${seasonNumber}&userId=${this.userId}&fields=ParentIndexNumber,IndexNumber,Chapters`;
+    const url = `${this.baseUrl}/Shows/${seriesJellyfinId}/Episodes?season=${seasonNumber}&userId=${this.userId}&fields=ParentIndexNumber,IndexNumber,Chapters,MediaSources`;
     const response = await fetch(url, { headers: await this.getAuthHeaders() });
     if (!response.ok) {
       const errorBody = await response.text().catch(() => '');
@@ -150,11 +150,21 @@ serve(async (req) => {
     
     const streamUrl = `${settings.url}/Videos/${episodeJellyfinId}/main.m3u8?MediaSourceId=${mediaSource.Id}&api_key=${sessionToken}`;
 
+    const audioTracks = (mediaSource.MediaStreams || []).filter((s: any) => s.Type === 'Audio');
+    const subtitleTracks = (mediaSource.MediaStreams || [])
+      .filter((s: any) => s.Type === 'Subtitle')
+      .map((s: any) => ({
+        ...s,
+        src: `${settings.url}/Subtitles/${episodeJellyfinId}/${s.Index}/stream.vtt`
+      }));
+
     return new Response(JSON.stringify({ 
       streamUrl, 
       title: episode.Name, 
       container: 'application/x-mpegURL',
-      chapters: episode.Chapters || []
+      chapters: episode.Chapters || [],
+      audioTracks,
+      subtitleTracks
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

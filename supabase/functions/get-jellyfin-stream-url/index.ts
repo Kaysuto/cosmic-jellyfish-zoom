@@ -135,10 +135,20 @@ serve(async (req) => {
     
     const streamUrl = `${settings.url}/Videos/${itemId}/main.m3u8?MediaSourceId=${mediaSource.Id}&api_key=${sessionToken}`;
 
+    const audioTracks = (mediaSource.MediaStreams || []).filter((s: any) => s.Type === 'Audio');
+    const subtitleTracks = (mediaSource.MediaStreams || [])
+      .filter((s: any) => s.Type === 'Subtitle')
+      .map((s: any) => ({
+        ...s,
+        src: `${settings.url}/Subtitles/${itemId}/${s.Index}/stream.vtt`
+      }));
+
     return new Response(JSON.stringify({ 
       streamUrl, 
       container: 'application/x-mpegURL',
-      chapters: itemDetails.Chapters || [] 
+      chapters: itemDetails.Chapters || [],
+      audioTracks,
+      subtitleTracks
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
