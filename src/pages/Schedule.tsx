@@ -24,6 +24,23 @@ const SchedulePage = () => {
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
   const ITEMS_PER_DAY_LIMIT = 3;
 
+  const checkEpisodeExists = async (seriesJellyfinId: string, seasonNumber: number, episodeNumber: number) => {
+    try {
+      // call edge function; function expects seriesJellyfinId, seasonNumber, episodeNumber
+      const { data, error } = await supabase.functions.invoke('check-jellyfin-episode-exists', {
+        body: { seriesJellyfinId, seasonNumber, episodeNumber },
+      });
+      if (error) {
+        console.error('check episode func error', error);
+        return false;
+      }
+      return data?.exists === true;
+    } catch (e) {
+      console.error('checkEpisodeExists', e);
+      return false;
+    }
+  };
+
   const fetchSchedule = useCallback(async () => {
     setLoading(true);
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -42,32 +59,75 @@ const SchedulePage = () => {
 
       const tmdbItems = data as MediaItem[];
       const tmdbIds = tmdbItems.map(item => item.id);
-      let itemsWithAvailability = tmdbItems;
 
-      if (tmdbIds.length > 0) {
-        const { data: catalogData, error: catalogError } = await supabase
-          .from('catalog_items')
-          .select('tmdb_id')
-          .in('tmdb_id', tmdbIds);
-        
-        if (catalogError) {
-          console.error("Error checking catalog availability", catalogError);
-        } else {
-          const availableIds = new Set(catalogData.map(item => item.tmdb_id));
-          itemsWithAvailability = tmdbItems.map(item => ({
-            ...item,
-            isAvailable: availableIds.has(item.id),
-          }));
+      // Fetch catalog items including jellyfin_id so we can know if series is synced
+      const { data: catalogData, error: catalogError } = await supabase
+        .from('catalog_items')
+        .select('tmdb_id, jellyfin_id')
+        .in('tmdb_id', tmdbIds);
+
+      if (catalogError) {
+        console.error("Error checking catalog availability", catalogError);
+      }
+
+      const jellyfinMap = new Map<number, string | null>(); // tmdbId -> jellyfin_id
+      if (catalogData) {
+        for (const c of catalogData) {
+          jellyfinMap.set(c.tmdb_id, c.jellyfin_id || null);
         }
       }
 
-      const groupedByDay = itemsWithAvailability.reduce((acc, item) => {
+      // initial mark: isAvailable only if an episode-level presence is known (we will refine below)
+      const itemsWithFlags: MediaItem[] = tmdbItems.map(item => ({
+        ...item,
+        isAvailable: false,
+        isSoon: false,
+      }));
+
+      // For TV items that include seasonNumber & episodeNumber, and for which series has a jellyfin_id,
+      // check whether the episode exists on Jellyfin. Cache checks per series to avoid repeated calls.
+      const seriesCheckCache = new Map<string, Map<string, boolean>>(); // seriesJellyfinId -> map "S:E" -> boolean
+
+      const checkPromises: Promise<void>[] = itemsWithFlags.map(async (it) => {
+        if (it.media_type === 'tv' && it.seasonNumber !== undefined && it.episodeNumber !== undefined) {
+          const seriesJellyfinId = jellyfinMap.get(it.id) || null;
+          if (seriesJellyfinId) {
+            // prepare cache
+            if (!seriesCheckCache.has(seriesJellyfinId)) seriesCheckCache.set(seriesJellyfinId, new Map());
+            const perSeries = seriesCheckCache.get(seriesJellyfinId)!;
+            const key = `${it.seasonNumber}:${it.episodeNumber}`;
+            if (perSeries.has(key)) {
+              const exists = perSeries.get(key)!;
+              if (exists) it.isAvailable = true;
+              else it.isSoon = true;
+            } else {
+              const exists = await checkEpisodeExists(seriesJellyfinId, it.seasonNumber, it.episodeNumber);
+              perSeries.set(key, exists);
+              if (exists) it.isAvailable = true;
+              else it.isSoon = true;
+            }
+          } else {
+            // series not in Jellyfin -> leave both false (no badge)
+          }
+        } else {
+          // For movies or TV without season/episode info, fallback to series-level existence
+          const seriesJellyfinId = jellyfinMap.get(it.id) || null;
+          if (seriesJellyfinId && it.media_type === 'movie') {
+            // If movie exists as a catalog item, consider available
+            it.isAvailable = true;
+          }
+        }
+      });
+
+      await Promise.all(checkPromises);
+
+      const groupedByDay = itemsWithFlags.reduce((acc, item) => {
         const airDate = item.first_air_date ? format(new Date(item.first_air_date), 'yyyy-MM-dd') : '';
         if (!acc[airDate]) acc[airDate] = [];
         acc[airDate].push(item);
         return acc;
       }, {} as Record<string, MediaItem[]>);
-      
+
       setSchedule(groupedByDay);
     } catch (error: any) {
       showError(error.message);

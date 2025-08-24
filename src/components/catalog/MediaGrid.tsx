@@ -13,6 +13,7 @@ export interface MediaItem {
   vote_average?: number;
   networks?: { name: string }[];
   isAvailable?: boolean;
+  isSoon?: boolean; // new: indicates series synced but episode missing
   seasonNumber?: number;
   episodeNumber?: number;
   episodeName?: string;
