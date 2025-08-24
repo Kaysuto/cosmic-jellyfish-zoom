@@ -5,10 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Film, Tv, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, Film, Tv, User, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { useJellyfin } from '@/contexts/JellyfinContext';
+import { Badge } from '@/components/ui/badge';
 
 interface PersonDetails {
   id: number;
@@ -30,6 +31,7 @@ interface Credit {
   release_date?: string;
   first_air_date?: string;
   poster_path: string | null;
+  isAvailable?: boolean;
 }
 
 const PersonDetailPage = () => {
@@ -62,7 +64,7 @@ const PersonDetailPage = () => {
         setPerson(personResult.data);
 
         if (creditsResult.error) throw creditsResult.error;
-        const allCredits = [...(creditsResult.data.cast || []), ...(creditsResult.data.crew || [])]
+        const allCreditsRaw = [...(creditsResult.data.cast || []), ...(creditsResult.data.crew || [])]
           .filter((credit, index, self) => 
             credit.id && index === self.findIndex((c) => c.id === credit.id)
           )
@@ -72,7 +74,28 @@ const PersonDetailPage = () => {
             const dateB = new Date(b.release_date || b.first_air_date).getTime();
             return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA);
           });
-        setCredits(allCredits);
+        
+        const creditIds = allCreditsRaw.map(c => c.id);
+        if (creditIds.length > 0) {
+            const { data: catalogData, error: catalogError } = await supabase
+                .from('catalog_items')
+                .select('tmdb_id')
+                .in('tmdb_id', creditIds);
+            
+            if (catalogError) {
+                console.error("Error checking catalog availability for filmography", catalogError);
+                setCredits(allCreditsRaw);
+            } else {
+                const availableIds = new Set(catalogData.map(item => item.tmdb_id));
+                const allCreditsWithAvailability = allCreditsRaw.map(credit => ({
+                    ...credit,
+                    isAvailable: availableIds.has(credit.id),
+                }));
+                setCredits(allCreditsWithAvailability);
+            }
+        } else {
+            setCredits(allCreditsRaw);
+        }
 
       } catch (error: any) {
         showError(error.message);
@@ -177,7 +200,15 @@ const PersonDetailPage = () => {
                 const title = credit.title || credit.name;
                 return (
                   <Link to={`/media/${credit.media_type}/${credit.id}`} key={`${credit.id}-${credit.job || credit.character}`} className="text-left">
-                    <Card className="overflow-hidden bg-muted/20 border-border h-full transition-transform hover:scale-105">
+                    <Card className="overflow-hidden bg-muted/20 border-border h-full transition-transform hover:scale-105 group relative">
+                      {credit.isAvailable && (
+                        <div className="absolute top-2 left-2 z-10">
+                          <Badge className="bg-green-600 hover:bg-green-700 text-white border-transparent">
+                            <Check className="h-3 w-3 mr-1" />
+                            {t('available')}
+                          </Badge>
+                        </div>
+                      )}
                       <div className="aspect-[2/3] bg-muted">
                         {credit.poster_path ? (
                           <img src={`https://image.tmdb.org/t/p/w500${credit.poster_path}`} alt={title} className="w-full h-full object-cover" />
