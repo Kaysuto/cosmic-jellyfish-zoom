@@ -6,12 +6,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChevronLeft, ChevronRight, Calendar, Plus } from 'lucide-react';
-import { startOfWeek, endOfWeek, add, sub, format, eachDayOfInterval } from 'date-fns';
+import { ChevronLeft, ChevronRight, Calendar, Plus, CalendarOff } from 'lucide-react';
+import { startOfWeek, endOfWeek, add, sub, format, eachDayOfInterval, isToday } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { MediaItem } from '@/components/catalog/MediaGrid';
 import ScheduleCard from '@/components/schedule/ScheduleCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
 const SchedulePage = () => {
   const { t, i18n } = useTranslation();
@@ -120,28 +121,33 @@ const SchedulePage = () => {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-2">
           {weekDays.map(day => {
             const dayKey = format(day, 'yyyy-MM-dd');
             const itemsForDay = schedule[dayKey] || [];
             const initialItems = itemsForDay.slice(0, ITEMS_PER_DAY_LIMIT);
             const remainingItems = itemsForDay.slice(ITEMS_PER_DAY_LIMIT);
+            const isCurrentDay = isToday(day);
+
             return (
-              <div key={dayKey}>
-                <h3 className="text-lg font-bold mb-3 capitalize flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
+              <div key={dayKey} className={cn("rounded-lg p-3 transition-colors", isCurrentDay && "bg-primary/10")}>
+                <h3 className={cn("text-lg font-bold mb-4 capitalize flex items-center gap-2", isCurrentDay && "text-primary")}>
+                  <Calendar className="h-5 w-5" />
                   {format(day, 'EEEE d', { locale: currentLocale })}
                 </h3>
                 <div className="space-y-2">
                   {initialItems.length > 0 ? (
-                    initialItems.map(item => <ScheduleCard key={item.id} item={item} />)
+                    initialItems.map(item => <ScheduleCard key={`${item.id}-${item.first_air_date}`} item={item} />)
                   ) : (
-                    <p className="text-sm text-muted-foreground h-24 flex items-center justify-center">{t('no_releases_on_this_day')}</p>
+                    <div className="h-24 flex flex-col items-center justify-center text-center text-muted-foreground bg-muted/30 rounded-md p-2">
+                      <CalendarOff className="h-6 w-6 mb-2" />
+                      <p className="text-xs">{t('no_releases_on_this_day')}</p>
+                    </div>
                   )}
                   {remainingItems.length > 0 && (
                     <Collapsible>
-                      <CollapsibleContent className="space-y-2">
-                        {remainingItems.map(item => <ScheduleCard key={item.id} item={item} />)}
+                      <CollapsibleContent className="space-y-2 animate-in fade-in-0">
+                        {remainingItems.map(item => <ScheduleCard key={`${item.id}-${item.first_air_date}`} item={item} />)}
                       </CollapsibleContent>
                       <CollapsibleTrigger asChild>
                         <Button variant="ghost" className="w-full mt-2">
