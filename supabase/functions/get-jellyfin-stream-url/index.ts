@@ -81,27 +81,6 @@ class JellyfinClient {
     }
     return await response.json();
   }
-
-  async getPlaybackInfo(itemId: string, mediaSourceId: string) {
-    if (!this.userId) await this.authenticate();
-    const url = `${this.baseUrl}/Items/${itemId}/PlaybackInfo`;
-    
-    const playbackInfoPayload = {
-      UserId: this.userId,
-      MediaSourceId: mediaSourceId,
-    };
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: await this.getAuthHeaders(),
-      body: JSON.stringify(playbackInfoPayload),
-    });
-    if (!response.ok) {
-        const body = await response.text().catch(() => '');
-        throw new Error(`Failed to fetch PlaybackInfo for item ${itemId}: ${response.status} ${body}`);
-    }
-    return await response.json();
-  }
 }
 
 serve(async (req) => {
@@ -137,20 +116,9 @@ serve(async (req) => {
         throw new Error("No media sources found for this item on Jellyfin.");
     }
 
-    const playbackInfo = await jellyfin.getPlaybackInfo(itemId, mediaSource.Id);
-    if (!playbackInfo) {
-      throw new Error("Jellyfin did not return any playable media sources for this item.");
-    }
-
     const sessionToken = jellyfin.getToken();
-    const userId = jellyfin.userId;
-
-    const playSessionId = playbackInfo.PlaySessionId;
-    if (!playSessionId) {
-        throw new Error("Could not obtain PlaySessionId from Jellyfin.");
-    }
-
-    const streamUrl = `${settings.url}/Videos/${itemId}/stream.m3u8?MediaSourceId=${mediaSource.Id}&PlaySessionId=${playSessionId}&api_key=${sessionToken}&UserId=${userId}`;
+    
+    const streamUrl = `${settings.url}/Videos/${itemId}/stream?MediaSourceId=${mediaSource.Id}&Static=true&api_key=${sessionToken}`;
 
     return new Response(JSON.stringify({ streamUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
