@@ -129,7 +129,7 @@ serve(async (req) => {
         throw new Error("Could not obtain PlaySessionId from Jellyfin.");
     }
 
-    const streamUrl = `${settings.url}/Videos/${itemId}/master.m3u8?MediaSourceId=${mediaSource.Id}&PlaySessionId=${playSessionId}&api_key=${sessionToken}&UserId=${userId}`;
+    const streamUrl = `${settings.url}/Videos/${itemId}/stream.m3u8?MediaSourceId=${mediaSource.Id}&PlaySessionId=${playSessionId}&api_key=${sessionToken}&UserId=${userId}`;
 
     return new Response(JSON.stringify({ streamUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
