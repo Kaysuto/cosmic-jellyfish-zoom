@@ -12,7 +12,7 @@ import type {
   MediaLoadedMetadataEvent
 } from 'vidstack';
 import { showError } from '@/utils/toast';
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 
 interface VideoPlayerProps {
   src: string;
@@ -27,51 +27,37 @@ interface VideoPlayerProps {
 const VideoPlayer = ({ src, title, container, chapters, startTime, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
   const player = useRef<MediaPlayerElement>(null);
   
-  useEffect(() => {
-    const playerRef = player.current as any; // Use type assertion to fix type definition issues
-    if (!playerRef) return;
+  const onLoadedMetadata = (event: MediaLoadedMetadataEvent) => {
+    const playerRef = player.current as any;
+    if (!playerRef || !chapters || chapters.length === 0) return;
 
-    const onDurationReady = () => {
-      // Find and remove existing chapter tracks to prevent duplicates
-      const existingTracks = playerRef.textTracks.getByKind('chapters');
-      for (const track of existingTracks) {
-        playerRef.textTracks.remove(track);
-      }
-
-      const track = new TextTrack({
-        kind: 'chapters',
-        default: true,
-        label: 'Chapters',
-      });
-
-      for (let i = 0; i < chapters.length; i++) {
-        const chapter = chapters[i];
-        const nextChapter = chapters[i + 1];
-        
-        const startTime = chapter.StartPositionTicks / 10000000;
-        const endTime = nextChapter ? (nextChapter.StartPositionTicks / 10000000) : playerRef.duration;
-
-        if (isNaN(startTime) || isNaN(endTime) || startTime >= endTime) continue;
-
-        const cue = new window.VTTCue(startTime, endTime, chapter.Name);
-        track.addCue(cue);
-      }
-
-      playerRef.textTracks.add(track);
-    };
-
-    // If duration is already available, run immediately. Otherwise, wait for it.
-    if (playerRef.duration > 0) {
-      onDurationReady();
-    } else {
-      playerRef.addEventListener('duration-change', onDurationReady, { once: true });
+    // This logic runs once metadata is loaded, which is a safe time.
+    const existingTracks = playerRef.textTracks.getByKind('chapters');
+    for (const track of existingTracks) {
+      playerRef.textTracks.remove(track);
     }
 
-    return () => {
-      playerRef.removeEventListener('duration-change', onDurationReady);
+    const track = new TextTrack({
+      kind: 'chapters',
+      default: true,
+      label: 'Chapters',
+    });
+
+    for (let i = 0; i < chapters.length; i++) {
+      const chapter = chapters[i];
+      const nextChapter = chapters[i + 1];
+      
+      const startTime = chapter.StartPositionTicks / 10000000;
+      const endTime = nextChapter ? (nextChapter.StartPositionTicks / 10000000) : playerRef.duration;
+
+      if (isNaN(startTime) || isNaN(endTime) || startTime >= endTime) continue;
+
+      const cue = new window.VTTCue(startTime, endTime, chapter.Name);
+      track.addCue(cue);
     }
 
-  }, [chapters]);
+    playerRef.textTracks.add(track);
+  };
 
   if (!src) return null;
 
@@ -106,11 +92,6 @@ const VideoPlayer = ({ src, title, container, chapters, startTime, onTimeUpdate,
     if (onDurationChange && !isNaN(duration) && duration > 0) {
       onDurationChange(duration);
     }
-  }
-
-  function onLoadedMetadata(event: MediaLoadedMetadataEvent) {
-    const detail = (event as any).detail;
-    console.log('Vidstack: Metadata loaded.', detail);
   }
 
   return (
