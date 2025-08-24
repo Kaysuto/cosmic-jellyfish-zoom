@@ -38,6 +38,7 @@ const Navbar = () => {
   const { session } = useSession();
   const { profile } = useProfile();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+  const [isDonateDialogOpen, setIsDonateDialogOpen] = useState(false);
   
   const headerRef = useRef<HTMLElement>(null);
   
@@ -63,6 +64,18 @@ const Navbar = () => {
     }
     await supabase.auth.signOut();
     navigate('/');
+  };
+
+  const DONATION_URL = "https://ko-fi.com/playjelly";
+
+  const handleDonateClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDonateDialogOpen(true);
+  };
+
+  const confirmDonate = () => {
+    window.open(DONATION_URL, '_blank', 'noopener,noreferrer');
+    setIsDonateDialogOpen(false);
   };
 
   const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
@@ -166,11 +179,9 @@ const Navbar = () => {
                     <Link to="/about">{t('about_us')}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <a href="https://ko-fi.com/playjelly" target="_blank" rel="noopener noreferrer" className="text-red-400 focus:text-red-400 focus:bg-red-500/10">
-                      <Heart className="mr-2 h-4 w-4" />
-                      {t('donate')}
-                    </a>
+                  <DropdownMenuItem onClick={handleDonateClick} onSelect={(e) => e.preventDefault()} className="text-red-400 focus:text-red-400 focus:bg-red-500/10 cursor-pointer">
+                    <Heart className="mr-2 h-4 w-4" />
+                    {t('donate')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -204,10 +215,10 @@ const Navbar = () => {
                       )}
                       <NavLink to="/status" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('status')}</NavLink>
                       <NavLink to="/about" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('about_us')}</NavLink>
-                      <a href="https://ko-fi.com/playjelly" target="_blank" rel="noopener noreferrer" className={cn(mobileNavLinkClasses({isActive: false}), "text-red-400")}>
+                      <button onClick={handleDonateClick} className={cn(mobileNavLinkClasses({isActive: false}), "text-red-400")}>
                         <Heart className="mr-3 h-5 w-5" />
                         {t('donate')}
-                      </a>
+                      </button>
                     </div>
                     <div className="flex-shrink-0 border-t pt-4 pb-6">
                       {session && profile ? (
@@ -256,6 +267,22 @@ const Navbar = () => {
             <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmLogout} className="bg-destructive hover:bg-destructive/90">
               {t('logout')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={isDonateDialogOpen} onOpenChange={setIsDonateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('confirm_donation_title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('confirm_donation_description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDonate}>
+              {t('continue_to_donation')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
