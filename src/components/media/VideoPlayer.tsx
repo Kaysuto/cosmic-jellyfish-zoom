@@ -1,8 +1,9 @@
-import 'vidstack/styles/defaults.css';
-import '@vidstack/react/player/layouts/video/styles.css';
+import 'vidstack/player/styles/base.css';
+import 'vidstack/player/styles/default/theme.css';
+import 'vidstack/player/styles/default/layouts/video.css';
 
 import { MediaPlayer, MediaOutlet } from '@vidstack/react';
-import { VideoLayout, defaultVideoLayoutIcons } from '@vidstack/react/player/layouts/video';
+import { VideoLayout, defaultLayoutIcons } from '@vidstack/react/player/layouts/video';
 import { TextTrack } from 'vidstack';
 import type { 
   MediaPlayerElement,
@@ -33,7 +34,7 @@ import {
 } from 'lucide-react';
 
 const customIcons = {
-  ...defaultVideoLayoutIcons,
+  ...defaultLayoutIcons,
   Play: Play,
   Pause: Pause,
   Mute: VolumeX,
