@@ -68,16 +68,16 @@ class JellyfinClient {
     return this.accessToken;
   }
 
-  async getItem(itemId: string) {
+  async getPlaybackInfo(itemId: string) {
     if (!this.userId) await this.authenticate();
-    const fields = 'MediaSources';
-    const url = `${this.baseUrl}/Users/${this.userId}/Items/${itemId}?fields=${fields}`;
+    const url = `${this.baseUrl}/Items/${itemId}/PlaybackInfo?userId=${this.userId}`;
     const response = await fetch(url, {
+      method: 'GET',
       headers: await this.getAuthHeaders(),
     });
     if (!response.ok) {
-      const body = await response.text().catch(() => '');
-      throw new Error(`Failed to fetch item ${itemId}: ${response.status} ${body}`);
+        const body = await response.text().catch(() => '');
+        throw new Error(`Failed to fetch PlaybackInfo for item ${itemId}: ${response.status} ${body}`);
     }
     return await response.json();
   }
@@ -140,18 +140,17 @@ serve(async (req) => {
     }
     const episodeJellyfinId = episode.Id;
 
-    const episodeDetails = await jellyfin.getItem(episodeJellyfinId);
-    
-    const mediaSource = episodeDetails.MediaSources?.[0];
+    const playbackInfo = await jellyfin.getPlaybackInfo(episodeJellyfinId);
+    const mediaSource = playbackInfo.MediaSources?.[0];
     if (!mediaSource) {
         throw new Error("No media sources found for this episode on Jellyfin.");
     }
 
     const sessionToken = jellyfin.getToken();
     
-    const streamUrl = `${settings.url}/Videos/${episodeJellyfinId}/stream?MediaSourceId=${mediaSource.Id}&Static=true&api_key=${sessionToken}`;
+    const streamUrl = `${settings.url}/Videos/${episodeJellyfinId}/main.m3u8?MediaSourceId=${mediaSource.Id}&api_key=${sessionToken}`;
 
-    return new Response(JSON.stringify({ streamUrl, title: episodeDetails.Name, container: mediaSource.Container }), {
+    return new Response(JSON.stringify({ streamUrl, title: episode.Name, container: 'application/x-mpegURL' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
