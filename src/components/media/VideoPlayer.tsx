@@ -122,7 +122,7 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
         variant="ghost"
         size="icon"
         onClick={onBack}
-        className="absolute top-4 left-4 z-20 text-white bg-black/50 hover:bg-black/75 hover:text-white rounded-full transition-opacity opacity-0 group-data-[user-idle=false]:opacity-100 focus:opacity-100"
+        className="absolute top-4 left-4 z-20 text-white bg-black/50 hover:bg-black/75 hover:text-white rounded-full transition-opacity opacity-0 group-hover:opacity-100 focus:opacity-100"
         aria-label={t('back')}
       >
         <ArrowLeft className="h-5 w-5" />
