@@ -72,7 +72,7 @@ class JellyfinClient {
     if (!this.userId) await this.authenticate();
     const url = `${this.baseUrl}/Items/${itemId}/PlaybackInfo?userId=${this.userId}`;
     const response = await fetch(url, {
-      method: 'GET',
+      method: 'POST',
       headers: await this.getAuthHeaders(),
     });
     if (!response.ok) {
