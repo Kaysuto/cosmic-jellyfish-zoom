@@ -17,6 +17,8 @@ import MediaGrid, { MediaItem } from '@/components/catalog/MediaGrid';
 import { motion } from 'framer-motion';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import RequestModal from '@/components/catalog/RequestModal';
+import { format } from 'date-fns';
+import { fr, enUS } from 'date-fns/locale';
 
 interface MediaDetails {
   id: number;
@@ -44,6 +46,7 @@ interface Episode {
   vote_average: number;
   air_date: string;
   runtime?: number;
+  isAvailable?: boolean;
 }
 
 interface SeasonDetails {
@@ -93,16 +96,38 @@ const MediaDetailPage = () => {
   const [loadingStreams, setLoadingStreams] = useState(false);
 
   const fromSearch = searchParams.get('fromSearch');
+  const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
   const fetchSeasonDetails = async (seasonNumber: number) => {
     if (!type || !id) return;
     setSeasonLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('get-tv-season-details', {
+      const { data: tmdbSeasonData, error: tmdbError } = await supabase.functions.invoke('get-tv-season-details', {
         body: { seriesId: id, seasonNumber, language: i18n.language },
       });
-      if (error) throw error;
-      setSelectedSeason(data);
+      if (tmdbError) throw tmdbError;
+
+      let episodesWithAvailability = tmdbSeasonData.episodes;
+
+      if (jellyfinId) {
+        const { data: localEpisodes, error: localError } = await supabase
+          .from('jellyfin_episodes')
+          .select('episode_number')
+          .eq('series_jellyfin_id', jellyfinId)
+          .eq('season_number', seasonNumber);
+
+        if (localError) {
+          console.error("Error fetching local episodes", localError);
+        } else {
+          const availableEpisodeNumbers = new Set(localEpisodes.map(ep => ep.episode_number));
+          episodesWithAvailability = tmdbSeasonData.episodes.map((ep: Episode) => ({
+            ...ep,
+            isAvailable: availableEpisodeNumbers.has(ep.episode_number),
+          }));
+        }
+      }
+
+      setSelectedSeason({ episodes: episodesWithAvailability });
     } catch (error: any) {
       showError(error.message);
     } finally {
@@ -190,7 +215,7 @@ const MediaDetailPage = () => {
     if ((type === 'tv' || type === 'anime') && selectedSeasonNumber !== null) {
       fetchSeasonDetails(selectedSeasonNumber);
     }
-  }, [selectedSeasonNumber, type, id, i18n.language]);
+  }, [selectedSeasonNumber, type, id, i18n.language, jellyfinId]);
 
   const handleRequest = () => {
     if (!details || !type) return;
@@ -457,7 +482,7 @@ const MediaDetailPage = () => {
                                 <Tv className="h-8 w-8" />
                               </div>
                             )}
-                            {jellyfinId && (
+                            {episode.isAvailable && (
                               <button
                                 onClick={() => handlePlay(selectedSeasonNumber!, episode.episode_number)}
                                 className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -469,6 +494,9 @@ const MediaDetailPage = () => {
                           <CardContent className="p-3">
                             <p className="text-xs text-muted-foreground">Épisode {episode.episode_number}</p>
                             <h4 className="font-semibold text-sm truncate">{episode.name}</h4>
+                            {episode.air_date && (
+                              <p className="text-xs text-muted-foreground">{format(new Date(episode.air_date), 'd MMM yyyy', { locale: currentLocale })}</p>
+                            )}
                           </CardContent>
                         </Card>
                       ))}
