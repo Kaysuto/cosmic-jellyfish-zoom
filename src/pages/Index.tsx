@@ -3,9 +3,9 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clapperboard, Smartphone, Users } from 'lucide-react';
-import CommunitySection from '@/components/widgets/CommunitySection';
 import FeaturedMedia from '@/components/home/FeaturedMedia';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import DiscordWidget from '@/components/widgets/DiscordWidget';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -101,7 +101,9 @@ const Index = () => {
 
       {/* Section Communauté */}
       <div className="relative z-10 w-full py-16 bg-gray-900/50">
-        <CommunitySection />
+        <div className="container mx-auto px-4">
+          <DiscordWidget />
+        </div>
       </div>
     </div>
   );
