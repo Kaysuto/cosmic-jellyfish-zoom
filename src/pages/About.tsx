@@ -17,7 +17,7 @@ const AboutPage = () => {
       >
         <div className="text-center mb-12">
           <h1 className="text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
-            À propos du Projet Jelly
+            À propos de Jelly
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
             Votre univers de divertissement, façonné par un passionné.
@@ -30,7 +30,7 @@ const AboutPage = () => {
             <div>
               <h2 className="text-2xl font-semibold text-white mt-0">La Mission</h2>
               <p>
-                La mission de ce projet est simple : offrir un accès simple, rapide et centralisé à un vaste catalogue de films, séries et animés. Je crois que le divertissement doit être accessible sans contraintes, sur n'importe quel appareil, n'importe quand. Le Projet Jelly est né de cette passion pour le cinéma et la technologie, avec l'ambition de créer la meilleure expérience de streaming possible.
+                La mission de ce projet est simple : offrir un accès simple, rapide et centralisé à un vaste catalogue de films, séries et animés. Je crois que le divertissement doit être accessible sans contraintes, sur n'importe quel appareil, n'importe quand. Jelly est né de cette passion pour le cinéma et la technologie, avec l'ambition de créer la meilleure expérience de streaming possible.
               </p>
             </div>
           </div>
@@ -50,7 +50,7 @@ const AboutPage = () => {
             <div>
               <h2 className="text-2xl font-semibold text-white mt-0">Rejoignez la Communauté</h2>
               <p>
-                Le Projet Jelly est plus qu'un simple service, c'est une communauté d'utilisateurs. Votre avis est essentiel pour m'aider à faire grandir le projet. Rejoignez-nous sur Discord pour discuter, suggérer de nouvelles fonctionnalités, ou simplement partager vos derniers coups de cœur cinématographiques.
+                Jelly est plus qu'un simple service, c'est une communauté d'utilisateurs. Votre avis est essentiel pour m'aider à faire grandir le projet. Rejoignez-nous sur Discord pour discuter, suggérer de nouvelles fonctionnalités, ou simplement partager vos derniers coups de cœur cinématographiques.
               </p>
             </div>
           </div>
