@@ -3,7 +3,7 @@ import 'vidstack/player/styles/default/theme.css';
 import 'vidstack/player/styles/default/layouts/video.css';
 
 import { MediaPlayer, MediaOutlet } from '@vidstack/react';
-import { VideoLayout, defaultLayoutIcons } from '@vidstack/react/layouts/video';
+import { VideoLayout, defaultLayoutIcons } from '@vidstack/react/player/layouts/video';
 import { TextTrack } from 'vidstack';
 import type { 
   MediaPlayerElement,
