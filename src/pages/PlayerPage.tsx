@@ -209,6 +209,7 @@ const PlayerPage = () => {
             onTimeUpdate={handleTimeUpdate}
             onDurationChange={handleDurationChange}
             startTime={startTime ? Number(startTime) : null}
+            selectedSubtitleIndex={subtitleStreamIndex}
           />
         )}
       </main>

@@ -29,9 +29,10 @@ interface VideoPlayerProps {
   startTime?: number | null;
   onTimeUpdate?: (time: number) => void;
   onDurationChange?: (duration: number) => void;
+  selectedSubtitleIndex?: string | null;
 }
 
-const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTime, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
+const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTime, onTimeUpdate, onDurationChange, selectedSubtitleIndex }: VideoPlayerProps) => {
   const player = useRef<MediaPlayerElement>(null);
   const { t } = useTranslation();
 
@@ -58,12 +59,13 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
     // Add Subtitles
     if (subtitleTracks && subtitleTracks.length > 0) {
       for (const sub of subtitleTracks) {
+        const isSelected = selectedSubtitleIndex ? sub.Index.toString() === selectedSubtitleIndex : false;
         const track = new TextTrack({
           src: sub.src,
           kind: 'subtitles',
           label: sub.DisplayTitle,
           language: sub.Language,
-          default: sub.IsDefault,
+          default: isSelected,
         });
         playerRef.textTracks.add(track);
       }
