@@ -103,7 +103,7 @@ serve(async (req) => {
   }
 
   try {
-    const { seriesTmdbId, seasonNumber, episodeNumber } = await req.json();
+    const { seriesTmdbId, seasonNumber, episodeNumber, audioStreamIndex, subtitleStreamIndex } = await req.json();
     if (seriesTmdbId === undefined || seasonNumber === undefined || episodeNumber === undefined) {
       throw new Error("seriesTmdbId, seasonNumber, and episodeNumber are required");
     }
@@ -148,7 +148,9 @@ serve(async (req) => {
 
     const sessionToken = jellyfin.getToken();
     
-    const streamUrl = `${settings.url}/Videos/${episodeJellyfinId}/main.m3u8?MediaSourceId=${mediaSource.Id}&api_key=${sessionToken}`;
+    let streamUrl = `${settings.url}/Videos/${episodeJellyfinId}/main.m3u8?MediaSourceId=${mediaSource.Id}&api_key=${sessionToken}`;
+    if (audioStreamIndex) streamUrl += `&AudioStreamIndex=${audioStreamIndex}`;
+    if (subtitleStreamIndex) streamUrl += `&SubtitleStreamIndex=${subtitleStreamIndex}`;
 
     const audioTracks = (mediaSource.MediaStreams || []).filter((s: any) => s.Type === 'Audio');
     const subtitleTracks = (mediaSource.MediaStreams || [])

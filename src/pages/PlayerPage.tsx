@@ -20,6 +20,8 @@ const PlayerPage = () => {
   const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [searchParams] = useSearchParams();
   const startTime = searchParams.get('t');
+  const audioStreamIndex = searchParams.get('audioStreamIndex');
+  const subtitleStreamIndex = searchParams.get('subtitleStreamIndex');
 
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
   const [container, setContainer] = useState<string | null>(null);
@@ -98,7 +100,9 @@ const PlayerPage = () => {
             body: { 
               seriesTmdbId: Number(id),
               seasonNumber: Number(season),
-              episodeNumber: Number(episode)
+              episodeNumber: Number(episode),
+              audioStreamIndex,
+              subtitleStreamIndex
             },
           });
 
@@ -126,7 +130,11 @@ const PlayerPage = () => {
           setMediaTitle(catalogItem.title);
 
           const { data: streamData, error: functionError } = await supabase.functions.invoke('get-jellyfin-stream-url', {
-            body: { itemId: catalogItem.jellyfin_id },
+            body: { 
+              itemId: catalogItem.jellyfin_id,
+              audioStreamIndex,
+              subtitleStreamIndex
+            },
           });
 
           if (functionError) throw functionError;
@@ -159,7 +167,7 @@ const PlayerPage = () => {
     };
 
     fetchStreamUrl();
-  }, [id, type, searchParams]);
+  }, [id, type, searchParams, audioStreamIndex, subtitleStreamIndex]);
 
   if (jellyfinError) {
     return (

@@ -61,27 +61,6 @@ class JellyfinClient {
     };
   }
 
-  getToken() {
-    if (this.useDirectToken) {
-      return this.apiKey;
-    }
-    return this.accessToken;
-  }
-
-  async getItem(itemId: string) {
-    if (!this.userId) await this.authenticate();
-    const fields = 'MediaSources,Chapters';
-    const url = `${this.baseUrl}/Users/${this.userId}/Items/${itemId}?fields=${fields}`;
-    const response = await fetch(url, {
-      headers: await this.getAuthHeaders(),
-    });
-    if (!response.ok) {
-      const body = await response.text().catch(() => '');
-      throw new Error(`Failed to fetch item ${itemId}: ${response.status} ${body}`);
-    }
-    return await response.json();
-  }
-
   async getPlaybackInfo(itemId: string) {
     if (!this.userId) await this.authenticate();
     const url = `${this.baseUrl}/Items/${itemId}/PlaybackInfo?userId=${this.userId}`;
@@ -103,9 +82,9 @@ serve(async (req) => {
   }
 
   try {
-    const { itemId, audioStreamIndex, subtitleStreamIndex } = await req.json();
-    if (!itemId) {
-      throw new Error("itemId is required");
+    const { jellyfinId } = await req.json();
+    if (!jellyfinId) {
+      throw new Error("jellyfinId is required");
     }
 
     const supabaseAdmin = createClient(
@@ -124,31 +103,16 @@ serve(async (req) => {
 
     const jellyfin = new JellyfinClient(settings.url, settings.api_key);
     
-    const itemDetails = await jellyfin.getItem(itemId);
-    const playbackInfo = await jellyfin.getPlaybackInfo(itemId);
+    const playbackInfo = await jellyfin.getPlaybackInfo(jellyfinId);
     const mediaSource = playbackInfo.MediaSources?.[0];
     if (!mediaSource) {
         throw new Error("No media sources found for this item on Jellyfin.");
     }
 
-    const sessionToken = jellyfin.getToken();
-    
-    let streamUrl = `${settings.url}/Videos/${itemId}/main.m3u8?MediaSourceId=${mediaSource.Id}&api_key=${sessionToken}`;
-    if (audioStreamIndex) streamUrl += `&AudioStreamIndex=${audioStreamIndex}`;
-    if (subtitleStreamIndex) streamUrl += `&SubtitleStreamIndex=${subtitleStreamIndex}`;
-
     const audioTracks = (mediaSource.MediaStreams || []).filter((s: any) => s.Type === 'Audio');
-    const subtitleTracks = (mediaSource.MediaStreams || [])
-      .filter((s: any) => s.Type === 'Subtitle')
-      .map((s: any) => ({
-        ...s,
-        src: `${settings.url}/Videos/${itemId}/${mediaSource.Id}/Subtitles/${s.Index}/stream.vtt?api_key=${sessionToken}`
-      }));
+    const subtitleTracks = (mediaSource.MediaStreams || []).filter((s: any) => s.Type === 'Subtitle');
 
     return new Response(JSON.stringify({ 
-      streamUrl, 
-      container: 'application/x-mpegURL',
-      chapters: itemDetails.Chapters || [],
       audioTracks,
       subtitleTracks
     }), {

@@ -8,7 +8,7 @@ import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight, Mic, Captions } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -81,6 +81,11 @@ const MediaDetailPage = () => {
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
   const [nextUpEpisode, setNextUpEpisode] = useState<NextUpEpisode | null>(null);
   const [loadingNextUp, setLoadingNextUp] = useState(false);
+  const [audioTracks, setAudioTracks] = useState<any[]>([]);
+  const [subtitleTracks, setSubtitleTracks] = useState<any[]>([]);
+  const [selectedAudio, setSelectedAudio] = useState<string>('auto');
+  const [selectedSubtitle, setSelectedSubtitle] = useState<string>('auto');
+  const [loadingStreams, setLoadingStreams] = useState(false);
 
   const fromSearch = searchParams.get('fromSearch');
 
@@ -111,6 +116,7 @@ const MediaDetailPage = () => {
       if (!type || !id) return;
       setLoading(true);
       setLoadingNextUp(true);
+      setLoadingStreams(true);
       try {
         const apiMediaType = type === 'anime' ? 'tv' : type;
         
@@ -136,11 +142,22 @@ const MediaDetailPage = () => {
         } else if (catalogResult.data?.jellyfin_id) {
           const jfId = catalogResult.data.jellyfin_id;
           setJellyfinId(jfId);
+
+          const { data: streamsData, error: streamsError } = await supabase.functions.invoke('get-jellyfin-media-streams', { body: { jellyfinId: jfId } });
+          if (streamsError) console.error("Error fetching media streams:", streamsError);
+          else {
+            setAudioTracks(streamsData.audioTracks || []);
+            setSubtitleTracks(streamsData.subtitleTracks || []);
+          }
+          setLoadingStreams(false);
+
           if (apiMediaType === 'tv') {
             const { data: nextUpData, error: nextUpError } = await supabase.functions.invoke('get-jellyfin-next-up', { body: { seriesJellyfinId: jfId } });
             if (nextUpError) console.error("Error fetching next up:", nextUpError);
             else setNextUpEpisode(nextUpData);
           }
+        } else {
+          setLoadingStreams(false);
         }
         setLoadingNextUp(false);
 
@@ -186,8 +203,17 @@ const MediaDetailPage = () => {
   const handlePlay = (season?: number, episode?: number) => {
     if (!type || !id) return;
     let url = `/media/${type}/${id}/play`;
+    const params = new URLSearchParams();
     if (season !== undefined && episode !== undefined) {
-      url += `?season=${season}&episode=${episode}`;
+      params.append('season', season.toString());
+      params.append('episode', episode.toString());
+    }
+    if (selectedAudio !== 'auto') params.append('audioStreamIndex', selectedAudio);
+    if (selectedSubtitle !== 'auto') params.append('subtitleStreamIndex', selectedSubtitle);
+    
+    const paramString = params.toString();
+    if (paramString) {
+      url += `?${paramString}`;
     }
     navigate(url);
   };
@@ -309,7 +335,35 @@ const MediaDetailPage = () => {
                 {details.genres.map(genre => <Badge key={genre.id} variant="secondary">{genre.name}</Badge>)}
               </div>
               <p className="mt-6 text-lg text-muted-foreground">{details.overview}</p>
-              <div className="mt-8">{renderActionButton()}</div>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                {renderActionButton()}
+                {jellyfinId && !loadingStreams && (
+                  <div className="flex items-center gap-2">
+                    {audioTracks.length > 1 && (
+                      <Select value={selectedAudio} onValueChange={setSelectedAudio}>
+                        <SelectTrigger className="w-[180px]">
+                          <div className="flex items-center gap-2"><Mic className="h-4 w-4" /> <SelectValue /></div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="auto">Audio (Auto)</SelectItem>
+                          {audioTracks.map(track => <SelectItem key={track.Index} value={track.Index.toString()}>{track.DisplayTitle}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    )}
+                    {subtitleTracks.length > 0 && (
+                      <Select value={selectedSubtitle} onValueChange={setSelectedSubtitle}>
+                        <SelectTrigger className="w-[180px]">
+                          <div className="flex items-center gap-2"><Captions className="h-4 w-4" /> <SelectValue /></div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="auto">Sous-titres (Aucun)</SelectItem>
+                          {subtitleTracks.map(track => <SelectItem key={track.Index} value={track.Index.toString()}>{track.DisplayTitle}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                )}
+              </div>
             </motion.div>
           </div>
 
