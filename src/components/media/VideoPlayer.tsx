@@ -65,7 +65,7 @@ const VideoPlayer = ({ src, title, startTime, onTimeUpdate, onDurationChange }: 
       ref={player}
       className="w-full max-h-screen"
       title={title}
-      src={{ src: src, type: 'application/x-mpegurl' }}
+      src={src}
       playsInline
       autoPlay
       load="eager"
@@ -75,7 +75,7 @@ const VideoPlayer = ({ src, title, startTime, onTimeUpdate, onDurationChange }: 
       onTimeUpdate={onTimeUpdateEvent}
       onDurationChange={onDurationChangeEvent}
       onLoadedMetadata={onLoadedMetadata}
-      aspectRatio={16 / 9} // Corrected to be a number
+      aspectRatio={16 / 9}
     >
       <MediaOutlet />
       <MediaCommunitySkin />
