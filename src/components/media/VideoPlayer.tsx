@@ -16,15 +16,21 @@ import { useRef } from 'react';
 interface VideoPlayerProps {
   src: string;
   title: string;
+  container?: string | null;
   startTime?: number | null;
   onTimeUpdate?: (time: number) => void;
   onDurationChange?: (duration: number) => void;
 }
 
-const VideoPlayer = ({ src, title, startTime, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
+const VideoPlayer = ({ src, title, container, startTime, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
   const player = useRef<MediaPlayerElement>(null);
   
   if (!src) return null;
+
+  const source = {
+    src: src,
+    type: container ? `video/${container.toLowerCase()}` : undefined,
+  };
 
   function onCanPlay(event: MediaCanPlayEvent) {
     const detail = (event as any).detail;
@@ -65,7 +71,7 @@ const VideoPlayer = ({ src, title, startTime, onTimeUpdate, onDurationChange }: 
       ref={player}
       className="w-full max-h-screen"
       title={title}
-      src={src}
+      src={source}
       playsInline
       autoPlay
       load="eager"

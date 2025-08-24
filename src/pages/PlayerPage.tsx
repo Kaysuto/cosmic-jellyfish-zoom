@@ -20,6 +20,7 @@ const PlayerPage = () => {
   const startTime = searchParams.get('t');
 
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
+  const [container, setContainer] = useState<string | null>(null);
   const [mediaTitle, setMediaTitle] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -101,6 +102,7 @@ const PlayerPage = () => {
           
           setMediaTitle(streamData.title || `S${season} E${episode}`);
           setStreamUrl(streamData.streamUrl);
+          setContainer(streamData.container);
         } else {
           const { data: catalogItem, error: catalogError } = await supabase
             .from('catalog_items')
@@ -123,6 +125,7 @@ const PlayerPage = () => {
           if (streamData.error) throw new Error(streamData.error);
 
           setStreamUrl(streamData.streamUrl);
+          setContainer(streamData.container);
         }
       } catch (err: any) {
         console.error("Error fetching stream URL:", err);
@@ -170,6 +173,7 @@ const PlayerPage = () => {
         {streamUrl && !loading && (
           <VideoPlayer 
             src={streamUrl} 
+            container={container}
             title={mediaTitle} 
             onTimeUpdate={handleTimeUpdate}
             onDurationChange={handleDurationChange}

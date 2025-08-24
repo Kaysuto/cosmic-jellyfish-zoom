@@ -120,7 +120,7 @@ serve(async (req) => {
     
     const streamUrl = `${settings.url}/Videos/${itemId}/stream?MediaSourceId=${mediaSource.Id}&Static=true&api_key=${sessionToken}`;
 
-    return new Response(JSON.stringify({ streamUrl }), {
+    return new Response(JSON.stringify({ streamUrl, container: mediaSource.Container }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });

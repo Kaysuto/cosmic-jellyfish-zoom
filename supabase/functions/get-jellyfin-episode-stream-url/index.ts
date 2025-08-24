@@ -151,7 +151,7 @@ serve(async (req) => {
     
     const streamUrl = `${settings.url}/Videos/${episodeJellyfinId}/stream?MediaSourceId=${mediaSource.Id}&Static=true&api_key=${sessionToken}`;
 
-    return new Response(JSON.stringify({ streamUrl, title: episodeDetails.Name }), {
+    return new Response(JSON.stringify({ streamUrl, title: episodeDetails.Name, container: mediaSource.Container }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
