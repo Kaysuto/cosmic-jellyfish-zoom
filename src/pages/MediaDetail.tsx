@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/AuthContext';
@@ -63,6 +63,7 @@ const MediaDetailPage = () => {
   const [searchParams] = useSearchParams();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { session } = useSession();
   const { jellyfinUrl } = useJellyfin();
   const [details, setDetails] = useState<MediaDetails | null>(null);
@@ -210,7 +211,7 @@ const MediaDetailPage = () => {
     }
 
     if (!session) {
-      return <Button size="lg" onClick={() => navigate('/login')}><User className="mr-2 h-4 w-4" /> {t('login_to_request')}</Button>;
+      return <Button size="lg" onClick={() => navigate('/login', { state: { from: location } })}><User className="mr-2 h-4 w-4" /> {t('login_to_request')}</Button>;
     }
 
     if (requestStatus === 'pending' || requestStatus === 'approved') {

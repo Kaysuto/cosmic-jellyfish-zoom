@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { NavLink, Link, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown, Heart, MailQuestion } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,7 @@ import logo from '/logo.png';
 const Navbar = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { session } = useSession();
   const { profile } = useProfile();
@@ -181,7 +182,7 @@ const Navbar = () => {
           <div className="flex items-center gap-2">
             {session && profile ? <UserMenu /> : (
               <Button asChild variant="ghost" className="hidden md:inline-flex">
-                <Link to="/login">{t('login')}</Link>
+                <Link to="/login" state={{ from: location }}>{t('login')}</Link>
               </Button>
             )}
             <div className="md:hidden">
@@ -230,7 +231,7 @@ const Navbar = () => {
                           </div>
                         </div>
                       ) : (
-                        <NavLink to="/login" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
+                        <NavLink to="/login" state={{ from: location }} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
                           {t('login')}
                         </NavLink>
                       )}
