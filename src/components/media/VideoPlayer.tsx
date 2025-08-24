@@ -1,25 +1,8 @@
 import 'vidstack/styles/defaults.css';
 import 'vidstack/styles/community-skin/video.css';
 
-import { 
-  MediaPlayer, 
-  MediaOutlet, 
-  MediaTimeSlider, 
-  MediaPlayButton, 
-  MediaMuteButton, 
-  MediaVolumeSlider, 
-  MediaTime, 
-  MediaMenu, 
-  MediaMenuButton, 
-  MediaMenuItems, 
-  MediaChaptersMenuItems, 
-  MediaPIPButton, 
-  MediaFullscreenButton, 
-  MediaCaptionButton,
-  // MediaGoogleCastButton, // Nécessite une version plus récente de vidstack
-} from '@vidstack/react';
+import { MediaPlayer, MediaOutlet, MediaCommunitySkin } from '@vidstack/react';
 import { TextTrack } from 'vidstack';
-import { Settings, ListOrdered, Volume2, Check } from 'lucide-react';
 import type { 
   MediaPlayerElement,
   MediaCanPlayEvent, 
@@ -27,10 +10,9 @@ import type {
   MediaTimeUpdateEvent,
   MediaDurationChangeEvent,
   MediaLoadedMetadataEvent,
-  AudioTrack as IAudioTrack,
 } from 'vidstack';
 import { showError } from '@/utils/toast';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 
 interface VideoPlayerProps {
   src: string;
@@ -44,15 +26,8 @@ interface VideoPlayerProps {
   onDurationChange?: (duration: number) => void;
 }
 
-const VideoPlayer = ({ src, title, container, chapters, audioTracks, subtitleTracks, startTime, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
+const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTime, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
   const player = useRef<MediaPlayerElement>(null);
-  const [playerState, setPlayerState] = useState<MediaPlayerElement | null>(null);
-  
-  useEffect(() => {
-    if (player.current) {
-      setPlayerState(player.current);
-    }
-  }, [player.current]);
 
   const onLoadedMetadata = (event: MediaLoadedMetadataEvent) => {
     const playerRef = player.current as any;
@@ -116,7 +91,7 @@ const VideoPlayer = ({ src, title, container, chapters, audioTracks, subtitleTra
     <MediaPlayer
       key={src}
       ref={player}
-      className="w-full max-h-screen group"
+      className="w-full max-h-screen"
       title={title}
       src={source}
       playsInline
@@ -131,59 +106,7 @@ const VideoPlayer = ({ src, title, container, chapters, audioTracks, subtitleTra
       aspectRatio={16 / 9}
     >
       <MediaOutlet />
-      <div className="absolute inset-0 z-10 flex h-full w-full flex-col justify-end bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity group-data-[controls]:opacity-100">
-        <div className="p-2.5">
-          <MediaTimeSlider className="mb-2" />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MediaPlayButton />
-              <MediaMuteButton />
-              <MediaVolumeSlider />
-              <MediaTime />
-            </div>
-            <div className="flex items-center gap-2">
-              <MediaMenu>
-                <MediaMenuButton className="vds-button">
-                  <Settings className="h-6 w-6" />
-                </MediaMenuButton>
-                <MediaMenuItems className="vds-menu-items">
-                  {playerState && (playerState as any).audioTracks.length > 1 && (
-                    <MediaMenu>
-                      <MediaMenuButton className="vds-menu-button">
-                        <Volume2 className="w-5 h-5 mr-2" />
-                        <span>Audio ({(playerState as any).audioTracks.selected?.label})</span>
-                      </MediaMenuButton>
-                      <MediaMenuItems>
-                        {(playerState as any).audioTracks.map((track: IAudioTrack) => (
-                          <MediaMenuButton key={track.id} className="vds-menu-button" onClick={() => track.selected = true}>
-                            {track.selected && <Check className="w-4 h-4 mr-2" />}
-                            <span>{track.label}</span>
-                          </MediaMenuButton>
-                        ))}
-                      </MediaMenuItems>
-                    </MediaMenu>
-                  )}
-                  {chapters && chapters.length > 0 && (
-                    <MediaMenu>
-                      <MediaMenuButton className="vds-menu-button">
-                        <ListOrdered className="w-5 h-5 mr-2" />
-                        <span>Chapitres</span>
-                      </MediaMenuButton>
-                      <MediaMenuItems>
-                        <MediaChaptersMenuItems />
-                      </MediaMenuItems>
-                    </MediaMenu>
-                  )}
-                </MediaMenuItems>
-              </MediaMenu>
-              <MediaCaptionButton />
-              {/* <MediaGoogleCastButton /> */}
-              <MediaPIPButton />
-              <MediaFullscreenButton />
-            </div>
-          </div>
-        </div>
-      </div>
+      <MediaCommunitySkin />
     </MediaPlayer>
   );
 };
