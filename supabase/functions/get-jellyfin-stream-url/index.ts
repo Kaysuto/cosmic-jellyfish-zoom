@@ -9,6 +9,70 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+class JellyfinClient {
+  baseUrl: string;
+  apiKey: string;
+  userId?: string;
+  accessToken?: string;
+  useDirectToken = false;
+
+  constructor(baseUrl: string, apiKey: string) {
+    this.baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    this.apiKey = apiKey;
+  }
+
+  async authenticate() {
+    try {
+      const authResponse = await fetch(`${this.baseUrl}/Users/AuthenticateWithKey`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Emby-Authorization': `MediaBrowser ApiKey="${this.apiKey}"`,
+        },
+      });
+      if (!authResponse.ok) throw new Error(`AuthenticateWithKey failed`);
+      const authData = await authResponse.json();
+      this.accessToken = authData.AccessToken;
+      this.userId = authData.User.Id;
+    } catch (authErr) {
+      const directTokenResponse = await fetch(`${this.baseUrl}/Users`, {
+        headers: { 'X-Emby-Token': this.apiKey, 'Content-Type': 'application/json' },
+      });
+      if (directTokenResponse.ok) {
+        this.useDirectToken = true;
+        const users = await directTokenResponse.json();
+        const adminUser = users.find(u => u.Policy?.IsAdministrator);
+        this.userId = adminUser ? adminUser.Id : users[0]?.Id;
+        if (!this.userId) throw new Error('Direct token auth succeeded, but could not retrieve a user ID.');
+      } else {
+        throw new Error('Jellyfin authentication failed for both standard and direct token methods.');
+      }
+    }
+  }
+
+  private async getAuthHeaders() {
+    if (this.useDirectToken) {
+      return { 'Content-Type': 'application/json', 'X-Emby-Token': this.apiKey };
+    }
+    if (!this.accessToken) throw new Error('Not authenticated.');
+    return {
+      'Content-Type': 'application/json',
+      'X-Emby-Authorization': `MediaBrowser ApiKey="${this.apiKey}", Token="${this.accessToken}"`,
+    };
+  }
+
+  async getPlaybackInfo(itemId: string) {
+    if (!this.userId) await this.authenticate();
+    const url = `${this.baseUrl}/Users/${this.userId}/Items/${itemId}/PlaybackInfo`;
+    const response = await fetch(url, { headers: await this.getAuthHeaders() });
+    if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        throw new Error(`Failed to fetch PlaybackInfo for item ${itemId}: ${response.status} ${body}`);
+    }
+    return await response.json();
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders, status: 200 })
@@ -34,7 +98,15 @@ serve(async (req) => {
       throw new Error('Jellyfin settings are not configured.');
     }
 
-    const streamUrl = `${settings.url}/Videos/${itemId}/hls1/main.m3u8?api_key=${settings.api_key}`;
+    const jellyfin = new JellyfinClient(settings.url, settings.api_key);
+    const playbackInfo = await jellyfin.getPlaybackInfo(itemId);
+
+    const mediaSource = playbackInfo.MediaSources?.[0];
+    if (!mediaSource) {
+        throw new Error("No media sources found for this item on Jellyfin.");
+    }
+
+    const streamUrl = `${settings.url}/Videos/${itemId}/master.m3u8?MediaSourceId=${mediaSource.Id}&api_key=${settings.api_key}`;
 
     return new Response(JSON.stringify({ streamUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
