@@ -6,6 +6,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   fr: {
     translation: {
+      "untitled_episode": "Épisode sans titre",
       "available": "Disponible",
       "resume_s_e": "Reprendre S{{season}} E{{episode}}",
       "play_s01e01": "Commencer S01 E01",
@@ -478,6 +479,7 @@ const resources = {
   },
   en: {
     translation: {
+      "untitled_episode": "Untitled Episode",
       "available": "Available",
       "resume_s_e": "Resume S{{season}} E{{episode}}",
       "play_s01e01": "Start S01 E01",

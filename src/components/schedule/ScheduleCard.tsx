@@ -1,11 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { format } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { MediaItem } from '@/components/catalog/MediaGrid';
 
 interface ScheduleCardProps {
@@ -13,10 +11,8 @@ interface ScheduleCardProps {
 }
 
 const ScheduleCard: React.FC<ScheduleCardProps> = ({ item }) => {
-  const { t, i18n } = useTranslation();
-  const currentLocale = i18n.language === 'fr' ? fr : enUS;
+  const { t } = useTranslation();
   const title = item.title || item.name;
-  const airTime = item.first_air_date ? format(new Date(item.first_air_date), 'HH:mm', { locale: currentLocale }) : '';
 
   return (
     <Link to={`/media/${item.media_type}/${item.id}`} className="block group">
@@ -36,14 +32,10 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({ item }) => {
             <h4 className="font-semibold text-sm line-clamp-2 group-hover:text-primary">{title}</h4>
             {item.seasonNumber !== undefined && item.episodeNumber !== undefined && (
               <p className="text-xs text-muted-foreground truncate">
-                S{String(item.seasonNumber).padStart(2, '0')} E{String(item.episodeNumber).padStart(2, '0')} - {item.episodeName}
+                S{String(item.seasonNumber).padStart(2, '0')} E{String(item.episodeNumber).padStart(2, '0')} - {item.episodeName || t('untitled_episode')}
               </p>
             )}
             <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mt-1 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1 shrink-0">
-                <Clock className="h-3 w-3" />
-                {airTime}
-              </span>
               {item.isAvailable && (
                 <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-none px-2 py-0.5">
                   <Check className="h-3 w-3 mr-1" />
