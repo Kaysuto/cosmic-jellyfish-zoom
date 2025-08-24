@@ -23,12 +23,12 @@ export const JellyfinProvider = ({ children }: { children: ReactNode }) => {
       setLoading(true);
       setError(null);
       const { data, error } = await supabase
-        .from('jellyfin_settings')
+        .from('jellyfin_public_url')
         .select('url')
         .single();
       
       if (error && error.code !== 'PGRST116') {
-        console.error("Error fetching Jellyfin URL:", error);
+        console.error("Error fetching Jellyfin URL from view:", error);
         setError(error.message);
       } else if (data) {
         setJellyfinUrl(data.url);
