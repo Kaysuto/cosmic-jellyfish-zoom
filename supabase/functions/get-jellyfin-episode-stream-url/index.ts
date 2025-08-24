@@ -143,6 +143,7 @@ serve(async (req) => {
 
     const playbackInfo = await jellyfin.getPlaybackInfo(episodeJellyfinId);
     const sessionToken = jellyfin.getToken();
+    const userId = jellyfin.userId;
     
     const mediaSource = playbackInfo.MediaSources?.[0];
     if (!mediaSource) {
@@ -154,7 +155,7 @@ serve(async (req) => {
         throw new Error("Could not obtain PlaySessionId from Jellyfin.");
     }
 
-    const streamUrl = `${settings.url}/Videos/${episodeJellyfinId}/master.m3u8?MediaSourceId=${mediaSource.Id}&PlaySessionId=${playSessionId}&api_key=${sessionToken}`;
+    const streamUrl = `${settings.url}/Videos/${episodeJellyfinId}/master.m3u8?MediaSourceId=${mediaSource.Id}&PlaySessionId=${playSessionId}&api_key=${sessionToken}&UserId=${userId}`;
 
     return new Response(JSON.stringify({ streamUrl, title: episode.Name }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
