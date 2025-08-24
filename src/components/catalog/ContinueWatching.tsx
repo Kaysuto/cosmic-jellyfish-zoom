@@ -39,7 +39,7 @@ const ContinueWatching = () => {
     setDialogOpen(false);
   };
 
-  if (!session || (!loading && items.length === 0)) {
+  if (!session) {
     return null;
   }
 
@@ -66,7 +66,7 @@ const ContinueWatching = () => {
               </div>
             ))}
           </div>
-        ) : (
+        ) : items.length > 0 ? (
           <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
             <CarouselContent className="-ml-4">
               {items.map((item) => {
@@ -82,6 +82,8 @@ const ContinueWatching = () => {
             <CarouselPrevious className="hidden sm:flex" />
             <CarouselNext className="hidden sm:flex" />
           </Carousel>
+        ) : (
+          <p>Aucun élément à afficher dans Reprendre la lecture.</p>
         )}
       </section>
       <ResumePlaybackDialog
