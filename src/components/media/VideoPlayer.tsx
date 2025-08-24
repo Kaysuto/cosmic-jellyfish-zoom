@@ -1,6 +1,8 @@
-import 'vidstack/styles/base.css';
+import 'vidstack/styles/defaults.css';
+import '@vidstack/react/layouts/default/styles.css';
 
 import { MediaPlayer, MediaOutlet } from '@vidstack/react';
+import { DefaultVideoLayout, defaultLayoutIcons } from '@vidstack/react/layouts/default';
 import { TextTrack } from 'vidstack';
 import type { 
   MediaPlayerElement,
@@ -12,6 +14,42 @@ import type {
 } from 'vidstack';
 import { showError } from '@/utils/toast';
 import { useRef } from 'react';
+import {
+  Play,
+  Pause,
+  VolumeX,
+  Volume1,
+  Volume2,
+  Subtitles,
+  ListOrdered,
+  Settings,
+  Cast,
+  PictureInPicture,
+  Maximize,
+  Minimize,
+  ArrowLeft,
+  ChevronRight,
+  Check,
+} from 'lucide-react';
+
+const customIcons = {
+  ...defaultLayoutIcons,
+  Play: Play,
+  Pause: Pause,
+  Mute: VolumeX,
+  VolumeLow: Volume1,
+  VolumeHigh: Volume2,
+  Captions: Subtitles,
+  Chapters: ListOrdered,
+  Settings: Settings,
+  GoogleCast: Cast,
+  Pip: PictureInPicture,
+  EnterFullscreen: Maximize,
+  ExitFullscreen: Minimize,
+  MenuArrowLeft: ArrowLeft,
+  MenuArrowRight: ChevronRight,
+  MenuCheck: Check,
+};
 
 interface VideoPlayerProps {
   src: string;
@@ -105,7 +143,7 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
       aspectRatio={16 / 9}
     >
       <MediaOutlet />
-      {/* The layout has been temporarily removed to fix the build. It will be added back. */}
+      <DefaultVideoLayout icons={customIcons} />
     </MediaPlayer>
   );
 };
