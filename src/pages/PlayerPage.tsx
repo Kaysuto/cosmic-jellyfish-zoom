@@ -186,16 +186,7 @@ const PlayerPage = () => {
   }
 
   return (
-    <div className="bg-black h-screen w-screen flex flex-col relative group">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => navigate(-1)}
-        className="absolute top-4 left-4 z-50 text-white bg-black/50 hover:bg-black/75 hover:text-white rounded-full transition-opacity opacity-0 group-hover:opacity-100 focus:opacity-100"
-        aria-label={t('back')}
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Button>
+    <div className="bg-black h-screen w-screen flex flex-col">
       <main className="flex-grow flex items-center justify-center">
         {loading && <Skeleton className="w-full h-full" />}
         {error && !loading && (
@@ -219,6 +210,7 @@ const PlayerPage = () => {
             onDurationChange={handleDurationChange}
             startTime={startTime ? Number(startTime) : null}
             selectedSubtitleIndex={subtitleStreamIndex}
+            onBack={() => navigate(-1)}
           />
         )}
       </main>

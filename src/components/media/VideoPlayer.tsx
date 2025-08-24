@@ -18,6 +18,8 @@ import type {
 import { showError } from '@/utils/toast';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 interface VideoPlayerProps {
   src: string;
@@ -30,9 +32,10 @@ interface VideoPlayerProps {
   onTimeUpdate?: (time: number) => void;
   onDurationChange?: (duration: number) => void;
   selectedSubtitleIndex?: string | null;
+  onBack: () => void;
 }
 
-const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTime, onTimeUpdate, onDurationChange, selectedSubtitleIndex }: VideoPlayerProps) => {
+const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTime, onTimeUpdate, onDurationChange, selectedSubtitleIndex, onBack }: VideoPlayerProps) => {
   const player = useRef<MediaPlayerElement>(null);
   const { t } = useTranslation();
 
@@ -99,7 +102,7 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
     <MediaPlayer
       key={src}
       ref={player}
-      className="w-full max-h-screen"
+      className="w-full max-h-screen group"
       title={title}
       src={source}
       playsInline
@@ -115,6 +118,15 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
     >
       <MediaOutlet />
       <MediaCommunitySkin />
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onBack}
+        className="absolute top-4 left-4 z-20 text-white bg-black/50 hover:bg-black/75 hover:text-white rounded-full transition-opacity opacity-0 group-data-[user-idle=false]:opacity-100 focus:opacity-100"
+        aria-label={t('back')}
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
     </MediaPlayer>
   );
 };
