@@ -70,7 +70,8 @@ class JellyfinClient {
 
   async getItem(itemId: string) {
     if (!this.userId) await this.authenticate();
-    const url = `${this.baseUrl}/Users/${this.userId}/Items/${itemId}`;
+    const fields = 'MediaSources';
+    const url = `${this.baseUrl}/Users/${this.userId}/Items/${itemId}?fields=${fields}`;
     const response = await fetch(url, {
       headers: await this.getAuthHeaders(),
     });
