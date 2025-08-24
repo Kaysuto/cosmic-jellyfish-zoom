@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import MediaGrid, { MediaItem } from '@/components/catalog/MediaGrid';
 import RequestModal from '@/components/catalog/RequestModal';
 import { useSession } from '@/contexts/AuthContext';
+import { useJellyfin } from '@/contexts/JellyfinContext';
 
 type MediaType = 'movie' | 'tv' | 'anime';
 
@@ -19,6 +20,7 @@ const FullSectionPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { session } = useSession();
+  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
 
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +128,19 @@ const FullSectionPage = () => {
       ))}
     </div>
   );
+
+  if (jellyfinError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Button variant="outline" onClick={() => navigate('/catalog')} className="mb-6">
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_catalog')}
+        </Button>
+        <div className="text-red-500 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+          <p>Erreur de configuration Jellyfin : {jellyfinError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

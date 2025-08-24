@@ -6,14 +6,27 @@ import { Skeleton } from '@/components/ui/skeleton';
 import MediaCard from './MediaCard';
 import { useSession } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
+import { useJellyfin } from '@/contexts/JellyfinContext';
 
 const ContinueWatching = () => {
   const { t } = useTranslation();
   const { session } = useSession();
   const { items, loading } = useContinueWatching();
+  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
 
   if (!session || (!loading && items.length === 0)) {
     return null;
+  }
+
+  if (jellyfinError) {
+    return (
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">{t('continue_watching')}</h2>
+        <div className="text-red-500 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+          <p>Erreur de configuration Jellyfin : {jellyfinError}</p>
+        </div>
+      </section>
+    );
   }
 
   return (

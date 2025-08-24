@@ -6,9 +6,11 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Skeleton } from '@/components/ui/skeleton';
 import MediaCard from '@/components/catalog/MediaCard';
 import { MediaItem } from '@/components/catalog/MediaGrid';
+import { useJellyfin } from '@/contexts/JellyfinContext';
 
 const FeaturedMedia = () => {
   const { t, i18n } = useTranslation();
+  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,6 +54,17 @@ const FeaturedMedia = () => {
     };
     fetchFeatured();
   }, [i18n.language]);
+
+  if (jellyfinError) {
+    return (
+      <div className="container mx-auto px-4">
+        <h2 className="text-3xl font-bold mb-6">{t('weekly_trends')}</h2>
+        <div className="text-red-500 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+          <p>Erreur de configuration Jellyfin : {jellyfinError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4">

@@ -65,7 +65,7 @@ const MediaDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { session } = useSession();
-  const { jellyfinUrl } = useJellyfin();
+  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [details, setDetails] = useState<MediaDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [requestStatus, setRequestStatus] = useState<RequestStatus>(null);
@@ -244,6 +244,21 @@ const MediaDetailPage = () => {
   );
 
   const backLink = fromSearch ? `/catalog?q=${encodeURIComponent(fromSearch)}` : '/catalog';
+
+  if (jellyfinError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Button asChild variant="outline" className="mb-6">
+          <Link to={backLink}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_catalog')}
+          </Link>
+        </Button>
+        <div className="text-red-500 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+          <p>Erreur de configuration Jellyfin : {jellyfinError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

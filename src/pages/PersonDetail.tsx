@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Film, Tv, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
+import { useJellyfin } from '@/contexts/JellyfinContext';
 
 interface PersonDetails {
   id: number;
@@ -35,6 +36,7 @@ const PersonDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [person, setPerson] = useState<PersonDetails | null>(null);
   const [credits, setCredits] = useState<Credit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,6 +112,19 @@ const PersonDetailPage = () => {
 
   if (!person) {
     return <div className="container mx-auto px-4 py-8 text-center">{t('no_results_found')}</div>;
+  }
+
+  if (jellyfinError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Button variant="outline" onClick={() => navigate(-1)} className="mb-8">
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t('back')}
+        </Button>
+        <div className="text-red-500 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+          <p>Erreur de configuration Jellyfin : {jellyfinError}</p>
+        </div>
+      </div>
+    );
   }
 
   return (

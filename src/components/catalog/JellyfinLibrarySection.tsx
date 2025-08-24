@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import MediaCard from './MediaCard';
 import { MediaItem } from './MediaGrid';
+import { useJellyfin } from '@/contexts/JellyfinContext';
 
 interface JellyfinLibrary {
   id: string;
@@ -22,6 +23,7 @@ interface JellyfinLibrarySectionProps {
 
 const JellyfinLibrarySection: React.FC<JellyfinLibrarySectionProps> = ({ library }) => {
   const { t } = useTranslation();
+  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -47,6 +49,19 @@ const JellyfinLibrarySection: React.FC<JellyfinLibrarySectionProps> = ({ library
     };
     fetchItems();
   }, [library.id]);
+
+  if (jellyfinError) {
+    return (
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold">{library.name}</h2>
+        </div>
+        <div className="text-red-500 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+          <p>Erreur de configuration Jellyfin : {jellyfinError}</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section>

@@ -10,12 +10,14 @@ import VideoPlayer from '@/components/media/VideoPlayer';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSession } from '@/contexts/AuthContext';
 import { FunctionsHttpError } from '@supabase/supabase-js';
+import { useJellyfin } from '@/contexts/JellyfinContext';
 
 const PlayerPage = () => {
   const { type, id } = useParams<{ type: string; id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { session } = useSession();
+  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [searchParams] = useSearchParams();
   const startTime = searchParams.get('t');
 
@@ -158,6 +160,22 @@ const PlayerPage = () => {
 
     fetchStreamUrl();
   }, [id, type, searchParams]);
+
+  if (jellyfinError) {
+    return (
+      <div className="bg-black h-screen w-screen flex flex-col">
+        <main className="flex-grow flex items-center justify-center">
+          <div className="container mx-auto px-4">
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Erreur de configuration Jellyfin</AlertTitle>
+              <AlertDescription>{jellyfinError}</AlertDescription>
+            </Alert>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-black h-screen w-screen flex flex-col">

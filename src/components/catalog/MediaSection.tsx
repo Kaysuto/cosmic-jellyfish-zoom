@@ -11,6 +11,7 @@ import MediaCard from './MediaCard';
 import { MediaItem } from './MediaGrid';
 import RequestModal from './RequestModal';
 import { useSession } from '@/contexts/AuthContext';
+import { useJellyfin } from '@/contexts/JellyfinContext';
 
 interface MediaSectionProps {
   title: string;
@@ -21,6 +22,7 @@ interface MediaSectionProps {
 const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, sortBy = 'popularity.desc' }) => {
   const { t, i18n } = useTranslation();
   const { session } = useSession();
+  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [requestModalOpen, setRequestModalOpen] = useState(false);
@@ -76,6 +78,19 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, sortBy = 
     setSelectedItemForRequest(item);
     setRequestModalOpen(true);
   };
+
+  if (jellyfinError) {
+    return (
+      <section className="mb-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold">{title}</h2>
+        </div>
+        <div className="text-red-500 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+          <p>Erreur de configuration Jellyfin : {jellyfinError}</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mb-12">

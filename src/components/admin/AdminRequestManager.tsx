@@ -15,6 +15,7 @@ import { getGravatarURL } from '@/lib/gravatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useJellyfin } from '@/contexts/JellyfinContext';
 
 interface MediaRequest {
   id: string;
@@ -33,6 +34,7 @@ interface MediaRequest {
 
 const AdminRequestManager = () => {
   const { t, i18n } = useTranslation();
+  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [requests, setRequests] = useState<MediaRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'available'>('all');
@@ -126,6 +128,14 @@ const AdminRequestManager = () => {
 
   if (loading) {
     return <Skeleton className="h-96 w-full" />;
+  }
+
+  if (jellyfinError) {
+    return (
+      <div className="text-red-500 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+        <p>Erreur de configuration Jellyfin : {jellyfinError}</p>
+      </div>
+    );
   }
 
   return (

@@ -14,6 +14,7 @@ import RequestModal from '@/components/catalog/RequestModal';
 import { useSession } from '@/contexts/AuthContext';
 import ContinueWatching from '@/components/catalog/ContinueWatching';
 import JellyfinLibrarySection from '@/components/catalog/JellyfinLibrarySection';
+import { useJellyfin } from '@/contexts/JellyfinContext';
 
 interface JellyfinLibrary {
   id: string;
@@ -24,6 +25,7 @@ interface JellyfinLibrary {
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
   const { session } = useSession();
+  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [searchParams, setSearchParams] = useSearchParams();
   
   const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
@@ -123,6 +125,21 @@ const CatalogPage = () => {
     setSelectedItemForRequest(item);
     setRequestModalOpen(true);
   };
+
+  if (jellyfinError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="py-8 text-center">
+            <div className="text-red-500 mb-4">
+              <h2 className="text-2xl font-bold mb-2">Erreur de configuration</h2>
+              <p>Impossible de charger les paramètres Jellyfin : {jellyfinError}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
