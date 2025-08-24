@@ -74,12 +74,6 @@ class JellyfinClient {
     
     const playbackInfoPayload = {
       UserId: this.userId,
-      DeviceProfile: {
-        Name: "Supabase Web Player",
-        TranscodingProfiles: [
-          { Container: "ts", Type: "Video", AudioCodec: "aac", VideoCodec: "h264", Protocol: "hls" },
-        ],
-      },
     };
 
     const response = await fetch(url, {
