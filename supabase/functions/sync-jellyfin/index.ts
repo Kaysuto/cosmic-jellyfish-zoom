@@ -39,7 +39,6 @@ class JellyfinClient {
       this.accessToken = authData.AccessToken;
       this.userId = authData.User.Id;
     } catch (authErr) {
-      // Fallback: test using the API key directly as X-Emby-Token
       const directTokenResponse = await fetch(`${this.baseUrl}/Users`, {
         headers: { 'X-Emby-Token': this.apiKey, 'Content-Type': 'application/json' },
       });
@@ -48,14 +47,12 @@ class JellyfinClient {
         this.useDirectToken = true;
         const users = await directTokenResponse.json();
         if (Array.isArray(users) && users.length > 0) {
-          // Find an admin user if possible, otherwise take the first one.
           const adminUser = users.find(u => u.Policy?.IsAdministrator);
           this.userId = adminUser ? adminUser.Id : users[0].Id;
         } else {
           throw new Error('Direct token auth succeeded, but could not retrieve a user ID.');
         }
       } else {
-        // Both methods failed
         throw new Error('Jellyfin authentication failed for both standard and direct token methods.');
       }
     }
@@ -100,6 +97,18 @@ class JellyfinClient {
     }
     return await response.json();
   }
+
+  async getAllEpisodesForSeries(seriesId: string) {
+    if (!this.userId) await this.authenticate();
+    const url = `${this.baseUrl}/Shows/${seriesId}/Episodes?userId=${this.userId}&fields=ParentIndexNumber,IndexNumber`;
+    const response = await fetch(url, { headers: await this.getAuthHeaders() });
+    if (!response.ok) {
+      console.error(`Could not fetch episodes for series ${seriesId}. Status: ${response.status}`);
+      return [];
+    }
+    const data = await response.json();
+    return data.Items || [];
+  }
 }
 
 serve(async (req) => {
@@ -128,7 +137,7 @@ serve(async (req) => {
     }
 
     const jellyfin = new JellyfinClient(settings.url, settings.api_key);
-    await jellyfin.authenticate(); // This will try both methods and throw if both fail
+    await jellyfin.authenticate();
 
     const reqBody = await req.json().catch(() => ({}));
     const viewId = reqBody.viewId;
@@ -181,6 +190,28 @@ serve(async (req) => {
 
       if (upsertError) {
         throw new Error(`Failed to save items: ${upsertError.message || upsertError}`);
+      }
+    }
+
+    // New: Sync episodes for series
+    const seriesItems = filteredItems.filter(item => item.Type === 'Series');
+    for (const series of seriesItems) {
+      const episodes = await jellyfin.getAllEpisodesForSeries(series.Id);
+      if (episodes.length > 0) {
+        const episodeRecords = episodes.map(ep => ({
+          series_jellyfin_id: series.Id,
+          episode_jellyfin_id: ep.Id,
+          season_number: ep.ParentIndexNumber,
+          episode_number: ep.IndexNumber,
+        }));
+        
+        const { error: episodeUpsertError } = await supabaseAdmin
+          .from('jellyfin_episodes')
+          .upsert(episodeRecords, { onConflict: 'series_jellyfin_id,season_number,episode_number' });
+
+        if (episodeUpsertError) {
+          console.error(`Failed to upsert episodes for series ${series.Id}: ${episodeUpsertError.message}`);
+        }
       }
     }
 

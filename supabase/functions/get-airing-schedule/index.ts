@@ -2,6 +2,7 @@
 
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -51,6 +52,11 @@ serve(async (req) => {
     if (!mediaType || !startDate || !endDate) {
       throw new Error("mediaType, startDate, and endDate are required");
     }
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
     const token = await getTvdbToken();
 
@@ -128,9 +134,53 @@ serve(async (req) => {
 
       totalPages = data.total_pages;
       page++;
-    } while (page <= totalPages && page < 10); // Limit to 10 pages to avoid excessive calls
+    } while (page <= totalPages && page < 10);
 
     const uniqueResults = Array.from(new Map(allResults.map(item => [`${item.id}-${item.first_air_date}`, item])).values());
+
+    // New availability check logic
+    const tmdbIds = [...new Set(uniqueResults.map(item => item.id))];
+    if (tmdbIds.length > 0) {
+      const { data: catalogData, error: catalogError } = await supabaseAdmin
+        .from('catalog_items')
+        .select('tmdb_id, jellyfin_id')
+        .in('tmdb_id', tmdbIds);
+
+      if (catalogError) throw catalogError;
+
+      const jellyfinIdMap = new Map(catalogData.map(item => [item.tmdb_id, item.jellyfin_id]));
+      const seriesJellyfinIds = [...jellyfinIdMap.values()].filter(Boolean);
+
+      let existingEpisodes = new Set<string>();
+      if (seriesJellyfinIds.length > 0) {
+        const { data: episodeData, error: episodeError } = await supabaseAdmin
+          .from('jellyfin_episodes')
+          .select('series_jellyfin_id, season_number, episode_number')
+          .in('series_jellyfin_id', seriesJellyfinIds);
+        
+        if (episodeError) throw episodeError;
+        
+        episodeData.forEach(ep => {
+          existingEpisodes.add(`${ep.series_jellyfin_id}:${ep.season_number}:${ep.episode_number}`);
+        });
+      }
+
+      uniqueResults.forEach(item => {
+        const jellyfinId = jellyfinIdMap.get(item.id);
+        if (jellyfinId) {
+          if (item.media_type === 'movie') {
+            item.isAvailable = true;
+          } else if (item.seasonNumber !== undefined && item.episodeNumber !== undefined) {
+            const episodeKey = `${jellyfinId}:${item.seasonNumber}:${item.episodeNumber}`;
+            if (existingEpisodes.has(episodeKey)) {
+              item.isAvailable = true;
+            } else {
+              item.isSoon = true;
+            }
+          }
+        }
+      });
+    }
 
     return new Response(JSON.stringify(uniqueResults), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
