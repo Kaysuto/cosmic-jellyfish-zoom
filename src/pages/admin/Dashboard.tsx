@@ -8,9 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { Activity, ShieldAlert, UserPlus, MailQuestion } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import RecentIncidents from '@/components/admin/RecentIncidents';
-import ServicesOverview from '@/components/admin/ServicesOverview';
-import QuickActions from '@/components/admin/QuickActions';
+import RecentIncidents from '@/components/admin/dashboard/RecentIncidents';
+import ServicesOverview from '@/components/admin/dashboard/ServicesOverview';
+import QuickActions from '@/components/admin/dashboard/QuickActions';
 import WebhookInstructions from '@/components/admin/WebhookInstructions';
 
 const AdminDashboard = () => {
