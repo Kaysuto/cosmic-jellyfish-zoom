@@ -100,7 +100,7 @@ class JellyfinClient {
 
   async getAllEpisodesForSeries(seriesId: string) {
     if (!this.userId) await this.authenticate();
-    const url = `${this.baseUrl}/Shows/${seriesId}/Episodes?userId=${this.userId}&fields=ParentIndexNumber,IndexNumber`;
+    const url = `${this.baseUrl}/Shows/${seriesId}/Episodes?userId=${this.userId}&fields=ParentIndexNumber,IndexNumber,ProviderIds`;
     const response = await fetch(url, { headers: await this.getAuthHeaders() });
     if (!response.ok) {
       console.error(`Could not fetch episodes for series ${seriesId}. Status: ${response.status}`);
@@ -193,7 +193,6 @@ serve(async (req) => {
       }
     }
 
-    // New: Sync episodes for series
     const seriesItems = filteredItems.filter(item => item.Type === 'Series');
     for (const series of seriesItems) {
       const episodes = await jellyfin.getAllEpisodesForSeries(series.Id);
@@ -203,11 +202,13 @@ serve(async (req) => {
           episode_jellyfin_id: ep.Id,
           season_number: ep.ParentIndexNumber,
           episode_number: ep.IndexNumber,
+          tvdb_id: ep.ProviderIds?.Tvdb ? parseInt(ep.ProviderIds.Tvdb, 10) : null,
+          tmdb_id: ep.ProviderIds?.Tmdb ? parseInt(ep.ProviderIds.Tmdb, 10) : null,
         }));
         
         const { error: episodeUpsertError } = await supabaseAdmin
           .from('jellyfin_episodes')
-          .upsert(episodeRecords, { onConflict: 'series_jellyfin_id,season_number,episode_number' });
+          .upsert(episodeRecords, { onConflict: 'episode_jellyfin_id' });
 
         if (episodeUpsertError) {
           console.error(`Failed to upsert episodes for series ${series.Id}: ${episodeUpsertError.message}`);

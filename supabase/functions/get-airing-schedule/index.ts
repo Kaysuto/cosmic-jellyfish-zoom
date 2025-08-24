@@ -122,6 +122,7 @@ serve(async (req) => {
             seasonNumber: ep.seasonNumber,
             episodeNumber: ep.number,
             episodeName: ep.name,
+            tvdb_episode_id: ep.id,
           }));
         } catch (e) {
           console.error(`Error processing series ${series.id}:`, e.message);
@@ -138,7 +139,6 @@ serve(async (req) => {
 
     const uniqueResults = Array.from(new Map(allResults.map(item => [`${item.id}-${item.first_air_date}`, item])).values());
 
-    // New availability check logic
     const tmdbIds = [...new Set(uniqueResults.map(item => item.id))];
     if (tmdbIds.length > 0) {
       const { data: catalogData, error: catalogError } = await supabaseAdmin
@@ -149,30 +149,22 @@ serve(async (req) => {
       if (catalogError) throw catalogError;
 
       const jellyfinIdMap = new Map(catalogData.map(item => [item.tmdb_id, item.jellyfin_id]));
-      const seriesJellyfinIds = [...jellyfinIdMap.values()].filter(Boolean);
+      
+      const { data: episodeData, error: episodeError } = await supabaseAdmin
+        .from('jellyfin_episodes')
+        .select('tvdb_id');
+      
+      if (episodeError) throw episodeError;
 
-      let existingEpisodes = new Set<string>();
-      if (seriesJellyfinIds.length > 0) {
-        const { data: episodeData, error: episodeError } = await supabaseAdmin
-          .from('jellyfin_episodes')
-          .select('series_jellyfin_id, season_number, episode_number')
-          .in('series_jellyfin_id', seriesJellyfinIds);
-        
-        if (episodeError) throw episodeError;
-        
-        episodeData.forEach(ep => {
-          existingEpisodes.add(`${ep.series_jellyfin_id}:${ep.season_number}:${ep.episode_number}`);
-        });
-      }
+      const existingEpisodeTvdbIds = new Set(episodeData.map(ep => ep.tvdb_id).filter(Boolean));
 
       uniqueResults.forEach(item => {
         const jellyfinId = jellyfinIdMap.get(item.id);
         if (jellyfinId) {
           if (item.media_type === 'movie') {
             item.isAvailable = true;
-          } else if (item.seasonNumber !== undefined && item.episodeNumber !== undefined) {
-            const episodeKey = `${jellyfinId}:${item.seasonNumber}:${item.episodeNumber}`;
-            if (existingEpisodes.has(episodeKey)) {
+          } else if (item.tvdb_episode_id) {
+            if (existingEpisodeTvdbIds.has(item.tvdb_episode_id)) {
               item.isAvailable = true;
             } else {
               item.isSoon = true;
