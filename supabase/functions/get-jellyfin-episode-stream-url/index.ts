@@ -70,7 +70,7 @@ class JellyfinClient {
 
   async findEpisode(seriesJellyfinId: string, seasonNumber: number, episodeNumber: number) {
     if (!this.userId) await this.authenticate();
-    const url = `${this.baseUrl}/Shows/${seriesJellyfinId}/Episodes?season=${seasonNumber}&userId=${this.userId}&fields=ParentIndexNumber,IndexNumber`;
+    const url = `${this.baseUrl}/Shows/${seriesJellyfinId}/Episodes?season=${seasonNumber}&userId=${this.userId}&fields=ParentIndexNumber,IndexNumber,MediaSources`;
     const response = await fetch(url, { headers: await this.getAuthHeaders() });
     if (!response.ok) {
       const errorBody = await response.text().catch(() => '');
@@ -82,12 +82,13 @@ class JellyfinClient {
     return episode;
   }
 
-  async getPlaybackInfo(itemId: string) {
+  async getPlaybackInfo(itemId: string, mediaSourceId: string) {
     if (!this.userId) await this.authenticate();
     const url = `${this.baseUrl}/Items/${itemId}/PlaybackInfo`;
     
     const playbackInfoPayload = {
       UserId: this.userId,
+      MediaSourceId: mediaSourceId,
     };
 
     const response = await fetch(url, {
@@ -145,16 +146,16 @@ serve(async (req) => {
       throw new Error(`Episode S${seasonNumber}E${episodeNumber} not found on Jellyfin for this series.`);
     }
     const episodeJellyfinId = episode.Id;
-
-    const playbackInfo = await jellyfin.getPlaybackInfo(episodeJellyfinId);
-    const sessionToken = jellyfin.getToken();
-    const userId = jellyfin.userId;
     
-    const mediaSource = playbackInfo.MediaSources?.[0];
+    const mediaSource = episode.MediaSources?.[0];
     if (!mediaSource) {
         throw new Error("No media sources found for this episode on Jellyfin.");
     }
 
+    const playbackInfo = await jellyfin.getPlaybackInfo(episodeJellyfinId, mediaSource.Id);
+    const sessionToken = jellyfin.getToken();
+    const userId = jellyfin.userId;
+    
     const playSessionId = playbackInfo.PlaySessionId;
     if (!playSessionId) {
         throw new Error("Could not obtain PlaySessionId from Jellyfin.");
