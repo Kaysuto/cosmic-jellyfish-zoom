@@ -21,6 +21,7 @@ const PlayerPage = () => {
 
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
   const [container, setContainer] = useState<string | null>(null);
+  const [chapters, setChapters] = useState<any[] | null>(null);
   const [mediaTitle, setMediaTitle] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -103,6 +104,7 @@ const PlayerPage = () => {
           setMediaTitle(streamData.title || `S${season} E${episode}`);
           setStreamUrl(streamData.streamUrl);
           setContainer(streamData.container);
+          setChapters(streamData.chapters);
         } else {
           const { data: catalogItem, error: catalogError } = await supabase
             .from('catalog_items')
@@ -126,6 +128,7 @@ const PlayerPage = () => {
 
           setStreamUrl(streamData.streamUrl);
           setContainer(streamData.container);
+          setChapters(streamData.chapters);
         }
       } catch (err: any) {
         console.error("Error fetching stream URL:", err);
@@ -175,6 +178,7 @@ const PlayerPage = () => {
             src={streamUrl} 
             container={container}
             title={mediaTitle} 
+            chapters={chapters}
             onTimeUpdate={handleTimeUpdate}
             onDurationChange={handleDurationChange}
             startTime={startTime ? Number(startTime) : null}

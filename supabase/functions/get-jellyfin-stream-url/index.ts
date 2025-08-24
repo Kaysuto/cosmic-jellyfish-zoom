@@ -70,7 +70,7 @@ class JellyfinClient {
 
   async getItem(itemId: string) {
     if (!this.userId) await this.authenticate();
-    const fields = 'MediaSources';
+    const fields = 'MediaSources,Chapters';
     const url = `${this.baseUrl}/Users/${this.userId}/Items/${itemId}?fields=${fields}`;
     const response = await fetch(url, {
       headers: await this.getAuthHeaders(),
@@ -124,6 +124,7 @@ serve(async (req) => {
 
     const jellyfin = new JellyfinClient(settings.url, settings.api_key);
     
+    const itemDetails = await jellyfin.getItem(itemId);
     const playbackInfo = await jellyfin.getPlaybackInfo(itemId);
     const mediaSource = playbackInfo.MediaSources?.[0];
     if (!mediaSource) {
@@ -134,7 +135,11 @@ serve(async (req) => {
     
     const streamUrl = `${settings.url}/Videos/${itemId}/main.m3u8?MediaSourceId=${mediaSource.Id}&api_key=${sessionToken}`;
 
-    return new Response(JSON.stringify({ streamUrl, container: 'application/x-mpegURL' }), {
+    return new Response(JSON.stringify({ 
+      streamUrl, 
+      container: 'application/x-mpegURL',
+      chapters: itemDetails.Chapters || [] 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });

@@ -2,6 +2,7 @@ import 'vidstack/styles/defaults.css';
 import 'vidstack/styles/community-skin/video.css';
 
 import { MediaPlayer, MediaOutlet, MediaCommunitySkin } from '@vidstack/react';
+import { TextTrack } from 'vidstack';
 import type { 
   MediaPlayerElement,
   MediaCanPlayEvent, 
@@ -11,20 +12,67 @@ import type {
   MediaLoadedMetadataEvent
 } from 'vidstack';
 import { showError } from '@/utils/toast';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
 interface VideoPlayerProps {
   src: string;
   title: string;
   container?: string | null;
+  chapters?: any[] | null;
   startTime?: number | null;
   onTimeUpdate?: (time: number) => void;
   onDurationChange?: (duration: number) => void;
 }
 
-const VideoPlayer = ({ src, title, container, startTime, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
+const VideoPlayer = ({ src, title, container, chapters, startTime, onTimeUpdate, onDurationChange }: VideoPlayerProps) => {
   const player = useRef<MediaPlayerElement>(null);
   
+  useEffect(() => {
+    const playerRef = player.current as any; // Use type assertion to fix type definition issues
+    if (!playerRef) return;
+
+    const onDurationReady = () => {
+      // Find and remove existing chapter tracks to prevent duplicates
+      const existingTracks = playerRef.textTracks.getByKind('chapters');
+      for (const track of existingTracks) {
+        playerRef.textTracks.remove(track);
+      }
+
+      const track = new TextTrack({
+        kind: 'chapters',
+        default: true,
+        label: 'Chapters',
+      });
+
+      for (let i = 0; i < chapters.length; i++) {
+        const chapter = chapters[i];
+        const nextChapter = chapters[i + 1];
+        
+        const startTime = chapter.StartPositionTicks / 10000000;
+        const endTime = nextChapter ? (nextChapter.StartPositionTicks / 10000000) : playerRef.duration;
+
+        if (isNaN(startTime) || isNaN(endTime) || startTime >= endTime) continue;
+
+        const cue = new window.VTTCue(startTime, endTime, chapter.Name);
+        track.addCue(cue);
+      }
+
+      playerRef.textTracks.add(track);
+    };
+
+    // If duration is already available, run immediately. Otherwise, wait for it.
+    if (playerRef.duration > 0) {
+      onDurationReady();
+    } else {
+      playerRef.addEventListener('duration-change', onDurationReady, { once: true });
+    }
+
+    return () => {
+      playerRef.removeEventListener('duration-change', onDurationReady);
+    }
+
+  }, [chapters]);
+
   if (!src) return null;
 
   const source = {
