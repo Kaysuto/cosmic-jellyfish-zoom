@@ -34,8 +34,8 @@ serve(async (req) => {
       throw new Error('Jellyfin settings are not configured.');
     }
 
-    // Construct a direct stream URL, which is more reliable.
-    const streamUrl = `${settings.url}/Videos/${itemId}/stream?api_key=${settings.api_key}`;
+    // Use a direct HLS master playlist URL. This is more reliable for players like vidstack.
+    const streamUrl = `${settings.url}/Videos/${itemId}/master.m3u8?api_key=${settings.api_key}`;
 
     return new Response(JSON.stringify({ streamUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
