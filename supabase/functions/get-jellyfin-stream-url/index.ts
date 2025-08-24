@@ -68,12 +68,27 @@ class JellyfinClient {
     return this.accessToken;
   }
 
-  async getPlaybackInfo(itemId: string) {
+  async getItem(itemId: string) {
+    if (!this.userId) await this.authenticate();
+    const fields = 'MediaSources';
+    const url = `${this.baseUrl}/Users/${this.userId}/Items/${itemId}?fields=${fields}`;
+    const response = await fetch(url, {
+      headers: await this.getAuthHeaders(),
+    });
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      throw new Error(`Failed to fetch item ${itemId}: ${response.status} ${body}`);
+    }
+    return await response.json();
+  }
+
+  async getPlaybackInfo(itemId: string, mediaSourceId: string) {
     if (!this.userId) await this.authenticate();
     const url = `${this.baseUrl}/Items/${itemId}/PlaybackInfo`;
     
     const playbackInfoPayload = {
       UserId: this.userId,
+      MediaSourceId: mediaSourceId,
     };
 
     const response = await fetch(url, {
@@ -116,12 +131,17 @@ serve(async (req) => {
 
     const jellyfin = new JellyfinClient(settings.url, settings.api_key);
     
-    const playbackInfo = await jellyfin.getPlaybackInfo(itemId);
-    if (!playbackInfo || !playbackInfo.MediaSources || playbackInfo.MediaSources.length === 0) {
+    const itemDetails = await jellyfin.getItem(itemId);
+    const mediaSource = itemDetails.MediaSources?.[0];
+    if (!mediaSource) {
+        throw new Error("No media sources found for this item on Jellyfin.");
+    }
+
+    const playbackInfo = await jellyfin.getPlaybackInfo(itemId, mediaSource.Id);
+    if (!playbackInfo) {
       throw new Error("Jellyfin did not return any playable media sources for this item.");
     }
 
-    const mediaSource = playbackInfo.MediaSources[0];
     const sessionToken = jellyfin.getToken();
     const userId = jellyfin.userId;
 
