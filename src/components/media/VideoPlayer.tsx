@@ -1,8 +1,9 @@
-import 'vidstack/styles/defaults.css';
-import '@vidstack/react/layouts/default/styles.css';
+import 'vidstack/player/styles/base.css';
+import 'vidstack/player/styles/default/theme.css';
+import 'vidstack/player/styles/default/layouts/video.css';
 
 import { MediaPlayer, MediaOutlet } from '@vidstack/react';
-import { DefaultVideoLayout, defaultLayoutIcons } from '@vidstack/react/layouts/default';
+import { VideoLayout, defaultLayoutIcons } from '@vidstack/react/player/layouts/video';
 import { TextTrack } from 'vidstack';
 import type { 
   MediaPlayerElement,
@@ -143,7 +144,7 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
       aspectRatio={16 / 9}
     >
       <MediaOutlet />
-      <DefaultVideoLayout icons={customIcons} />
+      <VideoLayout icons={customIcons} />
     </MediaPlayer>
   );
 };
