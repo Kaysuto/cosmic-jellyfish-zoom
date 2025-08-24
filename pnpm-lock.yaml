@@ -140,6 +140,9 @@ importers:
       md5:
         specifier: ^2.3.0
         version: 2.3.0
+      media-icons:
+        specifier: ^0.10.0
+        version: 0.10.0
       next-i18next:
         specifier: ^15.4.2
         version: 15.4.2(@types/react@18.3.20)(i18next@25.3.2(typescript@5.8.3))(next@15.4.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-i18next@15.6.1(i18next@25.3.2(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3))(react@18.3.1)
@@ -2283,6 +2286,10 @@ packages:
 
   media-captions@0.0.18:
     resolution: {integrity: sha512-JW18P6FuHdyLSGwC4TQ0kF3WdNj/+wMw2cKOb8BnmY6vSJGtnwJ+vkYj+IjHOV34j3XMc70HDeB/QYKR7E7fuQ==}
+    engines: {node: '>=16'}
+
+  media-icons@0.10.0:
+    resolution: {integrity: sha512-M9loX7KUWsID3T8pRSN6/+MNKPEm9dNteqJk7yfo9ZaAIEYzEd07jWTVRlRmgVMKoAh1kY7funD6Qe1prrTJMQ==}
     engines: {node: '>=16'}
 
   merge2@1.4.1:
@@ -4876,6 +4883,8 @@ snapshots:
       is-buffer: 1.1.6
 
   media-captions@0.0.18: {}
+
+  media-icons@0.10.0: {}
 
   merge2@1.4.1: {}
 
