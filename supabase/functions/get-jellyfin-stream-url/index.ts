@@ -71,10 +71,25 @@ class JellyfinClient {
   async getPlaybackInfo(itemId: string) {
     if (!this.userId) await this.authenticate();
     const url = `${this.baseUrl}/Items/${itemId}/PlaybackInfo`;
+    
+    const playbackInfoPayload = {
+      UserId: this.userId,
+      DeviceProfile: {
+        Name: "Supabase Web Player",
+        MaxStreamingBitrate: 140000000,
+        DirectPlayProfiles: [
+          { Container: "mp4,mkv,webm", Type: "Video" },
+        ],
+        TranscodingProfiles: [
+          { Container: "ts", Type: "Video", AudioCodec: "aac", VideoCodec: "h264", Protocol: "hls" },
+        ],
+      },
+    };
+
     const response = await fetch(url, {
       method: 'POST',
       headers: await this.getAuthHeaders(),
-      body: JSON.stringify({ UserId: this.userId }),
+      body: JSON.stringify(playbackInfoPayload),
     });
     if (!response.ok) {
         const body = await response.text().catch(() => '');
