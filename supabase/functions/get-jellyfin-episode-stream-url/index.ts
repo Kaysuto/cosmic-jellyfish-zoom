@@ -61,6 +61,13 @@ class JellyfinClient {
     };
   }
 
+  getToken() {
+    if (this.useDirectToken) {
+      return this.apiKey;
+    }
+    return this.accessToken;
+  }
+
   async findEpisode(seriesJellyfinId: string, seasonNumber: number, episodeNumber: number) {
     if (!this.userId) await this.authenticate();
     const url = `${this.baseUrl}/Shows/${seriesJellyfinId}/Episodes?season=${seasonNumber}&userId=${this.userId}&fields=ParentIndexNumber,IndexNumber`;
@@ -135,6 +142,8 @@ serve(async (req) => {
     const episodeJellyfinId = episode.Id;
 
     const playbackInfo = await jellyfin.getPlaybackInfo(episodeJellyfinId);
+    const sessionToken = jellyfin.getToken();
+    
     const mediaSource = playbackInfo.MediaSources?.[0];
     if (!mediaSource) {
         throw new Error("No media sources found for this episode on Jellyfin.");
@@ -145,7 +154,7 @@ serve(async (req) => {
         throw new Error("Could not obtain PlaySessionId from Jellyfin.");
     }
 
-    const streamUrl = `${settings.url}/Videos/${episodeJellyfinId}/master.m3u8?MediaSourceId=${mediaSource.Id}&PlaySessionId=${playSessionId}&api_key=${settings.api_key}`;
+    const streamUrl = `${settings.url}/Videos/${episodeJellyfinId}/master.m3u8?MediaSourceId=${mediaSource.Id}&PlaySessionId=${playSessionId}&api_key=${sessionToken}`;
 
     return new Response(JSON.stringify({ streamUrl, title: episode.Name }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

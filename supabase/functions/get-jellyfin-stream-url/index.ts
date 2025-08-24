@@ -61,6 +61,13 @@ class JellyfinClient {
     };
   }
 
+  getToken() {
+    if (this.useDirectToken) {
+      return this.apiKey;
+    }
+    return this.accessToken;
+  }
+
   async getPlaybackInfo(itemId: string) {
     if (!this.userId) await this.authenticate();
     const url = `${this.baseUrl}/Items/${itemId}/PlaybackInfo`;
@@ -104,6 +111,7 @@ serve(async (req) => {
 
     const jellyfin = new JellyfinClient(settings.url, settings.api_key);
     const playbackInfo = await jellyfin.getPlaybackInfo(itemId);
+    const sessionToken = jellyfin.getToken();
 
     const mediaSource = playbackInfo.MediaSources?.[0];
     if (!mediaSource) {
@@ -115,7 +123,7 @@ serve(async (req) => {
         throw new Error("Could not obtain PlaySessionId from Jellyfin.");
     }
 
-    const streamUrl = `${settings.url}/Videos/${itemId}/master.m3u8?MediaSourceId=${mediaSource.Id}&PlaySessionId=${playSessionId}&api_key=${settings.api_key}`;
+    const streamUrl = `${settings.url}/Videos/${itemId}/master.m3u8?MediaSourceId=${mediaSource.Id}&PlaySessionId=${playSessionId}&api_key=${sessionToken}`;
 
     return new Response(JSON.stringify({ streamUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
