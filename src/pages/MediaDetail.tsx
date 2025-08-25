@@ -8,7 +8,7 @@ import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight, Mic, Captions, ChevronsUpDown } from 'lucide-react';
+import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight, Mic, Captions, ChevronsUpDown, Heart, Bookmark } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,6 +19,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import RequestModal from '@/components/catalog/RequestModal';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
+import { useUserList } from '@/hooks/useUserList';
 
 interface MediaDetails {
   id: number;
@@ -73,7 +74,7 @@ const MediaDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { session } = useSession();
-  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
+  const { error: jellyfinError } = useJellyfin();
   const [details, setDetails] = useState<MediaDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [requestStatus, setRequestStatus] = useState<RequestStatus>(null);
@@ -94,6 +95,17 @@ const MediaDetailPage = () => {
   const [selectedAudio, setSelectedAudio] = useState<string>('auto');
   const [selectedSubtitle, setSelectedSubtitle] = useState<string>('auto');
   const [loadingStreams, setLoadingStreams] = useState(false);
+
+  const {
+    isInList: isInFavorites,
+    addToList: addToFavorites,
+    removeFromList: removeFromFavorites
+  } = useUserList('favorite');
+  const {
+    isInList: isInWatchlist,
+    addToList: addToWatchlist,
+    removeFromList: removeFromWatchlist
+  } = useUserList('watchlist');
 
   const fromSearch = searchParams.get('fromSearch');
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
@@ -275,6 +287,39 @@ const MediaDetailPage = () => {
     }
     
     return <Button size="lg" onClick={handleRequest}><Film className="mr-2 h-4 w-4" /> {t('request')}</Button>;
+  };
+
+  const renderListButtons = () => {
+    if (!session) return null;
+
+    const mediaId = Number(id);
+    const mediaType = type === 'anime' ? 'tv' : type;
+
+    if (!mediaId || !mediaType) return null;
+
+    const isFavorite = isInFavorites(mediaId, mediaType);
+    const isWatchlisted = isInWatchlist(mediaId, mediaType);
+
+    return (
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => isFavorite ? removeFromFavorites(mediaId, mediaType) : addToFavorites(mediaId, mediaType)}
+          title={isFavorite ? t('remove_from_favorites') : t('add_to_favorites')}
+        >
+          <Heart className={`h-5 w-5 ${isFavorite ? 'text-red-500 fill-current' : ''}`} />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => isWatchlisted ? removeFromWatchlist(mediaId, mediaType) : addToWatchlist(mediaId, mediaType)}
+          title={isWatchlisted ? t('remove_from_watchlist') : t('add_to_watchlist')}
+        >
+          <Bookmark className={`h-5 w-5 ${isWatchlisted ? 'text-blue-500 fill-current' : ''}`} />
+        </Button>
+      </div>
+    );
   };
 
   if (loading) {

@@ -489,7 +489,22 @@ const resources = {
       "update_user_email_password_desc": "Mettez à jour l'e-mail ou réinitialisez le mot de passe de l'utilisateur.",
       "new_password_optional": "Nouveau mot de passe (laisser vide pour ne pas changer)",
       "manage_user_mfa_desc": "Gérer l'authentification à deux facteurs pour cet utilisateur.",
-      "user_mfa_disabled": "L'utilisateur n'a pas activé l'MFA."
+      "user_mfa_disabled": "L'utilisateur n'a pas activé l'MFA.",
+      "favorites": "Favoris",
+      "watchlist": "Watchlist",
+      "added_to_list": "Ajouté à la liste.",
+      "removed_from_list": "Retiré de la liste.",
+      "error_fetching_list": "Erreur lors de la récupération de la liste.",
+      "must_be_logged_in": "Vous devez être connecté.",
+      "error_adding_to_list": "Erreur lors de l'ajout à la liste.",
+      "error_removing_from_list": "Erreur lors du retrait de la liste.",
+      "no_favorites_yet": "Aucun favori pour le moment.",
+      "no_watchlist_yet": "Aucun média dans la watchlist pour le moment.",
+      "notifications": "Notifications",
+      "no_notifications": "Aucune notification.",
+      "notification_request_approved": "Votre demande pour \"{{title}}\" a été approuvée.",
+      "notification_request_rejected": "Votre demande pour \"{{title}}\" a été rejetée.",
+      "mark_all_as_read": "Marquer tout comme lu"
     }
   },
   en: {

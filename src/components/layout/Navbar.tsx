@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown, Heart, MailQuestion } from "lucide-react";
+import { Menu, LayoutDashboard, User, Settings, LogOut, ChevronDown, Heart, MailQuestion, Bell } from "lucide-react";
+import { Notifications } from './Notifications';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -189,7 +190,12 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            {session && profile ? <UserMenu /> : (
+            {session && profile ? (
+              <div className="flex items-center gap-2">
+                <Notifications />
+                <UserMenu />
+              </div>
+            ) : (
               <Button asChild variant="ghost" className="hidden md:inline-flex">
                 <Link to="/login" state={{ from: location }}>{t('login')}</Link>
               </Button>

@@ -2,7 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { Film, Star, Plus, Check } from 'lucide-react';
+import { Film, Star, Plus, Check, Heart, Bookmark } from 'lucide-react';
+import { useUserList } from '@/hooks/useUserList';
+import { useSession } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import type { MediaItem } from './MediaGrid';
 import { useJellyfin } from '@/contexts/JellyfinContext';
@@ -21,6 +23,9 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
   const { t } = useTranslation();
   const { jellyfinUrl } = useJellyfin();
 
+  const { session } = useSession();
+  const { addToList: addToFavorites, removeFromList: removeFromFavorites, isInList: isInFavorites } = useUserList('favorite');
+  const { addToList: addToWatchlist, removeFromList: removeFromWatchlist, isInList: isInWatchlist } = useUserList('watchlist');
   const title = item.title || item.name || 'No title';
   const releaseDate = item.release_date || item.first_air_date;
   const year = releaseDate ? new Date(releaseDate).getFullYear() : '';
@@ -105,6 +110,30 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
         >
           <Plus className="h-4 w-4" />
         </button>
+      )}
+      {session && (
+        <div className="absolute top-2 right-2 z-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button
+            onClick={(e) => {
+              e.preventDefault(); e.stopPropagation();
+              isInFavorites(item.id, item.media_type) ? removeFromFavorites(item.id, item.media_type) : addToFavorites(item.id, item.media_type);
+            }}
+            aria-label={isInFavorites(item.id, item.media_type) ? t('remove_from_favorites') : t('add_to_favorites')}
+            className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            <Heart className={`h-4 w-4 ${isInFavorites(item.id, item.media_type) ? 'text-red-500 fill-current' : ''}`} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault(); e.stopPropagation();
+              isInWatchlist(item.id, item.media_type) ? removeFromWatchlist(item.id, item.media_type) : addToWatchlist(item.id, item.media_type);
+            }}
+            aria-label={isInWatchlist(item.id, item.media_type) ? t('remove_from_watchlist') : t('add_to_watchlist')}
+            className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <Bookmark className={`h-4 w-4 ${isInWatchlist(item.id, item.media_type) ? 'text-blue-500 fill-current' : ''}`} />
+          </button>
+        </div>
       )}
     </Card>
   );
