@@ -101,7 +101,9 @@ const Index = () => {
       </div>
 
       {/* Section Sections du Catalogue */}
-      <CatalogSections />
+      <div className="relative z-10">
+        <CatalogSections />
+      </div>
 
       {/* Section Communauté */}
       <div className="relative z-10 w-full py-16 bg-gray-900/50">
