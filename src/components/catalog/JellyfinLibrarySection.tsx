@@ -68,7 +68,7 @@ const JellyfinLibrarySection: React.FC<JellyfinLibrarySectionProps> = ({ library
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold">{library.name}</h2>
         <Button asChild variant="link">
-          <Link to={`/catalog/jellyfin/${library.id}`} state={{ libraryName: library.name }}>
+          <Link to={`/discover/${library.collectionType === 'movies' ? 'movie' : 'tv'}`} state={{ libraryName: library.name }}>
             {t('view_all')} <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>

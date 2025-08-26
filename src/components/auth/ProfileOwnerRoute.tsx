@@ -20,7 +20,7 @@ const ProfileOwnerRoute = () => {
 
   if (session.user.id !== userId) {
     // If the user is not the owner, redirect them to the public profile page.
-    return <Navigate to={`/users/${userId}`} replace />;
+    return <Navigate to={`/profile/${userId}`} replace />;
   }
 
   return <Outlet />;

@@ -22,7 +22,7 @@ export const Notifications = () => {
   };
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu modal={false} open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
@@ -68,7 +68,7 @@ export const Notifications = () => {
                       {notif.media_poster_path ? (
                         <img
                           src={`https://image.tmdb.org/t/p/w92${notif.media_poster_path}`}
-                          alt={notif.media_title}
+                          alt={notif.media_title ?? undefined}
                           className="h-16 w-12 rounded-md object-cover"
                         />
                       ) : (

@@ -2,15 +2,20 @@
 // @ts-nocheck
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-import { corsHeaders } from '../_shared/cors.ts'
-import { corsHeaders } from '../_shared/cors.ts'
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
+};
 
 const TMDB_API_KEY = Deno.env.get('TMDB_API_KEY');
 const TMDB_API_URL = 'https://api.themoviedb.org/3';
 
 serve(async (req) => {
+  // Ensure OPTIONS preflight returns an empty 204 with CORS headers immediately
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { status: 204, headers: corsHeaders })
   }
 
   try {

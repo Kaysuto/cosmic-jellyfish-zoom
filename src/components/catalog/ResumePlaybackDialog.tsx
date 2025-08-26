@@ -18,9 +18,10 @@ interface ResumePlaybackDialogProps {
   item: ContinueWatchingItem | null;
   onResume: () => void;
   onRestart: () => void;
+  onViewDetails: () => void;
 }
 
-const ResumePlaybackDialog = ({ open, onOpenChange, item, onResume, onRestart }: ResumePlaybackDialogProps) => {
+const ResumePlaybackDialog = ({ open, onOpenChange, item, onResume, onRestart, onViewDetails }: ResumePlaybackDialogProps) => {
   const { t } = useTranslation();
 
   if (!item) return null;
@@ -42,6 +43,9 @@ const ResumePlaybackDialog = ({ open, onOpenChange, item, onResume, onRestart }:
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="sm:justify-center gap-2">
+          <Button variant="secondary" onClick={onViewDetails}>
+            {t('view_details')}
+          </Button>
           <Button variant="outline" onClick={onRestart}>
             {t('restart_playback')}
           </Button>

@@ -74,7 +74,7 @@ const UserPublicProfile = () => {
           <p className="text-muted-foreground">{t('member_since')} {format(new Date(user.updated_at), 'MMMM yyyy', { locale: currentLocale })}</p>
           {isOwner && (
             <Button asChild variant="outline" size="sm" className="mt-4">
-              <Link to={`/users/${userId}/settings`}>
+              <Link to={`/profile/${userId}/settings`}>
                 <Settings className="mr-2 h-4 w-4" />
                 {t('edit_profile')}
               </Link>

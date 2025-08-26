@@ -85,14 +85,13 @@ const App = () => (
                       <Route path="/about" element={<AboutPage />} />
                       <Route path="/privacy" element={<PrivacyPage />} />
                       <Route path="/schedule" element={<SchedulePage />} />
-                      <Route path="/media/:type/:id" element={<MediaDetailPage />} />
-                      <Route path="/person/:id" element={<PersonDetailPage />} />
+                      <Route path="/media/:mediaType/:tmdbId" element={<MediaDetailPage />} />
+                      <Route path="/person/:personId" element={<PersonDetailPage />} />
                       <Route path="/catalog" element={<CatalogPage />} />
-                      <Route path="/catalog/:mediaType" element={<FullSectionPage />} />
-                      <Route path="/catalog/jellyfin/:libraryId" element={<FullSectionPage />} />
-                      <Route path="/users/:userId" element={<UserPublicProfile />} />
+                      <Route path="/discover/:mediaType" element={<FullSectionPage />} />
+                      <Route path="/profile/:userId" element={<UserPublicProfile />} />
                       <Route element={<ProfileOwnerRoute />}>
-                        <Route path="/users/:userId/settings" element={<Profile />} />
+                        <Route path="/profile/:userId/settings" element={<Profile />} />
                       </Route>
 
                       {/* Public route for admin-managed requests moved out of /admin */}
@@ -106,7 +105,7 @@ const App = () => (
                     </Route>
                     
                     <Route element={<ProtectedRoute />}>
-                      <Route path="/media/:type/:id/play" element={<PlayerPage />} />
+                      <Route path="/media/:mediaType/:tmdbId/play" element={<PlayerPage />} />
                     </Route>
 
                     <Route element={<AdminRoute />}>

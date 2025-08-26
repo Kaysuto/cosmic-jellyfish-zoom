@@ -10,7 +10,7 @@ const DiscordWidget = () => {
         src="https://ptb.discord.com/widget?id=1027968386640117770&theme=dark"
         width="100%"
         height="352"
-        allowTransparency={true}
+        style={{ backgroundColor: 'transparent' }}
         frameBorder="0"
         sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
         className="rounded-lg"

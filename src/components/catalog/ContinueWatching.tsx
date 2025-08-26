@@ -13,7 +13,7 @@ const ContinueWatching = () => {
   const { t } = useTranslation();
   const { session } = useSession();
   const { items, loading } = useContinueWatching();
-  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
+  const { error: jellyfinError } = useJellyfin();
   const navigate = useNavigate();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -28,18 +28,46 @@ const ContinueWatching = () => {
 
   const handleResume = () => {
     if (!selectedItem) return;
+    if (!selectedItem.id || !selectedItem.media_type) {
+      console.error('Attempted to resume playback for an item missing id or media_type', selectedItem);
+      setDialogOpen(false);
+      return;
+    }
     const resumeTimeInSeconds = selectedItem.playback_position_ticks / 10000000;
-    navigate(`/media/${selectedItem.media_type}/${selectedItem.id}/play?t=${resumeTimeInSeconds}`);
+   let url = `/media/${selectedItem.media_type}/${selectedItem.id}/play?t=${resumeTimeInSeconds}`;
+   if ((selectedItem.media_type === 'tv' || selectedItem.media_type === 'anime') && selectedItem.season_number && selectedItem.episode_number) {
+     url += `&season=${selectedItem.season_number}&episode=${selectedItem.episode_number}`;
+   }
+   navigate(url);
     setDialogOpen(false);
   };
 
   const handleRestart = () => {
     if (!selectedItem) return;
+    if (!selectedItem.id || !selectedItem.media_type) {
+      console.error('Attempted to restart playback for an item missing id or media_type', selectedItem);
+      setDialogOpen(false);
+      return;
+    }
     navigate(`/media/${selectedItem.media_type}/${selectedItem.id}/play`);
     setDialogOpen(false);
   };
 
-  if (!session || (!loading && items.length === 0)) {
+  const handleViewDetails = () => {
+    if (!selectedItem) return;
+    if (!selectedItem.id || !selectedItem.media_type) {
+      console.error('Attempted to view details for an item missing id or media_type', selectedItem);
+      setDialogOpen(false);
+      return;
+    }
+    navigate(`/media/${selectedItem.media_type}/${selectedItem.id}`);
+    setDialogOpen(false);
+  };
+
+  // Filter out invalid items (missing id or media_type) to avoid generating invalid routes
+  const validItems = Array.isArray(items) ? items.filter(i => i && i.id && i.media_type) : [];
+
+  if (!session || (!loading && validItems.length === 0)) {
     return null;
   }
 
@@ -69,11 +97,11 @@ const ContinueWatching = () => {
         ) : (
           <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
             <CarouselContent className="-ml-4">
-              {items.map((item) => {
+              {validItems.map((item) => {
                 return (
-                  <CarouselItem key={item.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 pl-4">
+                  <CarouselItem key={`${item.media_type}-${item.id}`} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 pl-4">
                     <div onClick={(e) => handleCardClick(e, item)} className="cursor-pointer h-full">
-                      <MediaCard item={item} showRequestButton={false} progress={item.progress} playUrl="#" />
+                      <MediaCard item={item} showRequestButton={false} progress={item.progress} />
                     </div>
                   </CarouselItem>
                 );
@@ -90,6 +118,7 @@ const ContinueWatching = () => {
         item={selectedItem}
         onResume={handleResume}
         onRestart={handleRestart}
+        onViewDetails={handleViewDetails}
       />
     </>
   );

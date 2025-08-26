@@ -31,8 +31,6 @@ const FullSectionPage = () => {
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
 
-  const isJellyfinLibrary = !!libraryId;
-
   const sortOptions = {
     'popularity.desc': t('sort_popularity_desc'),
     'release_date.desc': t('sort_release_date_desc'),
@@ -42,53 +40,37 @@ const FullSectionPage = () => {
   const fetchMedia = useCallback(async () => {
     setLoading(true);
     try {
-      let responseData;
-      let items;
+      const { data, error } = await supabase.functions.invoke('discover-media', {
+        body: { mediaType, language: i18n.language, page, sortBy },
+      });
+      if (error) throw error;
+      
+      const tmdbItems = data.results;
+      const tmdbIds = tmdbItems.map((item: MediaItem) => item.id);
 
-      if (isJellyfinLibrary) {
-        const { data, error } = await supabase.functions.invoke('get-jellyfin-library-items', {
-          body: { libraryId, page, limit: 20 },
-        });
-        if (error) throw error;
-        items = data.items.map((item: any) => ({ ...item, isAvailable: true }));
-        setTotalPages(Math.ceil(data.totalItems / 20));
-      } else {
-        const { data, error } = await supabase.functions.invoke('discover-media', {
-          body: { mediaType, language: i18n.language, page, sortBy },
-        });
-        if (error) throw error;
+      let items = tmdbItems;
+      if (tmdbIds.length > 0) {
+        const { data: catalogData, error: catalogError } = await supabase
+          .from('catalog_items')
+          .select('tmdb_id')
+          .in('tmdb_id', tmdbIds);
         
-        const tmdbItems = data.results;
-        const tmdbIds = tmdbItems.map((item: MediaItem) => item.id);
-
-        if (tmdbIds.length > 0) {
-          const { data: catalogData, error: catalogError } = await supabase
-            .from('catalog_items')
-            .select('tmdb_id')
-            .in('tmdb_id', tmdbIds);
-          
-          if (catalogError) {
-            console.error("Error checking catalog availability", catalogError);
-            items = tmdbItems;
-          } else {
-            const availableIds = new Set(catalogData.map(item => item.tmdb_id));
-            items = tmdbItems.map((item: MediaItem) => ({
-              ...item,
-              isAvailable: availableIds.has(item.id),
-            }));
-          }
-        } else {
-          items = tmdbItems;
+        if (!catalogError) {
+          const availableIds = new Set(catalogData.map(item => item.tmdb_id));
+          items = tmdbItems.map((item: MediaItem) => ({
+            ...item,
+            isAvailable: availableIds.has(item.id),
+          }));
         }
-        setTotalPages(Math.min(data.total_pages ?? 1, 500));
       }
       setMedia(items);
+      setTotalPages(Math.min(data.total_pages ?? 1, 500));
     } catch (error: any) {
       showError(error.message);
     } finally {
       setLoading(false);
     }
-  }, [isJellyfinLibrary, libraryId, mediaType, i18n.language, page, sortBy]);
+  }, [mediaType, i18n.language, page, sortBy]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -106,16 +88,13 @@ const FullSectionPage = () => {
   };
 
   const pageTitle = useMemo(() => {
-    if (isJellyfinLibrary) {
-      return location.state?.libraryName || t('catalog');
-    }
     switch (mediaType) {
       case 'movie': return t('popular_movies');
       case 'tv': return t('popular_tv_shows');
       case 'anime': return t('popular_animes');
       default: return t('catalog');
     }
-  }, [isJellyfinLibrary, mediaType, t, location.state]);
+  }, [mediaType, t, location.state]);
 
   const LoadingSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -150,28 +129,26 @@ const FullSectionPage = () => {
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-4xl font-bold tracking-tight">{pageTitle}</h1>
-        {!isJellyfinLibrary && (
-          <div className="w-full sm:w-auto">
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full sm:w-[200px] justify-between">
-                  {sortOptions[sortBy as keyof typeof sortOptions]}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-[200px]">
-                {Object.entries(sortOptions).map(([value, label]) => (
-                  <DropdownMenuItem key={value} onSelect={() => handleSortByChange(value)}>
-                    {label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
+        <div className="w-full sm:w-auto">
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full sm:w-[200px] justify-between">
+                {sortOptions[sortBy as keyof typeof sortOptions]}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[200px]">
+              {Object.entries(sortOptions).map(([value, label]) => (
+                <DropdownMenuItem key={value} onSelect={() => handleSortByChange(value)}>
+                  {label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      {loading ? <LoadingSkeleton /> : <MediaGrid items={media} onRequest={openRequestModal} showRequestButton={!!session} />}
+      {loading ? <LoadingSkeleton /> : <MediaGrid items={media} showRequestButton={!!session} />}
 
       {!loading && totalPages > 1 && (
         <div className="flex items-center justify-center gap-4 mt-8">

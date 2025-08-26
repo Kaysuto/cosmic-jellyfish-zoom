@@ -8,18 +8,18 @@ import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight, Mic, Captions, ChevronsUpDown, Heart, Bookmark } from 'lucide-react';
+import { ArrowLeft, Calendar, Check, Clock, Film, Loader2, Star, Tv, Play, User, AlertTriangle, ChevronLeft, ChevronRight, Mic, Captions, ChevronsUpDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import MediaGrid, { MediaItem } from '@/components/catalog/MediaGrid';
+import LazyYouTube from '@/components/ui/LazyYouTube';
 import { motion } from 'framer-motion';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import RequestModal from '@/components/catalog/RequestModal';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
-import { useUserList } from '@/hooks/useUserList';
 
 interface MediaDetails {
   id: number;
@@ -60,6 +60,12 @@ interface NextUpEpisode {
   title: string;
 }
 
+interface ContinueWatchingInfo {
+  seasonNumber: number;
+  episodeNumber: number;
+  playbackPositionTicks: number;
+}
+
 type RequestStatus = 'available' | 'pending' | 'approved' | 'rejected' | null;
 
 const getShortTrackName = (title: string | undefined) => {
@@ -68,7 +74,9 @@ const getShortTrackName = (title: string | undefined) => {
 };
 
 const MediaDetailPage = () => {
-  const { type, id } = useParams<{ type: 'movie' | 'tv' | 'anime'; id: string }>();
+  // Accept both old and new route param names. Routes use /media/:mediaType/:tmdbId in App.tsx.
+  const { mediaType: rawType, tmdbId: id } = useParams<{ mediaType: string; tmdbId: string }>();
+  const type = rawType as 'movie' | 'tv' | 'anime';
   const [searchParams] = useSearchParams();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -89,6 +97,7 @@ const MediaDetailPage = () => {
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
   const [nextUpEpisode, setNextUpEpisode] = useState<NextUpEpisode | null>(null);
+  const [continueWatchingInfo, setContinueWatchingInfo] = useState<ContinueWatchingInfo | null>(null);
   const [loadingNextUp, setLoadingNextUp] = useState(false);
   const [audioTracks, setAudioTracks] = useState<any[]>([]);
   const [subtitleTracks, setSubtitleTracks] = useState<any[]>([]);
@@ -96,16 +105,6 @@ const MediaDetailPage = () => {
   const [selectedSubtitle, setSelectedSubtitle] = useState<string>('auto');
   const [loadingStreams, setLoadingStreams] = useState(false);
 
-  const {
-    isInList: isInFavorites,
-    addToList: addToFavorites,
-    removeFromList: removeFromFavorites
-  } = useUserList('favorite');
-  const {
-    isInList: isInWatchlist,
-    addToList: addToWatchlist,
-    removeFromList: removeFromWatchlist
-  } = useUserList('watchlist');
 
   const fromSearch = searchParams.get('fromSearch');
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
@@ -153,31 +152,60 @@ const MediaDetailPage = () => {
     if (requestData) setRequestStatus(requestData.status as RequestStatus);
   };
 
+ const fetchContinueWatching = async () => {
+   if (session?.user && (type === 'tv' || type === 'anime')) {
+     const { data: continueData, error: continueError } = await supabase.rpc('get_continue_watching', { p_user_id: session.user.id });
+     if (!continueError && continueData) {
+       const seriesProgress = continueData.find((item: any) => item.id === Number(id));
+       if (seriesProgress) {
+         setContinueWatchingInfo({
+           seasonNumber: seriesProgress.season_number,
+           episodeNumber: seriesProgress.episode_number,
+           playbackPositionTicks: seriesProgress.playback_position_ticks
+         });
+       }
+     } else if (continueError) {
+       console.error("Error fetching continue watching:", continueError);
+     }
+   }
+ };
+
   useEffect(() => {
     const fetchAllDetails = async () => {
-      if (!type || !id) return;
+      if (!type || !id) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setLoadingNextUp(true);
       setLoadingStreams(true);
+
       try {
         const apiMediaType = type === 'anime' ? 'tv' : type;
-        
-        const detailsPromise = supabase.functions.invoke('get-media-details', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } });
-        const videosPromise = supabase.functions.invoke('get-media-videos', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } });
-        const similarPromise = supabase.functions.invoke('get-similar-media', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } });
-        const creditsPromise = supabase.functions.invoke('get-media-credits', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } });
-        const catalogPromise = supabase
-          .from('catalog_items')
-          .select('jellyfin_id')
-          .eq('tmdb_id', Number(id))
-          .eq('media_type', apiMediaType)
-          .maybeSingle();
-        
-        const [detailsResult, videosResult, similarResult, creditsResult, catalogResult] = await Promise.all([detailsPromise, videosPromise, similarPromise, creditsPromise, catalogPromise]);
+
+        const promises = [
+          supabase.functions.invoke('get-media-details', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } }),
+          supabase.functions.invoke('get-media-videos', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } }),
+          supabase.functions.invoke('get-similar-media', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } }),
+          supabase.functions.invoke('get-media-credits', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } }),
+          supabase.from('catalog_items').select('jellyfin_id').eq('tmdb_id', Number(id)).eq('media_type', apiMediaType).maybeSingle()
+        ];
+
+        const [detailsResult, videosResult, similarResult, creditsResult, catalogResult] = await Promise.all(promises);
+
+        let continueDataResult: any = null;
+        if (session?.user) {
+          continueDataResult = await supabase.rpc('get_continue_watching', { p_user_id: session.user.id });
+        }
 
         if (detailsResult.error) throw detailsResult.error;
         const tmdbDetails = detailsResult.data;
         setDetails(tmdbDetails);
+
+        if (videosResult.error) console.error('Error fetching videos:', videosResult.error); else setVideos(videosResult.data.results);
+        if (similarResult.error) console.error('Error fetching similar media:', similarResult.error); else setSimilar(similarResult.data);
+        if (creditsResult.error) console.error('Error fetching credits:', creditsResult.error); else setCredits(creditsResult.data);
 
         if (catalogResult.error) {
           console.error("Error fetching from catalog:", catalogResult.error);
@@ -191,25 +219,29 @@ const MediaDetailPage = () => {
             setAudioTracks(streamsData.audioTracks || []);
             setSubtitleTracks(streamsData.subtitleTracks || []);
           }
-          setLoadingStreams(false);
 
           if (apiMediaType === 'tv') {
             const { data: nextUpData, error: nextUpError } = await supabase.functions.invoke('get-jellyfin-next-up', { body: { seriesJellyfinId: jfId } });
             if (nextUpError) console.error("Error fetching next up:", nextUpError);
             else setNextUpEpisode(nextUpData);
           }
-        } else {
-          setLoadingStreams(false);
         }
-        setLoadingNextUp(false);
 
-        fetchRequestStatus();
+        if (continueDataResult && !continueDataResult.error && continueDataResult.data) {
+          const continueData = continueDataResult.data as any[];
+          const seriesProgress = continueData.find((item: any) => item.id === Number(id));
+          if (seriesProgress) {
+            setContinueWatchingInfo({
+              seasonNumber: seriesProgress.season_number,
+              episodeNumber: seriesProgress.episode_number,
+              playbackPositionTicks: seriesProgress.playback_position_ticks
+            });
+          }
+        } else if (continueDataResult?.error) {
+          console.error("Error fetching continue watching:", continueDataResult.error);
+        }
 
-        if (videosResult.error) console.error('Error fetching videos:', videosResult.error); else setVideos(videosResult.data.results);
-        if (similarResult.error) console.error('Error fetching similar media:', similarResult.error); else setSimilar(similarResult.data);
-        if (creditsResult.error) console.error('Error fetching credits:', creditsResult.error); else setCredits(creditsResult.data);
-        
-        if (apiMediaType === 'tv' && tmdbDetails.seasons?.length > 0) {
+        if (tmdbDetails.seasons?.length > 0) {
           const initialSeason = tmdbDetails.seasons.find((s: any) => s.season_number > 0) || tmdbDetails.seasons[0];
           setSelectedSeasonNumber(initialSeason.season_number);
         }
@@ -217,6 +249,8 @@ const MediaDetailPage = () => {
         showError(error.message);
       } finally {
         setLoading(false);
+        setLoadingNextUp(false);
+        setLoadingStreams(false);
       }
     };
 
@@ -228,6 +262,31 @@ const MediaDetailPage = () => {
       fetchSeasonDetails(selectedSeasonNumber);
     }
   }, [selectedSeasonNumber, type, id, i18n.language, jellyfinId]);
+
+  useEffect(() => {
+    const handlePlaybackEnded = () => {
+      // Refetch continue watching info after playback ends
+      fetchContinueWatching();
+    };
+
+    const handlePlaybackSaved = (e: any) => {
+      try {
+        // Only refetch if the saved progress is for the currently viewed media
+        if (Number(id) === e?.detail?.tmdbId) {
+          fetchContinueWatching();
+        }
+      } catch (err) {
+        console.error('Error handling playback-progress-saved event', err);
+      }
+    };
+
+    window.addEventListener('playback-ended', handlePlaybackEnded);
+    window.addEventListener('playback-progress-saved', handlePlaybackSaved);
+    return () => {
+      window.removeEventListener('playback-ended', handlePlaybackEnded);
+      window.removeEventListener('playback-progress-saved', handlePlaybackSaved);
+    };
+  }, [session, id, type]);
 
   const handleRequest = () => {
     if (!details || !type) return;
@@ -242,7 +301,7 @@ const MediaDetailPage = () => {
     setRequestModalOpen(true);
   };
 
-  const handlePlay = (season?: number, episode?: number) => {
+  const handlePlay = (season?: number, episode?: number, startTime?: number) => {
     if (!type || !id) return;
     let url = `/media/${type}/${id}/play`;
     const params = new URLSearchParams();
@@ -250,6 +309,9 @@ const MediaDetailPage = () => {
       params.append('season', season.toString());
       params.append('episode', episode.toString());
     }
+   if (startTime) {
+     params.append('t', startTime.toString());
+   }
     if (selectedAudio !== 'auto') params.append('audioStreamIndex', selectedAudio);
     if (selectedSubtitle !== 'auto') params.append('subtitleStreamIndex', selectedSubtitle);
     
@@ -257,7 +319,7 @@ const MediaDetailPage = () => {
     if (paramString) {
       url += `?${paramString}`;
     }
-    navigate(url);
+    navigate(url, { state: { from: location.pathname } });
   };
 
   const renderActionButton = () => {
@@ -269,12 +331,18 @@ const MediaDetailPage = () => {
         if (loadingNextUp) {
           return <Button size="lg" disabled><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('finding_next_episode')}</Button>;
         }
-        if (nextUpEpisode) {
-          const buttonText = nextUpEpisode.seasonNumber === 1 && nextUpEpisode.episodeNumber === 1
-            ? t('play_s01e01')
-            : t('resume_s_e', { season: nextUpEpisode.seasonNumber, episode: nextUpEpisode.episodeNumber });
+        if (continueWatchingInfo && continueWatchingInfo.seasonNumber && continueWatchingInfo.episodeNumber) {
+         const resumeTime = continueWatchingInfo.playbackPositionTicks / 10000000;
+          const buttonText = resumeTime < 30 // Threshold: 30 seconds
+            ? t('play_s_e', { season: String(continueWatchingInfo.seasonNumber).padStart(2, '0'), episode: String(continueWatchingInfo.episodeNumber).padStart(2, '0') })
+            : t('resume_s_e', { season: String(continueWatchingInfo.seasonNumber).padStart(2, '0'), episode: String(continueWatchingInfo.episodeNumber).padStart(2, '0') });
+         return <Button size="lg" onClick={() => handlePlay(continueWatchingInfo.seasonNumber, continueWatchingInfo.episodeNumber, resumeTime)}><Play className="mr-2 h-4 w-4" /> {buttonText}</Button>;
+        } else if (nextUpEpisode) {
+          const buttonText = t('play_s_e', { season: String(nextUpEpisode.seasonNumber).padStart(2, '0'), episode: String(nextUpEpisode.episodeNumber).padStart(2, '0') });
           return <Button size="lg" onClick={() => handlePlay(nextUpEpisode.seasonNumber, nextUpEpisode.episodeNumber)}><Play className="mr-2 h-4 w-4" /> {buttonText}</Button>;
         }
+        // Fallback for series without nextUp data (e.g., fully watched)
+        return <Button size="lg" onClick={() => handlePlay(1, 1)}><Play className="mr-2 h-4 w-4" /> {t('play_s01e01')}</Button>;
       }
     }
 
@@ -287,39 +355,6 @@ const MediaDetailPage = () => {
     }
     
     return <Button size="lg" onClick={handleRequest}><Film className="mr-2 h-4 w-4" /> {t('request')}</Button>;
-  };
-
-  const renderListButtons = () => {
-    if (!session) return null;
-
-    const mediaId = Number(id);
-    const mediaType = type === 'anime' ? 'tv' : type;
-
-    if (!mediaId || !mediaType) return null;
-
-    const isFavorite = isInFavorites(mediaId, mediaType);
-    const isWatchlisted = isInWatchlist(mediaId, mediaType);
-
-    return (
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => isFavorite ? removeFromFavorites(mediaId, mediaType) : addToFavorites(mediaId, mediaType)}
-          title={isFavorite ? t('remove_from_favorites') : t('add_to_favorites')}
-        >
-          <Heart className={`h-5 w-5 ${isFavorite ? 'text-red-500 fill-current' : ''}`} />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => isWatchlisted ? removeFromWatchlist(mediaId, mediaType) : addToWatchlist(mediaId, mediaType)}
-          title={isWatchlisted ? t('remove_from_watchlist') : t('add_to_watchlist')}
-        >
-          <Bookmark className={`h-5 w-5 ${isWatchlisted ? 'text-blue-500 fill-current' : ''}`} />
-        </Button>
-      </div>
-    );
   };
 
   if (loading) {
@@ -557,14 +592,7 @@ const MediaDetailPage = () => {
                       {currentVideos.map(video => (
                         <div key={video.id}>
                           <div className="aspect-video mb-2">
-                            <iframe 
-                              className="w-full h-full rounded-lg" 
-                              src={`https://www.youtube.com/embed/${video.key}`} 
-                              title={video.name} 
-                              frameBorder="0" 
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                              allowFullScreen>
-                            </iframe>
+                            <LazyYouTube videoId={video.key} title={video.name} className="rounded-lg" />
                           </div>
                           <h4 className="font-semibold">{video.name}</h4>
                           <p className="text-sm text-muted-foreground">{video.type}</p>

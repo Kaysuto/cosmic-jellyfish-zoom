@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { Film, Star, Plus, Check, Heart, Bookmark } from 'lucide-react';
+import { Film, Star, Plus, Check, Heart, Bookmark, Hourglass } from 'lucide-react';
 import { useUserList } from '@/hooks/useUserList';
 import { useSession } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -32,9 +31,10 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
   const rating = item.vote_average ?? null;
   const isAvailable = item.isAvailable;
   
+  const mediaTypeForLink = item.media_type === 'anime' ? 'tv' : item.media_type;
   const linkTo = playUrl || (searchTerm
-    ? `/media/${item.media_type}/${item.id}?fromSearch=${encodeURIComponent(searchTerm)}`
-    : `/media/${item.media_type}/${item.id}`);
+    ? `/media/${mediaTypeForLink}/${item.id}?fromSearch=${encodeURIComponent(searchTerm)}`
+    : `/media/${mediaTypeForLink}/${item.id}`);
 
   const getImageUrl = (path: string | null | undefined) => {
     if (!path) return null;
@@ -67,15 +67,6 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
             </div>
           )}
           
-          {isAvailable && (
-            <div className="absolute top-2 left-2 z-10">
-              <Badge className="bg-green-600 hover:bg-green-700 text-white border-transparent">
-                <Check className="h-3 w-3 mr-1" />
-                {t('available')}
-              </Badge>
-            </div>
-          )}
-
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
           <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
@@ -90,51 +81,73 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
               )}
             </div>
           </div>
-          {progress !== undefined && progress > 0 && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-500/50">
-              <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
-            </div>
-          )}
         </div>
       </Link>
-      
-      {showRequestButton && !isAvailable && (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (onRequest) onRequest(item);
-          }}
-          aria-label={`${t('request')} ${title}`}
-          className="absolute top-2 right-2 z-10 h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
-      )}
-      {session && (
-        <div className="absolute top-2 right-2 z-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button
-            onClick={(e) => {
-              e.preventDefault(); e.stopPropagation();
-              isInFavorites(item.id, item.media_type) ? removeFromFavorites(item.id, item.media_type) : addToFavorites(item.id, item.media_type);
-            }}
-            aria-label={isInFavorites(item.id, item.media_type) ? t('remove_from_favorites') : t('add_to_favorites')}
-            className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            <Heart className={`h-4 w-4 ${isInFavorites(item.id, item.media_type) ? 'text-red-500 fill-current' : ''}`} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.preventDefault(); e.stopPropagation();
-              isInWatchlist(item.id, item.media_type) ? removeFromWatchlist(item.id, item.media_type) : addToWatchlist(item.id, item.media_type);
-            }}
-            aria-label={isInWatchlist(item.id, item.media_type) ? t('remove_from_watchlist') : t('add_to_watchlist')}
-            className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <Bookmark className={`h-4 w-4 ${isInWatchlist(item.id, item.media_type) ? 'text-blue-500 fill-current' : ''}`} />
-          </button>
+      {progress !== undefined && progress > 0 && (
+        <div className="absolute bottom-0 left-0 right-0 h-3 bg-black/40 pointer-events-none z-50">
+          <div
+            className="h-full bg-white rounded-sm shadow-lg"
+            style={{ width: `${progress}%` }}
+            aria-hidden="true"
+          />
         </div>
       )}
+      
+      <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-2">
+        {isAvailable && (
+          <Badge className="bg-green-600 hover:bg-green-700 text-white border-transparent">
+            <Check className="h-3 w-3 mr-1" />
+            {t('available')}
+          </Badge>
+        )}
+        {item.isRequested && !isAvailable && (
+          <Badge className="bg-yellow-600 hover:bg-yellow-700 text-white border-transparent">
+            <Hourglass className="h-3 w-3 mr-1" />
+            {t('requested')}
+          </Badge>
+        )}
+        
+        <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {showRequestButton && !isAvailable && !item.isRequested && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (onRequest) onRequest(item);
+              }}
+              aria-label={`${t('request')} ${title}`}
+              className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center transition-colors duration-150 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          )}
+
+          {session && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.preventDefault(); e.stopPropagation();
+                  isInFavorites(item.id, item.media_type) ? removeFromFavorites(item.id, item.media_type) : addToFavorites(item.id, item.media_type);
+                }}
+                aria-label={isInFavorites(item.id, item.media_type) ? t('remove_from_favorites') : t('add_to_favorites')}
+                className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                <Heart className={`h-4 w-4 ${isInFavorites(item.id, item.media_type) ? 'text-red-500 fill-current' : ''}`} />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault(); e.stopPropagation();
+                  isInWatchlist(item.id, item.media_type) ? removeFromWatchlist(item.id, item.media_type) : addToWatchlist(item.id, item.media_type);
+                }}
+                aria-label={isInWatchlist(item.id, item.media_type) ? t('remove_from_watchlist') : t('add_to_watchlist')}
+                className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <Bookmark className={`h-4 w-4 ${isInWatchlist(item.id, item.media_type) ? 'text-blue-500 fill-current' : ''}`} />
+              </button>
+            </>
+          )}
+        </div>
+      </div>
     </Card>
   );
 };

@@ -39,6 +39,10 @@ serve(async (req) => {
       }
     }
 
+    const { data, error } = await supabase.functions.invoke('get-notifications', {
+      body: { userId: session.user.id }
+    });
+
     return new Response(JSON.stringify({ message: `All MFA factors for user ${userId} have been unenrolled.` }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

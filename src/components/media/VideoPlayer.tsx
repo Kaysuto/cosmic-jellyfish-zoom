@@ -9,11 +9,12 @@ import {
 import { TextTrack } from 'vidstack';
 import type { 
   MediaPlayerElement,
-  MediaCanPlayEvent, 
-  MediaErrorEvent, 
+  MediaCanPlayEvent,
+  MediaErrorEvent,
   MediaTimeUpdateEvent,
-  MediaDurationChangeEvent,
-  MediaLoadedMetadataEvent,
+ MediaDurationChangeEvent,
+ MediaLoadedMetadataEvent,
+ MediaEndedEvent,
 } from 'vidstack';
 import { showError } from '@/utils/toast';
 import { useRef } from 'react';
@@ -97,6 +98,9 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
   function onDurationChangeEvent(event: MediaDurationChangeEvent) {
     if (onDurationChange) onDurationChange((event as any).detail.duration);
   }
+ function onEnded(event: MediaEndedEvent) {
+   window.dispatchEvent(new CustomEvent('playback-ended'));
+ }
 
   return (
     <MediaPlayer
@@ -114,6 +118,7 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
       onTimeUpdate={onTimeUpdateEvent}
       onDurationChange={onDurationChangeEvent}
       onLoadedMetadata={onLoadedMetadata}
+     onEnded={onEnded}
       aspectRatio={16 / 9}
     >
       <MediaOutlet />

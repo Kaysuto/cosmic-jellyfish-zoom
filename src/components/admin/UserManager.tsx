@@ -309,7 +309,7 @@ const UserManager = () => {
                           <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link to={`/users/${user.id}`} className="cursor-pointer">
+                              <Link to={`/profile/${user.id}`} className="cursor-pointer">
                                 <User className="mr-2 h-4 w-4" />
                                 <span>Voir le profil</span>
                               </Link>

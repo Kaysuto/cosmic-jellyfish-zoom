@@ -39,7 +39,7 @@ serve(async (req) => {
       throw new Error(`TMDB API error: ${response.status} ${response.statusText}. Body: ${errorBody}`);
     }
     
-    let data = await response.json();
+    const data = await response.json();
 
     // Filter out results that are not movies or TV shows, directly in the function
     const filteredResults = data.results.filter(item => 

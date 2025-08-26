@@ -37,8 +37,35 @@ export const useRequestsByUserId = (userId: string | undefined) => {
   }, [userId]);
 
   useEffect(() => {
+    if (!userId) {
+      setRequests([]);
+      setLoading(false);
+      return;
+    }
+
     fetchRequests();
-  }, [fetchRequests]);
+
+    const channel = supabase
+      .channel(`user-requests-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'media_requests',
+          filter: `user_id=eq.${userId}`
+        },
+        (payload) => {
+          console.log('Change received!', payload);
+          fetchRequests(); // Re-fetch all requests on any change for simplicity
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, fetchRequests]);
 
   return { requests, loading, refreshRequests: fetchRequests };
 };

@@ -100,7 +100,8 @@ class JellyfinClient {
 
   async getAllEpisodesForSeries(seriesId: string) {
     if (!this.userId) await this.authenticate();
-    const url = `${this.baseUrl}/Shows/${seriesId}/Episodes?userId=${this.userId}&fields=ParentIndexNumber,IndexNumber,ProviderIds`;
+    // Request additional fields (Name and ImageTags) so we can store episode title and still image
+    const url = `${this.baseUrl}/Shows/${seriesId}/Episodes?userId=${this.userId}&fields=ParentIndexNumber,IndexNumber,ProviderIds,Name,ImageTags`;
     const response = await fetch(url, { headers: await this.getAuthHeaders() });
     if (!response.ok) {
       console.error(`Could not fetch episodes for series ${seriesId}. Status: ${response.status}`);
@@ -197,14 +198,19 @@ serve(async (req) => {
     for (const series of seriesItems) {
       const episodes = await jellyfin.getAllEpisodesForSeries(series.Id);
       if (episodes.length > 0) {
-        const episodeRecords = episodes.map(ep => ({
-          series_jellyfin_id: series.Id,
-          episode_jellyfin_id: ep.Id,
-          season_number: ep.ParentIndexNumber,
-          episode_number: ep.IndexNumber,
-          tvdb_id: ep.ProviderIds?.Tvdb ? parseInt(ep.ProviderIds.Tvdb, 10) : null,
-          tmdb_id: ep.ProviderIds?.Tmdb ? parseInt(ep.ProviderIds.Tmdb, 10) : null,
-        }));
+        const episodeRecords = episodes.map(ep => {
+          const stillPath = ep.ImageTags?.Primary ? `Items/${ep.Id}/Images/Primary?tag=${ep.ImageTags.Primary}` : null;
+          return {
+            series_jellyfin_id: series.Id,
+            episode_jellyfin_id: ep.Id,
+            season_number: ep.ParentIndexNumber,
+            episode_number: ep.IndexNumber,
+            title: ep.Name ?? null,
+            still_path: stillPath,
+            tvdb_id: ep.ProviderIds?.Tvdb ? parseInt(ep.ProviderIds.Tvdb, 10) : null,
+            tmdb_id: ep.ProviderIds?.Tmdb ? parseInt(ep.ProviderIds.Tmdb, 10) : null,
+          };
+        });
         
         const { error: episodeUpsertError } = await supabaseAdmin
           .from('jellyfin_episodes')

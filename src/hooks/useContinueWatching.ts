@@ -7,10 +7,12 @@ export interface ContinueWatchingItem {
   title?: string;
   name?: string;
   poster_path?: string | null;
-  media_type: 'movie' | 'tv';
+  media_type: 'movie' | 'tv' | 'anime';
   progress: number; // as a percentage
   playback_position_ticks: number;
   runtime_ticks: number;
+ season_number?: number;
+ episode_number?: number;
 }
 
 export const useContinueWatching = () => {
@@ -39,6 +41,24 @@ export const useContinueWatching = () => {
 
   useEffect(() => {
     fetchItems();
+
+    const handlePlaybackEnded = () => fetchItems();
+    const handlePlaybackSaved = (_e: any) => {
+      try {
+        // When progress is saved we want to refresh the list to avoid stale UI
+        fetchItems();
+      } catch (err) {
+        console.error('Error handling playback-progress-saved in useContinueWatching:', err);
+      }
+    };
+
+    window.addEventListener('playback-ended', handlePlaybackEnded);
+    window.addEventListener('playback-progress-saved', handlePlaybackSaved);
+
+    return () => {
+      window.removeEventListener('playback-ended', handlePlaybackEnded);
+      window.removeEventListener('playback-progress-saved', handlePlaybackSaved);
+    };
   }, [fetchItems]);
 
   return { items, loading, refresh: fetchItems };

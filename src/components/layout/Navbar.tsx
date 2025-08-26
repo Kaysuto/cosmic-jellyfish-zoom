@@ -109,7 +109,7 @@ const Navbar = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuItem asChild>
-          <Link to={`/users/${profile?.id}`} className="cursor-pointer">
+          <Link to={`/profile/${profile?.id}`} className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
             <span>Profil</span>
           </Link>
@@ -120,14 +120,6 @@ const Navbar = () => {
             <span>{t('my_requests')}</span>
           </Link>
         </DropdownMenuItem>
-        {profile?.role === 'admin' && (
-          <DropdownMenuItem asChild>
-            <Link to="/requests/manage" className="cursor-pointer">
-              <MailQuestion className="mr-2 h-4 w-4" />
-              <span>{t('requests')}</span>
-            </Link>
-          </DropdownMenuItem>
-        )}
         <DropdownMenuItem asChild>
           <Link to="/admin" className="cursor-pointer">
             <LayoutDashboard className="mr-2 h-4 w-4" />
@@ -143,14 +135,50 @@ const Navbar = () => {
     </DropdownMenu>
   );
 
+  // Admin quick links menu (desktop) - compact icon that opens admin shortcuts
+  const AdminQuickMenu = () => {
+    if (!profile || profile.role !== 'admin') return null;
+    return (
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="p-2">
+            <LayoutDashboard className="h-5 w-5" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-44">
+          <DropdownMenuItem asChild>
+            <Link to="/admin" className="cursor-pointer">
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              <span>{t('admin_dashboard')}</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/requests/manage" className="cursor-pointer">
+              <MailQuestion className="mr-2 h-4 w-4" />
+              <span>{t('requests')}</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/admin/users" className="cursor-pointer">
+              <User className="mr-2 h-4 w-4" />
+              <span>{t('manage_users') || 'Users'}</span>
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
+
   return (
     <>
       <header ref={headerRef} className="fixed top-0 left-0 right-0 z-50 bg-background/60 backdrop-blur-lg border-b">
         <nav className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
+          {/* Left: Logo + Desktop nav */}
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2">
               <img src={logo} alt="Jelly Logo" className="h-8 w-auto" />
             </Link>
+
             <div className="hidden md:flex items-center gap-2">
               {navItems.map((item) => (
                 <NavLink key={item.to} to={item.to} className={navLinkClasses}>
@@ -158,16 +186,10 @@ const Navbar = () => {
                 </NavLink>
               ))}
 
-              {/* Public navbar: show admin-managed requests link only for admins */}
-              {profile?.role === 'admin' && (
-                <NavLink to="/requests/manage" className={navLinkClasses}>
-                  {t('requests')}
-                </NavLink>
-              )}
 
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className={cn(navLinkClasses({isActive: false}), "flex items-center")}>
+                  <Button variant="ghost" className={cn(navLinkClasses({ isActive: false }), "flex items-center")}>
                     {t('more')}
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </Button>
@@ -189,78 +211,106 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Right: Desktop user area */}
+          <div className="hidden md:flex items-center gap-3">
             {session && profile ? (
-              <div className="flex items-center gap-2">
+              <>
+                <AdminQuickMenu />
                 <Notifications />
                 <UserMenu />
-              </div>
+              </>
             ) : (
               <Button asChild variant="ghost" className="hidden md:inline-flex">
                 <Link to="/login" state={{ from: location }}>{t('login')}</Link>
               </Button>
             )}
-            <div className="md:hidden">
-              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Menu className="h-6 w-6" />
-                    <span className="sr-only">Open menu</span>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="bg-background border-l w-[280px]">
-                  <div className="flex flex-col h-full">
-                    <div className="flex-grow space-y-2 pt-10">
-                      {navItems.map((item) => (
-                        <NavLink key={item.to} to={item.to} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
-                          {item.label}
-                        </NavLink>
-                      ))}
-                      {profile?.role === 'admin' && (
-                        <NavLink to="/requests/manage" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('requests')}</NavLink>
-                      )}
-                      <NavLink to="/status" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('status')}</NavLink>
-                      <NavLink to="/about" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('about_us')}</NavLink>
-                      <button onClick={handleDonateClick} className={cn(mobileNavLinkClasses({isActive: false}), "text-red-400")}>
-                        <Heart className="mr-3 h-5 w-5" />
-                        {t('donate')}
-                      </button>
-                    </div>
-                    <div className="flex-shrink-0 border-t pt-4 pb-6">
-                      {session && profile ? (
-                        <div className="space-y-2">
-                          <div className="px-4">
+          </div>
+
+          {/* Mobile: burger */}
+          <div className="md:hidden">
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </SheetTrigger>
+
+              <SheetContent side="right" className="bg-background border-l w-[280px]">
+                <div className="flex flex-col h-full">
+                  {/* Header */}
+                  <div className="px-4 pt-6 pb-4 border-b">
+                    <div className="flex items-center gap-3">
+                      <img src={logo} alt="Jelly Logo" className="h-8 w-auto" />
+                      <div>
+                        {session && profile ? (
+                          <>
                             <p className="font-medium text-foreground">{profile.first_name} {profile.last_name}</p>
                             <p className="text-sm text-muted-foreground">{profile.email}</p>
-                          </div>
-                          {profile.role === 'admin' && (
-                            <>
-                              <NavLink to="/admin" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><LayoutDashboard className="mr-3 h-5 w-5" />{t('admin_dashboard')}</NavLink>
-                              <NavLink to="/requests/manage" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><MailQuestion className="mr-3 h-5 w-5" />{t('requests')}</NavLink>
-                            </>
-                          )}
-                          <NavLink to={`/users/${profile.id}`} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
-                          <NavLink to="/requests" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><MailQuestion className="mr-3 h-5 w-5" />{t('my_requests')}</NavLink>
-                          <div className="px-4 pt-2">
-                            <Button onClick={handleLogoutClick} variant="destructive" className="w-full justify-start">
-                              <LogOut className="mr-3 h-5 w-5" />
-                              {t('logout')}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <NavLink to="/login" state={{ from: location }} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
-                          {t('login')}
-                        </NavLink>
-                      )}
+                          </>
+                        ) : (
+                          <p className="font-medium text-foreground">{t('welcome')}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </SheetContent>
-              </Sheet>
-            </div>
+
+                  {/* Public links */}
+                  <div className="flex-grow p-4 space-y-2 overflow-y-auto">
+                    {navItems.map((item) => (
+                      <NavLink key={item.to} to={item.to} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
+                        {item.label}
+                      </NavLink>
+                    ))}
+
+                    <NavLink to="/status" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('status')}</NavLink>
+                    <NavLink to="/about" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('about_us')}</NavLink>
+
+                    <button onClick={handleDonateClick} className={cn(mobileNavLinkClasses({ isActive: false }), "text-red-400")}>
+                      <Heart className="mr-3 h-5 w-5" />
+                      {t('donate')}
+                    </button>
+
+                    <div className="border-t my-3" />
+
+                    {/* User section */}
+                    {session && profile ? (
+                      <>
+                        <div className="px-2 text-xs text-muted-foreground uppercase">{t('user')}</div>
+                        <NavLink to={`/profile/${profile.id}`} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><User className="mr-3 h-5 w-5" />Profil</NavLink>
+                        <NavLink to="/requests" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><MailQuestion className="mr-3 h-5 w-5" />{t('my_requests')}</NavLink>
+
+                        {/* Admin tools */}
+                        {profile.role === 'admin' && (
+                          <>
+                            <div className="border-t my-3" />
+                            <div className="px-2 text-xs text-muted-foreground uppercase">{t('admin')}</div>
+                            <NavLink to="/admin" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><LayoutDashboard className="mr-3 h-5 w-5" />{t('admin_dashboard')}</NavLink>
+                            <NavLink to="/requests/manage" className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}><MailQuestion className="mr-3 h-5 w-5" />{t('requests')}</NavLink>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <NavLink to="/login" state={{ from: location }} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>{t('login')}</NavLink>
+                    )}
+                  </div>
+
+                  <div className="px-4 pb-6">
+                    {session && profile ? (
+                      <Button onClick={() => { setIsSheetOpen(false); handleLogoutClick(); }} variant="destructive" className="w-full">
+                        <LogOut className="mr-3 h-5 w-5" />
+                        {t('logout')}
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </nav>
       </header>
+
+      {/* Logout confirmation */}
       <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -277,6 +327,8 @@ const Navbar = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Donate confirmation */}
       <AlertDialog open={isDonateDialogOpen} onOpenChange={setIsDonateDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

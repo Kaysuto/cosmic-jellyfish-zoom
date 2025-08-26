@@ -78,8 +78,11 @@ const SchedulePage = () => {
         }
       }
 
+      // Ensure the returned items have the correct media_type according to the selected tab.
+      // Some backends may return 'tv' for anime schedules — force the media_type to match the selected mediaType filter.
       const itemsWithFlags: MediaItem[] = tmdbItems.map(item => ({
         ...item,
+        media_type: mediaType === 'anime' ? 'anime' : (item.media_type ?? mediaType),
         isAvailable: false,
         isSoon: false,
       }));
@@ -114,7 +117,10 @@ const SchedulePage = () => {
 
       await Promise.all(checkPromises);
 
-      const groupedByDay = itemsWithFlags.reduce((acc, item) => {
+      // Filter items to match the selected mediaType strictly (avoid mixing anime/tv)
+      const filteredItems = itemsWithFlags.filter(it => it.media_type === mediaType);
+
+      const groupedByDay = filteredItems.reduce((acc, item) => {
         const airDate = item.first_air_date ? format(new Date(item.first_air_date), 'yyyy-MM-dd') : '';
         if (!acc[airDate]) acc[airDate] = [];
         acc[airDate].push(item);

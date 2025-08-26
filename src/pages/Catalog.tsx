@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,10 +10,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent } from '@/components/ui/card';
-import RequestModal from '@/components/catalog/RequestModal';
 import { useSession } from '@/contexts/AuthContext';
 import ContinueWatching from '@/components/catalog/ContinueWatching';
 import JellyfinLibrarySection from '@/components/catalog/JellyfinLibrarySection';
+import NextUpSection from '@/components/catalog/NextUpSection';
 import { useJellyfin } from '@/contexts/JellyfinContext';
 
 interface JellyfinLibrary {
@@ -25,7 +25,7 @@ interface JellyfinLibrary {
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
   const { session } = useSession();
-  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
+  const { error: jellyfinError } = useJellyfin();
   const [searchParams, setSearchParams] = useSearchParams();
   
   const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
@@ -34,8 +34,6 @@ const CatalogPage = () => {
   const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [requestModalOpen, setRequestModalOpen] = useState(false);
-  const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
 
   const [jellyfinLibraries, setJellyfinLibraries] = useState<JellyfinLibrary[]>([]);
   const [librariesLoading, setLibrariesLoading] = useState(true);
@@ -86,6 +84,14 @@ const CatalogPage = () => {
             ...item,
             isAvailable: availableIds.has(item.id),
           }));
+          
+          // Sort items to show available ones first
+          itemsWithAvailability.sort((a: MediaItem, b: MediaItem) => {
+            if (a.isAvailable && !b.isAvailable) return -1;
+            if (!a.isAvailable && b.isAvailable) return 1;
+            return 0;
+          });
+
           setSearchResults(itemsWithAvailability);
         }
       } else {
@@ -121,10 +127,6 @@ const CatalogPage = () => {
     </div>
   );
 
-  const openRequestModal = (item: MediaItem) => {
-    setSelectedItemForRequest(item);
-    setRequestModalOpen(true);
-  };
 
   if (jellyfinError) {
     return (
@@ -168,7 +170,7 @@ const CatalogPage = () => {
         {debouncedSearchTerm ? (
           loading ? <LoadingSkeleton /> : (
             searchResults.length > 0 ? (
-              <MediaGrid items={searchResults} onRequest={openRequestModal} showRequestButton={!!session} searchTerm={debouncedSearchTerm} />
+              <MediaGrid items={searchResults} showRequestButton={!!session} searchTerm={debouncedSearchTerm} />
             ) : (
               <Card><CardContent><p className="text-center text-muted-foreground py-8">{t('no_results_found')}</p></CardContent></Card>
             )
@@ -176,6 +178,7 @@ const CatalogPage = () => {
         ) : (
           <div className="space-y-12">
             <ContinueWatching />
+            <NextUpSection />
             {librariesLoading ? (
               <>
                 <Skeleton className="h-8 w-1/4 mb-4" />
@@ -196,7 +199,6 @@ const CatalogPage = () => {
         )}
       </main>
 
-      <RequestModal open={requestModalOpen} onOpenChange={setRequestModalOpen} item={selectedItemForRequest} onSuccess={() => {}} />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
@@ -7,12 +7,37 @@ import { Skeleton } from '@/components/ui/skeleton';
 import MediaCard from '@/components/catalog/MediaCard';
 import { MediaItem } from '@/components/catalog/MediaGrid';
 import { useJellyfin } from '@/contexts/JellyfinContext';
+import { useRequestStatus } from '@/hooks/useRequestStatus';
+import RequestModal from '@/components/catalog/RequestModal';
+import { useSession } from '@/contexts/AuthContext';
 
 const FeaturedMedia = () => {
   const { t, i18n } = useTranslation();
+  const { session } = useSession();
   const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
+
+  const mediaIds = useMemo(() => media.map(item => item.id), [media]);
+  const { requestedIds: initialRequestedIds } = useRequestStatus(mediaIds);
+  const [newlyRequestedIds, setNewlyRequestedIds] = useState<Set<number>>(new Set());
+
+  const requestedIds = useMemo(() => {
+    return new Set([...Array.from(initialRequestedIds), ...Array.from(newlyRequestedIds)]);
+  }, [initialRequestedIds, newlyRequestedIds]);
+
+  const handleRequest = (item: MediaItem) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
+
+  const onModalSuccess = () => {
+    if (selectedItem) {
+      setNewlyRequestedIds(prev => new Set(prev).add(selectedItem.id));
+    }
+  };
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -67,30 +92,42 @@ const FeaturedMedia = () => {
   }
 
   return (
-    <div className="container mx-auto px-4">
-      <h2 className="text-3xl font-bold mb-6">{t('weekly_trends')}</h2>
-      {loading ? (
-        <div className="flex space-x-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="w-full basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/6">
-              <Skeleton className="aspect-[2/3] w-full" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <Carousel opts={{ align: "start", loop: true }} className="w-full">
-          <CarouselContent className="-ml-4">
-            {media.map((item) => (
-              <CarouselItem key={item.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/6 pl-4">
-                <MediaCard item={item} showRequestButton={false} />
-              </CarouselItem>
+    <>
+      <div className="container mx-auto px-4">
+        <h2 className="text-3xl font-bold mb-6">{t('weekly_trends')}</h2>
+        {loading ? (
+          <div className="flex space-x-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="w-full basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/6">
+                <Skeleton className="aspect-[2/3] w-full" />
+              </div>
             ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden sm:flex" />
-          <CarouselNext className="hidden sm:flex" />
-        </Carousel>
-      )}
-    </div>
+          </div>
+        ) : (
+          <Carousel opts={{ align: "start", loop: true }} className="w-full">
+            <CarouselContent className="-ml-4">
+              {media.map((item) => (
+                <CarouselItem key={item.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/6 pl-4">
+                  <MediaCard
+                    item={{...item, isRequested: requestedIds.has(item.id)}}
+                    showRequestButton={!!session}
+                    onRequest={handleRequest}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden sm:flex" />
+            <CarouselNext className="hidden sm:flex" />
+          </Carousel>
+        )}
+      </div>
+      <RequestModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        item={selectedItem}
+        onSuccess={onModalSuccess}
+      />
+    </>
   );
 };
 
