@@ -20,6 +20,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import RequestModal from '@/components/catalog/RequestModal';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 
 interface MediaDetails {
   id: number;
@@ -101,9 +102,10 @@ const MediaDetailPage = () => {
   const [loadingNextUp, setLoadingNextUp] = useState(false);
   const [audioTracks, setAudioTracks] = useState<any[]>([]);
   const [subtitleTracks, setSubtitleTracks] = useState<any[]>([]);
+  const [loadingStreams, setLoadingStreams] = useState(false);
+  const [jellyfinConnectionError, setJellyfinConnectionError] = useState<string | null>(null);
   const [selectedAudio, setSelectedAudio] = useState<string>('auto');
   const [selectedSubtitle, setSelectedSubtitle] = useState<string>('auto');
-  const [loadingStreams, setLoadingStreams] = useState(false);
 
 
   const fromSearch = searchParams.get('fromSearch');
@@ -180,6 +182,7 @@ const MediaDetailPage = () => {
       setLoading(true);
       setLoadingNextUp(true);
       setLoadingStreams(true);
+      setJellyfinConnectionError(null);
 
       try {
         const apiMediaType = type === 'anime' ? 'tv' : type;
@@ -213,11 +216,23 @@ const MediaDetailPage = () => {
           const jfId = catalogResult.data.jellyfin_id;
           setJellyfinId(jfId);
 
-          const { data: streamsData, error: streamsError } = await supabase.functions.invoke('get-jellyfin-media-streams', { body: { jellyfinId: jfId } });
-          if (streamsError) console.error("Error fetching media streams:", streamsError);
-          else {
+          try {
+            const { data: streamsData, error: streamsError } = await supabase.functions.invoke('get-jellyfin-media-streams', { body: { jellyfinId: jfId } });
+            if (streamsError) throw streamsError;
             setAudioTracks(streamsData.audioTracks || []);
             setSubtitleTracks(streamsData.subtitleTracks || []);
+          } catch (error: any) {
+            let errorMessage = "Impossible de se connecter à Jellyfin. Vérifiez que l'URL est correcte et que le serveur est accessible publiquement.";
+            if (error instanceof FunctionsHttpError) {
+              try {
+                const errorJson = await error.context.json();
+                if (errorJson.error) {
+                  errorMessage = errorJson.error;
+                }
+              } catch (e) { /* ignore */ }
+            }
+            setJellyfinConnectionError(errorMessage);
+            console.error("Error fetching media streams:", error);
           }
 
           if (apiMediaType === 'tv') {
@@ -323,6 +338,16 @@ const MediaDetailPage = () => {
   };
 
   const renderActionButton = () => {
+    if (jellyfinConnectionError) {
+      return (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Erreur de connexion Jellyfin</AlertTitle>
+          <AlertDescription>{jellyfinConnectionError}</AlertDescription>
+        </Alert>
+      );
+    }
+
     if (jellyfinId) {
       if (type === 'movie') {
         return <Button size="lg" onClick={() => handlePlay()}><Play className="mr-2 h-4 w-4" /> {t('play')}</Button>;
@@ -450,7 +475,7 @@ const MediaDetailPage = () => {
               <p className="mt-6 text-lg text-muted-foreground">{details.overview}</p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 {renderActionButton()}
-                {jellyfinId && !loadingStreams && (
+                {jellyfinId && !loadingStreams && !jellyfinConnectionError && (
                   <div className="flex flex-wrap items-center gap-2">
                     {audioTracks.length > 1 && (
                       <DropdownMenu modal={false}>
