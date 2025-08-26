@@ -6,16 +6,13 @@ import {
   Film, 
   Tv, 
   PlayCircle, 
-  Sparkles,
-  ArrowRight 
+  Sparkles
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface CatalogSection {
   id: string;
   name: string;
-  description: string;
   icon: React.ReactNode;
   path: string;
   color: string;
@@ -28,7 +25,6 @@ const CatalogSections = () => {
     {
       id: 'animations',
       name: t('catalog_section_animations'),
-      description: t('catalog_section_animations_desc'),
       icon: <Sparkles className="h-8 w-8" />,
       path: '/discover/animations',
       color: 'from-purple-500 to-pink-500'
@@ -36,7 +32,6 @@ const CatalogSections = () => {
     {
       id: 'animes',
       name: t('catalog_section_animes'),
-      description: t('catalog_section_animes_desc'),
       icon: <PlayCircle className="h-8 w-8" />,
       path: '/discover/animes',
       color: 'from-blue-500 to-cyan-500'
@@ -44,7 +39,6 @@ const CatalogSections = () => {
     {
       id: 'films',
       name: t('catalog_section_films'),
-      description: t('catalog_section_films_desc'),
       icon: <Film className="h-8 w-8" />,
       path: '/discover/films',
       color: 'from-orange-500 to-red-500'
@@ -52,7 +46,6 @@ const CatalogSections = () => {
     {
       id: 'series',
       name: t('catalog_section_series'),
-      description: t('catalog_section_series_desc'),
       icon: <Tv className="h-8 w-8" />,
       path: '/discover/series',
       color: 'from-green-500 to-emerald-500'
@@ -71,32 +64,27 @@ const CatalogSections = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {sections.map((section, index) => (
-            <Card key={section.id} className="h-full bg-card border hover:bg-accent/5 transition-all duration-300 group">
-              <CardHeader className="text-center pb-4">
-                <div className={`mx-auto w-16 h-16 rounded-full bg-gradient-to-br ${section.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <div className="text-white">
-                    {section.icon}
-                  </div>
-                </div>
-                <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors duration-300">
-                  {section.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-muted-foreground mb-4 group-hover:text-foreground/80 transition-colors duration-300">
-                  {section.description}
-                </p>
-                <Link to={section.path}>
-                  <Button 
-                    variant="outline" 
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300"
-                  >
-                    {t('explore_section')}
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+            <motion.div
+              key={section.id}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: index * 0.1, ease: "easeInOut" }}
+            >
+              <Link to={section.path} className="group block h-full">
+                <Card className="h-full bg-card border hover:bg-accent/5 transition-all duration-300 group-hover:border-primary group-hover:shadow-xl group-hover:-translate-y-1">
+                  <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
+                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${section.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                      <div className="text-white">
+                        {section.icon}
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold group-hover:text-primary transition-colors duration-300">
+                      {section.name}
+                    </h3>
+                  </CardContent>
+                </Card>
+              </Link>
+            </motion.div>
           ))}
         </div>
       </div>
