@@ -57,10 +57,8 @@ const CatalogNavigation = () => {
   return (
     <div className="w-full">
       <div className="mb-8">
-        <Link to="/" className="group">
-          <h1 className="text-3xl font-bold mb-2 group-hover:text-primary transition-colors">{t('catalog_title')}</h1>
-          <p className="text-muted-foreground group-hover:text-primary/80 transition-colors cursor-pointer">{t('catalog_subtitle')}</p>
-        </Link>
+        <h1 className="text-3xl font-bold mb-2">{t('catalog_title')}</h1>
+        <p className="text-muted-foreground">{t('catalog_subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
