@@ -14,23 +14,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    // La méthode onAuthStateChange notifie immédiatement de l'état de la session au chargement,
+    // puis écoute les changements (connexion, déconnexion, rafraîchissement du jeton).
+    // Si le rafraîchissement échoue, elle renverra une session `null`.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setLoading(false);
-    }
-
-    getSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      // This prevents re-renders on token refreshes.
-      // The session object is updated only when the user logs in or out.
-      setSession(currentSession => {
-        if (currentSession?.user.id === newSession?.user.id) {
-          return currentSession;
-        }
-        return newSession;
-      });
     });
 
     return () => {
@@ -43,6 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading,
   };
 
+  // Ne rend les enfants que lorsque le chargement est terminé pour éviter les affichages incorrects
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
