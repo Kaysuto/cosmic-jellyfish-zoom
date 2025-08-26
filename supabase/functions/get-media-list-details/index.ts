@@ -2,6 +2,8 @@
 // @ts-nocheck
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -24,6 +26,13 @@ serve(async (req) => {
       throw new Error("mediaList is required and must be an array.");
     }
 
+    // Create Supabase client
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Get TMDB data
     const promises = mediaList.map(item => {
       const url = `${TMDB_API_URL}/${item.media_type}/${item.media_id}?api_key=${TMDB_API_KEY}&language=${language || 'en-US'}`;
       return fetch(url).then(res => res.json());
@@ -31,7 +40,32 @@ serve(async (req) => {
 
     const results = await Promise.all(promises);
 
-    return new Response(JSON.stringify(results), {
+    // Check availability in catalog
+    const tmdbIds = mediaList.map(item => item.media_id);
+    const { data: catalogData, error: catalogError } = await supabaseAdmin
+      .from('catalog_items')
+      .select('tmdb_id, jellyfin_id')
+      .in('tmdb_id', tmdbIds);
+
+    if (catalogError) {
+      console.error("Error checking catalog availability", catalogError);
+    }
+
+    // Create availability map
+    const availabilityMap = new Map();
+    if (catalogData) {
+      for (const item of catalogData) {
+        availabilityMap.set(item.tmdb_id, item.jellyfin_id ? true : false);
+      }
+    }
+
+    // Add availability to results
+    const resultsWithAvailability = results.map((item, index) => ({
+      ...item,
+      isAvailable: availabilityMap.get(item.id) || false,
+    }));
+
+    return new Response(JSON.stringify(resultsWithAvailability), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });

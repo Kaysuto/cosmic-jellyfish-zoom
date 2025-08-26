@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
-import { Film, Star, Plus, Check, Heart, Bookmark, Hourglass } from 'lucide-react';
+import { Film, Star, Plus, Check, Heart, Bookmark, Hourglass, X } from 'lucide-react';
 import { useUserList } from '@/hooks/useUserList';
 import { useSession } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -16,12 +16,17 @@ interface MediaCardProps {
   searchTerm?: string;
   progress?: number;
   playUrl?: string;
+  // Optional resume information (ticks = 100-nanosecond units)
+  playbackPositionTicks?: number;
+  runtimeTicks?: number;
+  showRemoveButton?: boolean;
+  onRemove?: (item: MediaItem) => void;
 }
-
-const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, onRequest, searchTerm, progress, playUrl }) => {
+  
+const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, onRequest, searchTerm, progress, playUrl, playbackPositionTicks, showRemoveButton, onRemove }) => {
   const { t } = useTranslation();
   const { jellyfinUrl } = useJellyfin();
-
+  
   const { session } = useSession();
   const { addToList: addToFavorites, removeFromList: removeFromFavorites, isInList: isInFavorites } = useUserList('favorite');
   const { addToList: addToWatchlist, removeFromList: removeFromWatchlist, isInList: isInWatchlist } = useUserList('watchlist');
@@ -48,6 +53,15 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
   };
 
   const imageUrl = getImageUrl(item.poster_path);
+  
+  // Compute resume time string (used when showing "Reprendre à Xm Ys" badges)
+  let resumeTimeString = '';
+  if ((item as any).playback_position_ticks && (item as any).playback_position_ticks > 0) {
+    const resumeSeconds = Math.floor((item as any).playback_position_ticks / 10000000);
+    const resumeMinutes = Math.floor(resumeSeconds / 60);
+    const resumeSecondsOnly = resumeSeconds % 60;
+    resumeTimeString = `${resumeMinutes}m ${resumeSecondsOnly}s`;
+  }
 
   return (
     <Card className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-card h-full">
@@ -68,7 +82,7 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
           )}
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-
+ 
           <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
             <h3 className="font-bold text-sm line-clamp-2">{title}</h3>
             <div className="flex items-center justify-between text-xs text-gray-300 mt-1">
@@ -80,6 +94,21 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
                 </div>
               )}
             </div>
+
+            {/* Resume badge: show elapsed time if we have playback information */}
+            {((item as any).playback_position_ticks || playbackPositionTicks) && (
+              <div className="mt-2 inline-block bg-black/60 text-xs text-white px-2 py-1 rounded-md">
+                {t('resume_at', { time: resumeTimeString || (() => {
+                  if (playbackPositionTicks && playbackPositionTicks > 0) {
+                    const resumeSeconds = Math.floor(playbackPositionTicks / 10000000);
+                    const resumeMinutes = Math.floor(resumeSeconds / 60);
+                    const resumeSecondsOnly = resumeSeconds % 60;
+                    return `${resumeMinutes}m ${resumeSecondsOnly}s`;
+                  }
+                  return '';
+                })() })}
+              </div>
+            )}
           </div>
         </div>
       </Link>
@@ -107,6 +136,19 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
         )}
         
         <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {showRemoveButton && onRemove && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onRemove(item);
+              }}
+              aria-label={`Retirer ${title} de la liste`}
+              className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center transition-colors duration-150 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
           {showRequestButton && !isAvailable && !item.isRequested && (
             <button
               onClick={(e) => {

@@ -15,11 +15,11 @@ import { useJellyfin } from '@/contexts/JellyfinContext';
 
 interface MediaSectionProps {
   title: string;
-  mediaType: 'movie' | 'tv' | 'anime';
+  section: 'animations' | 'animes' | 'films' | 'series';
   sortBy?: string;
 }
 
-const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, sortBy = 'popularity.desc' }) => {
+const MediaSection: React.FC<MediaSectionProps> = ({ title, section, sortBy = 'popularity.desc' }) => {
   const { t, i18n } = useTranslation();
   const { session } = useSession();
   const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
@@ -34,7 +34,7 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, sortBy = 
       try {
         const { data, error } = await supabase.functions.invoke('discover-media', {
           body: {
-            mediaType,
+            section,
             language: i18n.language,
             page: 1,
             sortBy,
@@ -72,7 +72,7 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, sortBy = 
       }
     };
     fetchMedia();
-  }, [mediaType, sortBy, i18n.language]);
+  }, [section, sortBy, i18n.language]);
 
   const openRequestModal = (item: MediaItem) => {
     setSelectedItemForRequest(item);
@@ -97,7 +97,7 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, mediaType, sortBy = 
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold">{title}</h2>
         <Button asChild variant="link">
-          <Link to={`/catalog/${mediaType}`}>
+          <Link to={`/discover/${section}`}>
             {t('view_all')} <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>

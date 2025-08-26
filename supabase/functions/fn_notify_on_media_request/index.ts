@@ -28,7 +28,7 @@ serve(async (req) => {
       .from('notifications')
       .insert({
         type: 'media_request',
-        title: `Nouvelle demande: ${record.title || record.tmdb_id}`,
+        title: record.title || record.tmdb_id,
         payload: {
           request_id: record.id,
           tmdb_id: record.tmdb_id,

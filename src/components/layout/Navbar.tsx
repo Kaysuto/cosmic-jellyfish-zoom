@@ -120,12 +120,14 @@ const Navbar = () => {
             <span>{t('my_requests')}</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/admin" className="cursor-pointer">
-            <LayoutDashboard className="mr-2 h-4 w-4" />
-            <span>{t('admin_dashboard')}</span>
-          </Link>
-        </DropdownMenuItem>
+        {profile?.role !== 'admin' && (
+          <DropdownMenuItem asChild>
+            <Link to="/admin" className="cursor-pointer">
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              <span>{t('admin_dashboard')}</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogoutClick} className="text-destructive focus:text-destructive cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />

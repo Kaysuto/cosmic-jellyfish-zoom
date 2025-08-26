@@ -117,8 +117,27 @@ const SchedulePage = () => {
 
       await Promise.all(checkPromises);
 
-      // Filter items to match the selected mediaType strictly (avoid mixing anime/tv)
-      const filteredItems = itemsWithFlags.filter(it => it.media_type === mediaType);
+      // Filtrage strict :
+      // - Si "tv", on exclut les animés (genre 16 ou origine JP)
+      // - Si "anime", on ne prend que les animés
+      const isAnime = (item) => {
+        // Genre 16 (Animation) ou origine JP = animé
+        const genres = item.genre_ids || item.genres || [];
+        const hasAnimeGenre = Array.isArray(genres)
+          ? genres.includes(16) || genres.some((g) => (typeof g === 'object' ? g.id === 16 : false))
+          : false;
+        const originCountries = item.origin_country || item.origin_countries || [];
+        const isJapanese = Array.isArray(originCountries)
+          ? originCountries.includes('JP')
+          : false;
+        return item.media_type === 'anime' || hasAnimeGenre || isJapanese;
+      };
+
+      const filteredItems = itemsWithFlags.filter(it => {
+        if (mediaType === 'anime') return isAnime(it);
+        if (mediaType === 'tv') return it.media_type === 'tv' && !isAnime(it);
+        return false;
+      });
 
       const groupedByDay = filteredItems.reduce((acc, item) => {
         const airDate = item.first_air_date ? format(new Date(item.first_air_date), 'yyyy-MM-dd') : '';
@@ -142,6 +161,10 @@ const SchedulePage = () => {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+  // Résumé de la semaine : nombre total de sorties
+  const totalReleases = Object.values(schedule).reduce((acc, arr) => acc + arr.length, 0);
+  const daysWithReleases = Object.values(schedule).filter(arr => arr.length > 0).length;
 
   const goToPreviousWeek = () => setCurrentDate(sub(currentDate, { weeks: 1 }));
   const goToNextWeek = () => setCurrentDate(add(currentDate, { weeks: 1 }));
@@ -171,11 +194,14 @@ const SchedulePage = () => {
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" onClick={goToPreviousWeek}><ChevronLeft className="h-4 w-4" /></Button>
             <Button variant="outline" size="icon" onClick={goToNextWeek}><ChevronRight className="h-4 w-4" /></Button>
-            <Button variant="outline" onClick={goToToday}>{t('today')}</Button>
+            <Button variant="default" onClick={goToToday}>{t('today')}</Button>
           </div>
-          <h2 className="text-xl font-semibold text-center">
-            {format(weekStart, 'd MMM', { locale: currentLocale })} - {format(weekEnd, 'd MMM yyyy', { locale: currentLocale })}
-          </h2>
+          <div className="flex flex-col items-center gap-1">
+            <h2 className="text-xl font-semibold text-center">
+              {format(weekStart, 'd MMM', { locale: currentLocale })} - {format(weekEnd, 'd MMM yyyy', { locale: currentLocale })}
+            </h2>
+            <span className="text-xs text-muted-foreground">{t('releases_this_week', { count: totalReleases })} • {t('days_with_releases', { count: daysWithReleases })}</span>
+          </div>
           <Tabs value={mediaType} onValueChange={(value) => setMediaType(value as 'tv' | 'anime')} className="w-full sm:w-auto">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="tv">{t('tv_shows')}</TabsTrigger>
@@ -212,7 +238,7 @@ const SchedulePage = () => {
                 </h3>
                 <div className="space-y-2">
                   {initialItems.length > 0 ? (
-                    initialItems.map(item => <ScheduleCard key={`${item.id}-${item.first_air_date}`} item={item} />)
+                    initialItems.map(item => <ScheduleCard key={`${item.id}-${item.first_air_date}`} item={item} currentMediaType={mediaType} />)
                   ) : (
                     <div className="h-24 flex flex-col items-center justify-center text-center text-muted-foreground bg-muted/30 rounded-md p-2">
                       <CalendarOff className="h-6 w-6 mb-2" />
@@ -222,7 +248,7 @@ const SchedulePage = () => {
                   {remainingItems.length > 0 && (
                     <Collapsible open={isOpen} onOpenChange={(open) => setOpenStates(prev => ({...prev, [dayKey]: open}))}>
                       <CollapsibleContent className="space-y-2 animate-in fade-in-0">
-                        {remainingItems.map(item => <ScheduleCard key={`${item.id}-${item.first_air_date}`} item={item} />)}
+                        {remainingItems.map(item => <ScheduleCard key={`${item.id}-${item.first_air_date}`} item={item} currentMediaType={mediaType} />)}
                       </CollapsibleContent>
                       <CollapsibleTrigger asChild>
                         <Button variant="ghost" className="w-full mt-2">

@@ -11,6 +11,47 @@ const corsHeaders = {
 const TMDB_API_KEY = Deno.env.get('TMDB_API_KEY');
 const TMDB_API_URL = 'https://api.themoviedb.org/3';
 
+// Définition des sections du catalogue
+const CATALOG_SECTIONS = {
+  'animations': {
+    name: 'Animations',
+    description: 'Films d\'animation occidentaux',
+    mediaType: 'movie',
+    filters: {
+      with_genres: '16', // Animation
+      without_genres: '10751', // Family (pour exclure les films pour enfants)
+      without_origin_country: 'JP,KR,CN' // Exclure les productions asiatiques
+    }
+  },
+  'animes': {
+    name: 'Animés',
+    description: 'Productions animées asiatiques',
+    mediaType: 'tv',
+    filters: {
+      with_genres: '16', // Animation
+      with_origin_country: 'JP' // Japon uniquement (comme l'ancienne logique)
+    }
+  },
+  'films': {
+    name: 'Films',
+    description: 'Films en prise de vue réelle',
+    mediaType: 'movie',
+    filters: {
+      without_genres: '16', // Exclure Animation
+      without_origin_country: 'JP,KR,CN' // Exclure les productions asiatiques
+    }
+  },
+  'series': {
+    name: 'Séries',
+    description: 'Séries en prise de vue réelle',
+    mediaType: 'tv',
+    filters: {
+      without_genres: '16', // Exclure Animation
+      without_origin_country: 'JP,KR,CN' // Exclure les productions asiatiques
+    }
+  }
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders, status: 200 })
@@ -24,15 +65,34 @@ serve(async (req) => {
   }
 
   try {
-    const { mediaType, language, page, sortBy, genres, studios, networks, keywords } = await req.json();
-    if (!mediaType) {
-      throw new Error("mediaType is required (movie, tv, or anime)");
+    const { section, language, page, sortBy, genres, studios, networks, keywords } = await req.json();
+    
+    if (!section) {
+      throw new Error("section is required (animations, animes, films, or series)");
     }
 
-    let discoverUrl;
-    let type = mediaType;
+    const sectionConfig = CATALOG_SECTIONS[section];
+    if (!sectionConfig) {
+      throw new Error(`Invalid section: ${section}. Valid sections are: ${Object.keys(CATALOG_SECTIONS).join(', ')}`);
+    }
+
     let params = `api_key=${TMDB_API_KEY}&language=${language || 'en-US'}&page=${page || 1}&sort_by=${sortBy || 'popularity.desc'}`;
     
+    // Appliquer les filtres de base de la section
+    if (sectionConfig.filters.with_genres) {
+      params += `&with_genres=${sectionConfig.filters.with_genres}`;
+    }
+    if (sectionConfig.filters.without_genres) {
+      params += `&without_genres=${sectionConfig.filters.without_genres}`;
+    }
+    if (sectionConfig.filters.with_origin_country) {
+      params += `&with_origin_country=${sectionConfig.filters.with_origin_country}`;
+    }
+    if (sectionConfig.filters.without_origin_country) {
+      params += `&without_origin_country=${sectionConfig.filters.without_origin_country}`;
+    }
+
+    // Appliquer les filtres additionnels
     if (genres) {
       params += `&with_genres=${genres}`;
     }
@@ -40,21 +100,14 @@ serve(async (req) => {
       params += `&with_keywords=${keywords}`;
     }
 
-    if (studios && mediaType === 'movie') {
+    if (studios && sectionConfig.mediaType === 'movie') {
       params += `&with_companies=${studios}`;
     }
-    if (networks && (mediaType === 'tv' || mediaType === 'anime')) {
+    if (networks && sectionConfig.mediaType === 'tv') {
       params += `&with_networks=${networks}`;
     }
 
-    if (mediaType === 'anime') {
-      type = 'tv';
-      // Pour les animés, on ajoute le genre "Animation" (16) et le pays d'origine Japon (JP)
-      const animeGenres = genres ? `16,${genres}` : '16';
-      discoverUrl = `${TMDB_API_URL}/discover/tv?${params}&with_genres=${animeGenres}&with_origin_country=JP`;
-    } else {
-      discoverUrl = `${TMDB_API_URL}/discover/${mediaType}?${params}`;
-    }
+    const discoverUrl = `${TMDB_API_URL}/discover/${sectionConfig.mediaType}?${params}`;
     
     const response = await fetch(discoverUrl);
     if (!response.ok) {
@@ -62,16 +115,20 @@ serve(async (req) => {
     }
     const data = await response.json();
 
-    const resultsWithMediaType = data.results.map(item => ({
+    // Ajouter le type de média et la section aux résultats
+    const resultsWithMetadata = data.results.map(item => ({
         ...item,
-        media_type: type
+        media_type: sectionConfig.mediaType,
+        catalog_section: section
     }));
 
     return new Response(JSON.stringify({
         page: data.page,
-        results: resultsWithMediaType,
+        results: resultsWithMetadata,
         total_pages: data.total_pages,
-        total_results: data.total_results
+        total_results: data.total_results,
+        section: section,
+        section_config: sectionConfig
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

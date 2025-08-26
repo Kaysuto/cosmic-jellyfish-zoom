@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clapperboard, Smartphone, Users } from 'lucide-react';
 import FeaturedMedia from '@/components/home/FeaturedMedia';
+import CatalogSections from '@/components/home/CatalogSections';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DiscordWidget from '@/components/widgets/DiscordWidget';
 
@@ -98,6 +99,9 @@ const Index = () => {
       <div className="relative z-10 w-full py-16">
         <FeaturedMedia />
       </div>
+
+      {/* Section Sections du Catalogue */}
+      <CatalogSections />
 
       {/* Section Communauté */}
       <div className="relative z-10 w-full py-16 bg-gray-900/50">

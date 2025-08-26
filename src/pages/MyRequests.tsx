@@ -9,7 +9,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
-import { X, MailQuestion, Calendar, Tv, Film, Clapperboard } from 'lucide-react';
+import { MailQuestion, Calendar, Tv, Film, Clapperboard } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { showSuccess, showError } from '@/utils/toast';
 import { motion } from 'framer-motion';
@@ -19,8 +19,7 @@ const MyRequestsPage = () => {
   const { t, i18n } = useTranslation();
   const { session } = useSession();
   const { requests, loading, refreshRequests } = useRequestsByUserId(session?.user?.id);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [requestToCancel, setRequestToCancel] = useState<UserMediaRequest | null>(null);
+  const [requestToDelete, setRequestToDelete] = useState<UserMediaRequest | null>(null);
 
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
@@ -37,27 +36,21 @@ const MyRequestsPage = () => {
     anime: <Clapperboard className="h-4 w-4" />,
   };
 
-  const handleCancelClick = (request: UserMediaRequest) => {
-    setRequestToCancel(request);
-    setIsConfirmOpen(true);
-  };
+  // Suppression directe (une seule action)
 
-  const handleConfirmCancel = async () => {
-    if (!requestToCancel) return;
-
+  const handleConfirmDelete = async () => {
+    if (!requestToDelete) return;
     const { error } = await supabase
       .from('media_requests')
       .delete()
-      .eq('id', requestToCancel.id);
-
+      .eq('id', requestToDelete.id);
     if (error) {
-      showError(t('error_cancelling_request'));
+      showError(t('error_deleting_requests'));
     } else {
-      showSuccess(t('request_cancelled_successfully'));
+      showSuccess(t('requests_deleted_successfully'));
       refreshRequests();
     }
-    setIsConfirmOpen(false);
-    setRequestToCancel(null);
+    setRequestToDelete(null);
   };
 
   return (
@@ -122,14 +115,11 @@ const MyRequestsPage = () => {
                     <span className="ml-2 capitalize">{t(request.media_type)}</span>
                   </div>
                 </CardContent>
-                {request.status === 'pending' && (
-                  <CardFooter className="p-2 bg-muted/30 border-t">
-                    <Button variant="ghost" size="sm" className="w-full text-red-500 hover:text-red-600 hover:bg-red-500/10" onClick={() => handleCancelClick(request)}>
-                      <X className="mr-2 h-4 w-4" />
-                        {t('cancel_request')}
-                    </Button>
-                  </CardFooter>
-                )}
+                <CardFooter className="p-2 bg-muted/30 border-t">
+                  <Button variant="destructive" size="sm" className="w-full" onClick={() => setRequestToDelete(request)}>
+                    {t('delete')}
+                  </Button>
+                </CardFooter>
               </Card>
             </motion.div>
           ))}
@@ -145,18 +135,20 @@ const MyRequestsPage = () => {
         </div>
       )}
 
-      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+      {/* Confirmation suppression */}
+
+      <AlertDialog open={!!requestToDelete} onOpenChange={(open) => !open && setRequestToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('confirm_cancel_request_title')}</AlertDialogTitle>
+            <AlertDialogTitle>{t('confirm_delete_title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('confirm_cancel_request_desc', { title: requestToCancel?.title })}
+              {t('confirm_delete_request', { title: requestToDelete?.title })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setRequestToCancel(null)}>{t('cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmCancel} className={buttonVariants({ variant: "destructive" })}>
-              {t('confirm_request_cancellation')}
+            <AlertDialogCancel onClick={() => setRequestToDelete(null)}>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className={buttonVariants({ variant: "destructive" })}>
+              {t('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

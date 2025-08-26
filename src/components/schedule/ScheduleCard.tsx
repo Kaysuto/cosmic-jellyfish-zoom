@@ -9,15 +9,38 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 interface ScheduleCardProps {
   item: MediaItem;
+  currentMediaType?: 'tv' | 'anime';
 }
 
-const ScheduleCard: React.FC<ScheduleCardProps> = ({ item }) => {
+const ScheduleCard: React.FC<ScheduleCardProps> = ({ item, currentMediaType }) => {
   const { t } = useTranslation();
-  const title = item.title || item.name;
+  // Affichage du titre avec numéro d'épisode si dispo
+  let title = item.title || item.name;
+  if ((item.seasonNumber !== undefined && item.episodeNumber !== undefined) && title) {
+    title = `${title} • S${String(item.seasonNumber).padStart(2, '0')}E${String(item.episodeNumber).padStart(2, '0')}`;
+  }
+
+  // Différenciation visuelle si c'est un animé dans l'onglet séries (cas rare)
+  const isAnime = (() => {
+    const genres = item.genre_ids || item.genres || [];
+    const hasAnimeGenre = Array.isArray(genres)
+      ? genres.some((g) => (typeof g === 'number' && g === 16) || (typeof g === 'object' && g?.id === 16))
+      : false;
+    const originCountries = item.origin_country || item.origin_countries || [];
+    const isJapanese = Array.isArray(originCountries)
+      ? originCountries.includes('JP')
+      : false;
+    return item.media_type === 'anime' || hasAnimeGenre || isJapanese;
+  })();
+
+  // Appliquer l'anneau rose seulement si on est dans l'onglet "tv" et que c'est un animé
+  const shouldShowAnimeRing = currentMediaType === 'tv' && isAnime;
 
   return (
     <Link to={`/media/${item.media_type}/${item.id}`} className="block group">
-      <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/50 p-2">
+      <Card className={
+        `overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/50 p-2 ${shouldShowAnimeRing ? 'ring-2 ring-pink-400/60' : ''}`
+      }>
         <div className="flex items-start gap-3">
           {item.poster_path ? (
             <img
@@ -31,11 +54,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({ item }) => {
           )}
           <div className="flex-grow min-w-0">
             <h4 className="font-semibold text-sm line-clamp-2 group-hover:text-primary">{title}</h4>
-            {item.seasonNumber !== undefined && item.episodeNumber !== undefined && (
-              <p className="text-xs text-muted-foreground truncate">
-                S{String(item.seasonNumber).padStart(2, '0')} E{String(item.episodeNumber).padStart(2, '0')}
-              </p>
-            )}
+            {/* Le titre contient déjà la saison/épisode si dispo */}
             <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mt-1 text-xs text-muted-foreground">
               {/* Show Available only when episode exists (isAvailable === true).
                   Show 'Bientôt' only if isSoon === true (series synced but episode missing).

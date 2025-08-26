@@ -14,6 +14,7 @@ import { useSession } from '@/contexts/AuthContext';
 import ContinueWatching from '@/components/catalog/ContinueWatching';
 import JellyfinLibrarySection from '@/components/catalog/JellyfinLibrarySection';
 import NextUpSection from '@/components/catalog/NextUpSection';
+import CatalogNavigation from '@/components/catalog/CatalogNavigation';
 import { useJellyfin } from '@/contexts/JellyfinContext';
 
 interface JellyfinLibrary {
@@ -25,99 +26,69 @@ interface JellyfinLibrary {
 const CatalogPage = () => {
   const { t, i18n } = useTranslation();
   const { session } = useSession();
-  const { error: jellyfinError } = useJellyfin();
-  const [searchParams, setSearchParams] = useSearchParams();
-  
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
-  const debouncedSearchTerm = useDebounce(searchTerm, 450);
-  
+  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
+  const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(false);
-
-
   const [jellyfinLibraries, setJellyfinLibraries] = useState<JellyfinLibrary[]>([]);
   const [librariesLoading, setLibrariesLoading] = useState(true);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  useEffect(() => {
-    const fetchLibraries = async () => {
-      setLibrariesLoading(true);
-      try {
-        const { data, error } = await supabase.functions.invoke('get-jellyfin-libraries');
-        if (error) throw error;
-        setJellyfinLibraries(data);
-      } catch (error: any) {
-        showError(error.message);
-      } finally {
-        setLibrariesLoading(false);
-      }
-    };
-    fetchLibraries();
-  }, []);
-
-  const fetchSearchResults = useCallback(async () => {
-    if (!debouncedSearchTerm) {
-      setSearchResults([]);
+  const fetchJellyfinLibraries = useCallback(async () => {
+    if (!jellyfinUrl) {
+      setLibrariesLoading(false);
       return;
     }
+
+    try {
+      const { data: librariesData, error: librariesError } = await supabase.functions.invoke('get-jellyfin-libraries');
+      if (librariesError) throw librariesError;
+      setJellyfinLibraries(librariesData || []);
+    } catch (error: any) {
+      console.error('Error fetching Jellyfin libraries:', error);
+    } finally {
+      setLibrariesLoading(false);
+    }
+  }, [jellyfinUrl]);
+
+  useEffect(() => {
+    fetchJellyfinLibraries();
+  }, [fetchJellyfinLibraries]);
+
+  const handleSearch = useCallback(async (term: string) => {
+    if (!term.trim()) {
+      setSearchResults([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('search-media', {
-        body: { query: debouncedSearchTerm, language: i18n.language },
+        body: { query: term, language: i18n.language },
       });
       if (error) throw error;
-
-      const tmdbItems = data;
-      const tmdbIds = tmdbItems.map((item: MediaItem) => item.id);
-
-      if (tmdbIds.length > 0) {
-        const { data: catalogData, error: catalogError } = await supabase
-          .from('catalog_items')
-          .select('tmdb_id')
-          .in('tmdb_id', tmdbIds);
-        
-        if (catalogError) {
-          console.error("Error checking catalog availability", catalogError);
-          setSearchResults(tmdbItems);
-        } else {
-          const availableIds = new Set(catalogData.map(item => item.tmdb_id));
-          const itemsWithAvailability = tmdbItems.map((item: MediaItem) => ({
-            ...item,
-            isAvailable: availableIds.has(item.id),
-          }));
-          
-          // Sort items to show available ones first
-          itemsWithAvailability.sort((a: MediaItem, b: MediaItem) => {
-            if (a.isAvailable && !b.isAvailable) return -1;
-            if (!a.isAvailable && b.isAvailable) return 1;
-            return 0;
-          });
-
-          setSearchResults(itemsWithAvailability);
-        }
-      } else {
-        setSearchResults(tmdbItems);
-      }
+      setSearchResults(data.results || []);
     } catch (error: any) {
       showError(error.message);
+      setSearchResults([]);
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, i18n.language]);
+  }, [i18n.language]);
 
   useEffect(() => {
-    if (debouncedSearchTerm) {
-      setSearchParams({ q: debouncedSearchTerm });
-      fetchSearchResults();
-    } else {
-      searchParams.delete('q');
-      setSearchParams(searchParams);
-      setSearchResults([]);
-    }
-  }, [debouncedSearchTerm, fetchSearchResults, setSearchParams, searchParams]);
+    handleSearch(debouncedSearchTerm);
+  }, [debouncedSearchTerm, handleSearch]);
+
+  const clearSearch = () => {
+    setSearchTerm('');
+    setSearchResults([]);
+  };
 
   const LoadingSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-      {[...Array(18)].map((_, i) => (
+      {[...Array(12)].map((_, i) => (
         <div key={i} className="space-y-2">
           <Skeleton className="aspect-[2/3] w-full rounded-lg" />
           <Skeleton className="h-4 w-3/4" />
@@ -127,43 +98,30 @@ const CatalogPage = () => {
     </div>
   );
 
-
-  if (jellyfinError) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="py-8 text-center">
-            <div className="text-red-500 mb-4">
-              <h2 className="text-2xl font-bold mb-2">Erreur de configuration</h2>
-              <p>Impossible de charger les paramètres Jellyfin : {jellyfinError}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-4xl font-bold tracking-tight mb-2">{t('catalog')}</h1>
-        <p className="text-muted-foreground">{t('catalog_description')}</p>
-      </div>
-
-      <div className="relative w-full mb-8">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder={t('search_and_request')}
-          className="pl-10"
-        />
-        {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />}
-        {searchTerm && !loading && (
-          <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setSearchTerm('')}>
-            <X className="h-4 w-4" />
-          </Button>
-        )}
+      <div className="flex items-center gap-4 mb-8">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            type="text"
+            placeholder={t('search_placeholder')}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearSearch}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        {loading && <Loader2 className="h-4 w-4 animate-spin" />}
       </div>
 
       <main>
@@ -179,6 +137,11 @@ const CatalogPage = () => {
           <div className="space-y-12">
             <ContinueWatching />
             <NextUpSection />
+            
+            {/* Navigation des sections du catalogue */}
+            <CatalogNavigation />
+            
+            {/* Bibliothèques Jellyfin */}
             {librariesLoading ? (
               <>
                 <Skeleton className="h-8 w-1/4 mb-4" />
@@ -198,7 +161,6 @@ const CatalogPage = () => {
           </div>
         )}
       </main>
-
     </div>
   );
 };

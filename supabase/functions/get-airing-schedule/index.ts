@@ -67,6 +67,8 @@ serve(async (req) => {
     let discoverUrl;
     if (mediaType === 'anime') {
       discoverUrl = `${TMDB_API_URL}/discover/tv?${baseParams}&with_genres=16&with_origin_country=JP`;
+    } else if (mediaType === 'series') {
+      discoverUrl = `${TMDB_API_URL}/discover/tv?${baseParams}&without_genres=16&without_origin_country=JP,KR,CN`;
     } else {
       discoverUrl = `${TMDB_API_URL}/discover/tv?${baseParams}`;
     }

@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
 import MediaCard from './MediaCard';
 import RequestModal from './RequestModal';
 import { useRequestStatus } from '@/hooks/useRequestStatus';
@@ -21,15 +20,20 @@ export interface MediaItem {
   episodeNumber?: number;
   episodeName?: string;
   isRequested?: boolean;
+  genre_ids?: number[];
+  genres?: { id: number; name: string }[];
+  origin_country?: string[];
+  origin_countries?: string[];
 }
 
 interface MediaGridProps {
   items: MediaItem[];
   showRequestButton?: boolean;
   searchTerm?: string;
+  onRequest?: (item: MediaItem) => void;
 }
 
-const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, searchTerm }) => {
+const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, searchTerm, onRequest }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
 
@@ -42,8 +46,12 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, 
   }, [initialRequestedIds, newlyRequestedIds]);
 
   const handleRequest = (item: MediaItem) => {
-    setSelectedItem(item);
-    setIsModalOpen(true);
+    if (onRequest) {
+      onRequest(item);
+    } else {
+      setSelectedItem(item);
+      setIsModalOpen(true);
+    }
   };
 
   const onModalSuccess = () => {
@@ -77,12 +85,14 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, 
         ))}
       </motion.div>
       
-      <RequestModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        item={selectedItem}
-        onSuccess={onModalSuccess}
-      />
+      {!onRequest && (
+        <RequestModal
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          item={selectedItem}
+          onSuccess={onModalSuccess}
+        />
+      )}
     </>
   );
 };

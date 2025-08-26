@@ -7,7 +7,7 @@ BEGIN
   INSERT INTO public.notifications (type, title, payload, target_role, is_read, created_at)
   VALUES (
     'media_request',
-    concat('Nouvelle demande: ', COALESCE(NEW.title, NEW.tmdb_id::text)),
+    COALESCE(NEW.title, NEW.tmdb_id::text),
     jsonb_build_object(
       'request_id', NEW.id,
       'tmdb_id', NEW.tmdb_id,

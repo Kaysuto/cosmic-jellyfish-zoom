@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Settings from "./pages/admin/Settings";
 import Profile from "./pages/Profile";
+import ProfileIndex from "./pages/ProfileIndex";
 import UpdatePassword from "./pages/UpdatePassword";
 import { ThemeProvider } from "@/components/theme-provider";
 import MainLayout from "@/components/layout/MainLayout";
@@ -88,11 +89,8 @@ const App = () => (
                       <Route path="/media/:mediaType/:tmdbId" element={<MediaDetailPage />} />
                       <Route path="/person/:personId" element={<PersonDetailPage />} />
                       <Route path="/catalog" element={<CatalogPage />} />
-                      <Route path="/discover/:mediaType" element={<FullSectionPage />} />
-                      <Route path="/profile/:userId" element={<UserPublicProfile />} />
-                      <Route element={<ProfileOwnerRoute />}>
-                        <Route path="/profile/:userId/settings" element={<Profile />} />
-                      </Route>
+                      <Route path="/discover/:section" element={<FullSectionPage />} />
+                      <Route path="/profile/:userId" element={<ProfileIndex />} />
 
                       {/* Public route for admin-managed requests moved out of /admin */}
                       <Route element={<AdminRoute />}>

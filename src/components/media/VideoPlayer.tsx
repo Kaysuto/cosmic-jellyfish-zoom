@@ -40,24 +40,42 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
   const player = useRef<MediaPlayerElement>(null);
   const { t } = useTranslation();
 
-  const onLoadedMetadata = (event: MediaLoadedMetadataEvent) => {
+  const onLoadedMetadata = (_event: MediaLoadedMetadataEvent) => {
     const playerRef = player.current as any;
     if (!playerRef) return;
 
-    // Add Chapters
-    if (chapters && chapters.length > 0) {
-      const existingTracks = playerRef.textTracks.getByKind('chapters');
-      for (const track of existingTracks) playerRef.textTracks.remove(track);
-      const track = new TextTrack({ kind: 'chapters', default: true, label: 'Chapters' });
+    // Add Chapters (with fallbacks and title normalization)
+    const existingTracks = playerRef.textTracks.getByKind('chapters');
+    for (const track of existingTracks) playerRef.textTracks.remove(track);
+    const chapterTrack = new TextTrack({ kind: 'chapters', default: true, label: 'Chapters' });
+
+    const hasProvidedChapters = Array.isArray(chapters) && chapters.length > 0;
+    if (hasProvidedChapters) {
       for (let i = 0; i < chapters.length; i++) {
         const chapter = chapters[i];
         const nextChapter = chapters[i + 1];
-        const startTime = chapter.StartPositionTicks / 10000000;
-        const endTime = nextChapter ? (nextChapter.StartPositionTicks / 10000000) : playerRef.duration;
+        const startTime = Number(chapter?.StartPositionTicks || 0) / 10000000;
+        const endTime = nextChapter ? (Number(nextChapter?.StartPositionTicks || 0) / 10000000) : playerRef.duration;
         if (isNaN(startTime) || isNaN(endTime) || startTime >= endTime) continue;
-        track.addCue(new window.VTTCue(startTime, endTime, chapter.Name));
+        const label = (chapter?.Name && String(chapter.Name).trim().length > 0) ? String(chapter.Name) : `Chapitre ${i + 1}`;
+        chapterTrack.addCue(new window.VTTCue(startTime, endTime, label));
       }
-      playerRef.textTracks.add(track);
+    } else if (!isNaN(playerRef.duration) && playerRef.duration > 0) {
+      // Fallback synthetic chapters when none are provided
+      const d = playerRef.duration;
+      const cueDefs = [
+        { s: 0, e: Math.min(d * 0.5, d), label: 'Début' },
+        { s: Math.min(d * 0.5, d - 1), e: Math.min(d * 0.9, d), label: 'Milieu' },
+        { s: Math.min(d * 0.9, d - 1), e: d, label: 'Générique' },
+      ];
+      for (const c of cueDefs) {
+        if (!isNaN(c.s) && !isNaN(c.e) && c.s < c.e) {
+          chapterTrack.addCue(new window.VTTCue(c.s, c.e, c.label));
+        }
+      }
+    }
+    if (chapterTrack.cues.length > 0) {
+      playerRef.textTracks.add(chapterTrack);
     }
 
     // Add Subtitles
@@ -74,31 +92,41 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
         playerRef.textTracks.add(track);
       }
     }
+
+    // Ensure resume position is applied as soon as metadata is ready
+    if (typeof startTime === 'number' && !isNaN(startTime) && startTime > 0) {
+      try {
+        playerRef.currentTime = startTime;
+      } catch {}
+    }
   };
 
   if (!src) return null;
 
   const source = { src, type: container ? `video/${container.toLowerCase()}` : undefined };
 
-  function onCanPlay(event: MediaCanPlayEvent) {
-    if (player.current && startTime && (player.current as any).currentTime === 0) {
-      (player.current as any).currentTime = startTime;
+  function onCanPlay(_event: MediaCanPlayEvent) {
+    if (player.current && typeof startTime === 'number' && !isNaN(startTime)) {
+      const current = (player.current as any).currentTime;
+      if (Math.abs(current - startTime) > 0.5) {
+        (player.current as any).currentTime = startTime;
+      }
     }
   }
 
-  function onError(event: MediaErrorEvent) {
-    const detail = (event as any).detail;
+  function onError(_event: MediaErrorEvent) {
+    const detail = (_event as any).detail;
     showError(`Erreur lecteur vidéo: ${detail.message}`);
   }
 
-  function onTimeUpdateEvent(event: MediaTimeUpdateEvent) {
-    if (onTimeUpdate) onTimeUpdate((event as any).detail.currentTime);
+  function onTimeUpdateEvent(_event: MediaTimeUpdateEvent) {
+    if (onTimeUpdate) onTimeUpdate((_event as any).detail.currentTime);
   }
 
-  function onDurationChangeEvent(event: MediaDurationChangeEvent) {
-    if (onDurationChange) onDurationChange((event as any).detail.duration);
+  function onDurationChangeEvent(_event: MediaDurationChangeEvent) {
+    if (onDurationChange) onDurationChange((_event as any).detail.duration);
   }
- function onEnded(event: MediaEndedEvent) {
+ function onEnded(_event: MediaEndedEvent) {
    window.dispatchEvent(new CustomEvent('playback-ended'));
  }
 

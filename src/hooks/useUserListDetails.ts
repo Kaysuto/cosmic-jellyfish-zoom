@@ -42,10 +42,26 @@ export const useUserListDetails = (userId: string, listType: ListType) => {
     if (detailsError) {
       showError(t('error_fetching_list'));
     } else {
-      const items = detailsData.map((item: any) => ({
-        ...item,
-        media_type: listIds.find(i => i.media_id === item.id)?.media_type
-      }));
+      // Fetch availability from catalog_items to ensure up-to-date availability
+      const tmdbIds = listIds.map(i => i.media_id);
+      const { data: catalog, error: catalogError } = await supabase
+        .from('catalog_items')
+        .select('tmdb_id, media_type, jellyfin_id')
+        .in('tmdb_id', tmdbIds);
+
+      const availabilityKey = (id: number, mediaType?: string) => `${id}:${mediaType || ''}`;
+      const availability = new Map<string, boolean>();
+      if (!catalogError && catalog) {
+        for (const row of catalog) {
+          availability.set(availabilityKey(row.tmdb_id, row.media_type), !!row.jellyfin_id);
+        }
+      }
+
+      const items = detailsData.map((item: any) => {
+        const mediaType = listIds.find(i => i.media_id === item.id)?.media_type;
+        const isAvailable = availability.get(availabilityKey(item.id, mediaType)) || false;
+        return { ...item, media_type: mediaType, isAvailable } as MediaItem;
+      });
       setList(items);
     }
     setLoading(false);

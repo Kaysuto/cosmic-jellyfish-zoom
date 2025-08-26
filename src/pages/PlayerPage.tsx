@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertTriangle } from 'lucide-react';
 import VideoPlayer from '@/components/media/VideoPlayer';
+import { logger } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSession } from '@/contexts/AuthContext';
 import { FunctionsHttpError } from '@supabase/supabase-js';
@@ -38,7 +39,7 @@ const PlayerPage = () => {
 
   const updateProgress = useCallback(async (time: number) => {
     if (!session?.user || !id || !type || duration === 0) return;
-    console.log(`Updating progress for ${type} ${id} at time ${time}`, { episode: currentEpisode });
+    logger.debug(`Updating progress for ${type} ${id} at time ${time}`, { episode: currentEpisode });
 
     const record: any = {
       user_id: session.user.id,
@@ -54,21 +55,18 @@ const PlayerPage = () => {
         record.season_number = currentEpisode.season;
         record.episode_number = currentEpisode.episode;
       } else {
-        // Don't save progress if we don't know the episode
         return;
       }
     }
 
     try {
-      const { data: upsertData, error: upsertError } = await supabase.from('playback_progress').upsert(record, {
+      const { error: upsertError } = await supabase.from('playback_progress').upsert(record, {
         onConflict: 'user_id,tmdb_id,media_type,season_number,episode_number',
       });
 
       if (upsertError) {
-        console.error('Error upserting playback_progress:', upsertError);
+        logger.error('Error upserting playback_progress:', upsertError);
       } else {
-        // Emit an event signalling the DB has the latest progress for this media/episode.
-        // Other components can listen to this to re-fetch continue-watching / next-up.
         try {
           window.dispatchEvent(new CustomEvent('playback-progress-saved', {
             detail: {
@@ -79,13 +77,13 @@ const PlayerPage = () => {
               time: record.progress_seconds
             }
           }));
-          console.log('Dispatched playback-progress-saved event', { tmdbId: Number(id), mediaType: type, season: record.season_number, episode: record.episode_number });
+          logger.debug('Dispatched playback-progress-saved event', { tmdbId: Number(id), mediaType: type, season: record.season_number, episode: record.episode_number });
         } catch (dispatchErr) {
-          console.error('Failed to dispatch playback-progress-saved event', dispatchErr);
+          logger.error('Failed to dispatch playback-progress-saved event', dispatchErr);
         }
       }
     } catch (err) {
-      console.error('Exception while updating progress:', err);
+      logger.error('Exception while updating progress:', err);
     }
   }, [session, id, type, duration, currentEpisode]);
 
@@ -97,40 +95,60 @@ const PlayerPage = () => {
   useEffect(() => {
     const saveFinalProgress = () => {
       if (currentTimeRef.current > 0 && !hasSavedOnUnmount.current) {
-        // Use sendBeacon for reliability on unload. It's asynchronous but designed for this purpose.
-        // Note: sendBeacon sends a POST request. We need a way to handle this on the backend.
-        // For now, we'll stick to a synchronous-like call on unload, accepting it might be blocked by some browsers.
-        // A better solution would be a dedicated beacon endpoint.
         updateProgress(currentTimeRef.current);
         hasSavedOnUnmount.current = true;
       }
     };
  
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+    const handleBeforeUnload = (_event: BeforeUnloadEvent) => {
       saveFinalProgress();
-      // Some browsers require returnValue to be set.
-      // event.preventDefault(); // This is sometimes required.
-      // event.returnValue = '';
     };
  
     window.addEventListener('beforeunload', handleBeforeUnload);
  
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      saveFinalProgress(); // Also save on component unmount
+      saveFinalProgress();
     };
   }, [updateProgress]);
  
-  // Ensure we persist progress immediately when playback ends so that other components
-  // (continue-watching / next-up) can re-fetch the latest DB state without racing.
   useEffect(() => {
     const handlePlaybackEnded = async () => {
       try {
         if (currentTimeRef.current > 0) {
           await updateProgress(currentTimeRef.current);
         }
+
+        if ((type === 'tv' || type === 'anime') && id) {
+          try {
+            const apiMediaType = 'tv';
+            const { data: catalogItem, error: catalogError } = await supabase
+              .from('catalog_items')
+              .select('jellyfin_id')
+              .eq('tmdb_id', Number(id))
+              .eq('media_type', apiMediaType)
+              .single();
+
+            if (!catalogError && catalogItem?.jellyfin_id) {
+              const { data: nextUpData, error: nextUpError } = await supabase.functions.invoke('get-jellyfin-next-up', {
+                body: { seriesJellyfinId: catalogItem.jellyfin_id },
+              });
+
+              if (!nextUpError && nextUpData?.seasonNumber && nextUpData?.episodeNumber) {
+                const params = new URLSearchParams();
+                params.set('season', String(nextUpData.seasonNumber));
+                params.set('episode', String(nextUpData.episodeNumber));
+                if (audioStreamIndex) params.set('audioStreamIndex', audioStreamIndex);
+                if (subtitleStreamIndex) params.set('subtitleStreamIndex', subtitleStreamIndex);
+                navigate(`/media/${type}/${id}/play?${params.toString()}`, { replace: true, state: { from: location.state?.from || -1 } });
+              }
+            }
+          } catch (e) {
+            // Ignorer si la navigation échoue
+          }
+        }
       } catch (err) {
-        console.error('Error saving progress on playback-ended:', err);
+        logger.error('Error saving progress on playback-ended:', err);
       }
     };
  
@@ -138,7 +156,7 @@ const PlayerPage = () => {
     return () => {
       window.removeEventListener('playback-ended', handlePlaybackEnded);
     };
-  }, [updateProgress]);
+  }, [type, id, navigate, audioStreamIndex, subtitleStreamIndex, location.state, updateProgress]);
 
   const handleTimeUpdate = (time: number) => {
     currentTimeRef.current = time;
@@ -169,7 +187,6 @@ const PlayerPage = () => {
         let episodeNumber: number | null = episodeStr ? Number(episodeStr) : null;
 
         if (apiMediaType === 'tv' && (seasonNumber === null || episodeNumber === null)) {
-          // TV show, but no specific episode. Find next up.
           const { data: catalogItem, error: catalogError } = await supabase
             .from('catalog_items')
             .select('jellyfin_id')
@@ -306,7 +323,7 @@ const PlayerPage = () => {
             subtitleTracks={subtitleTracks}
             onTimeUpdate={handleTimeUpdate}
             onDurationChange={handleDurationChange}
-            startTime={startTime ? Number(startTime) : null}
+            startTime={startTime !== null ? Number(startTime) : null}
             selectedSubtitleIndex={subtitleStreamIndex}
             onBack={() => {
               const from = location.state?.from || -1;

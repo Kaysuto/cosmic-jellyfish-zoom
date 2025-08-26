@@ -10,6 +10,9 @@ import { useJellyfin } from '@/contexts/JellyfinContext';
 import { useRequestStatus } from '@/hooks/useRequestStatus';
 import RequestModal from '@/components/catalog/RequestModal';
 import { useSession } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 
 const FeaturedMedia = () => {
   const { t, i18n } = useTranslation();
@@ -94,7 +97,14 @@ const FeaturedMedia = () => {
   return (
     <>
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-6">{t('weekly_trends')}</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold">{t('weekly_trends')}</h2>
+          <Button asChild variant="link">
+            <Link to="/catalog">
+              {t('view_all')} <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
         {loading ? (
           <div className="flex space-x-4">
             {[...Array(6)].map((_, i) => (

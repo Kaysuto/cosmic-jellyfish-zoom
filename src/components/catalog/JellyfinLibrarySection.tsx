@@ -27,6 +27,36 @@ const JellyfinLibrarySection: React.FC<JellyfinLibrarySectionProps> = ({ library
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Fonction pour déterminer la section appropriée basée sur le nom de la bibliothèque
+  const getAppropriateSection = (libraryName: string, collectionType: string) => {
+    const name = libraryName.toLowerCase();
+    
+    console.log('Library name:', libraryName, 'Normalized:', name, 'Collection type:', collectionType);
+    
+    // Correspondances exactes pour les cas spécifiques
+    if (name === 'animés' || name === 'animes') {
+      console.log('Exact match for animes');
+      return 'animes';
+    }
+    
+    // Détecter les bibliothèques d'animés (asiatiques) - PRIORITÉ ÉLEVÉE
+    if (name.includes('anime') || name.includes('japon') || name.includes('japanese') || name.includes('manga') || name.includes('animes') || name.includes('japan') || name.includes('corée') || name.includes('korea') || name.includes('chinese') || name.includes('chinois')) {
+      console.log('Pattern match for animes');
+      return 'animes';
+    }
+    
+    // Détecter les bibliothèques d'animations (occidentales)
+    if (name.includes('animation') || name.includes('anim') || name.includes('cartoon') || name.includes('disney') || name.includes('pixar') || name.includes('dreamworks')) {
+      console.log('Pattern match for animations');
+      return 'animations';
+    }
+    
+    // Par défaut, utiliser la logique basée sur le type de collection
+    const defaultSection = collectionType === 'movies' ? 'films' : 'series';
+    console.log('Default section:', defaultSection);
+    return defaultSection;
+  };
+
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true);
@@ -68,7 +98,7 @@ const JellyfinLibrarySection: React.FC<JellyfinLibrarySectionProps> = ({ library
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold">{library.name}</h2>
         <Button asChild variant="link">
-          <Link to={`/discover/${library.collectionType === 'movies' ? 'movie' : 'tv'}`} state={{ libraryName: library.name }}>
+          <Link to={`/discover/${getAppropriateSection(library.name, library.collectionType)}`} state={{ libraryName: library.name }}>
             {t('view_all')} <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>

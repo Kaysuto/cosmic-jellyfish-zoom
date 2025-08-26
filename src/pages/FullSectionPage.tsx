@@ -12,36 +12,37 @@ import RequestModal from '@/components/catalog/RequestModal';
 import { useSession } from '@/contexts/AuthContext';
 import { useJellyfin } from '@/contexts/JellyfinContext';
 
-type MediaType = 'movie' | 'tv' | 'anime';
+type CatalogSection = 'animations' | 'animes' | 'films' | 'series';
 
 const FullSectionPage = () => {
-  const { mediaType, libraryId } = useParams<{ mediaType: MediaType, libraryId: string }>();
+  const { section } = useParams<{ section: CatalogSection }>();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { session } = useSession();
-  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
-
+  const { error: jellyfinError } = useJellyfin();
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('popularity.desc');
-  
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
 
   const sortOptions = {
     'popularity.desc': t('sort_popularity_desc'),
-    'release_date.desc': t('sort_release_date_desc'),
     'vote_average.desc': t('sort_vote_average_desc'),
+    'release_date.desc': t('sort_release_date_desc'),
+    'title.asc': t('sort_title_asc'),
   };
 
   const fetchMedia = useCallback(async () => {
+    if (!section) return;
+    
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('discover-media', {
-        body: { mediaType, language: i18n.language, page, sortBy },
+        body: { section, language: i18n.language, page, sortBy },
       });
       if (error) throw error;
       
@@ -70,7 +71,7 @@ const FullSectionPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [mediaType, i18n.language, page, sortBy]);
+  }, [section, i18n.language, page, sortBy]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -88,17 +89,28 @@ const FullSectionPage = () => {
   };
 
   const pageTitle = useMemo(() => {
-    switch (mediaType) {
-      case 'movie': return t('popular_movies');
-      case 'tv': return t('popular_tv_shows');
-      case 'anime': return t('popular_animes');
+    switch (section) {
+      case 'animations': return t('catalog_section_animations');
+      case 'animes': return t('catalog_section_animes');
+      case 'films': return t('catalog_section_films');
+      case 'series': return t('catalog_section_series');
       default: return t('catalog');
     }
-  }, [mediaType, t, location.state]);
+  }, [section, t]);
+
+  const pageDescription = useMemo(() => {
+    switch (section) {
+      case 'animations': return t('catalog_section_animations_desc');
+      case 'animes': return t('catalog_section_animes_desc');
+      case 'films': return t('catalog_section_films_desc');
+      case 'series': return t('catalog_section_series_desc');
+      default: return '';
+    }
+  }, [section, t]);
 
   const LoadingSkeleton = () => (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-      {[...Array(20)].map((_, i) => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      {[...Array(18)].map((_, i) => (
         <div key={i} className="space-y-2">
           <Skeleton className="aspect-[2/3] w-full rounded-lg" />
           <Skeleton className="h-4 w-3/4" />
@@ -108,11 +120,17 @@ const FullSectionPage = () => {
     </div>
   );
 
+  if (!section) {
+    return <div className="container mx-auto px-4 py-8 text-center">{t('invalid_section')}</div>;
+  }
+
   if (jellyfinError) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Button variant="outline" onClick={() => navigate('/catalog')} className="mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_catalog')}
+        <Button asChild variant="outline" className="mb-6">
+          <Link to="/catalog">
+            <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_catalog')}
+          </Link>
         </Button>
         <div className="text-red-500 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
           <p>Erreur de configuration Jellyfin : {jellyfinError}</p>
@@ -123,60 +141,73 @@ const FullSectionPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Button variant="outline" onClick={() => navigate('/catalog')} className="mb-6">
-        <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_catalog')}
-      </Button>
-
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-4xl font-bold tracking-tight">{pageTitle}</h1>
-        <div className="w-full sm:w-auto">
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-[200px] justify-between">
-                {sortOptions[sortBy as keyof typeof sortOptions]}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[200px]">
-              {Object.entries(sortOptions).map(([value, label]) => (
-                <DropdownMenuItem key={value} onSelect={() => handleSortByChange(value)}>
-                  {label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <Button asChild variant="outline" className="mb-4">
+            <Link to="/catalog">
+              <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_catalog')}
+            </Link>
+          </Button>
+          <h1 className="text-4xl font-bold tracking-tight mb-2">{pageTitle}</h1>
+          <p className="text-muted-foreground">{pageDescription}</p>
         </div>
       </div>
 
-      {loading ? <LoadingSkeleton /> : <MediaGrid items={media} showRequestButton={!!session} />}
+      <div className="flex items-center justify-between mb-6">
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-[200px] justify-between">
+              {sortOptions[sortBy as keyof typeof sortOptions]}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-[200px]">
+            {Object.entries(sortOptions).map(([value, label]) => (
+              <DropdownMenuItem key={value} onSelect={() => handleSortByChange(value)}>
+                {label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
-      {!loading && totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 mt-8">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            {t('previous')}
-          </Button>
-          <span className="text-sm text-muted-foreground font-mono">
-            {t('page')} {page} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages}
-          >
-            {t('next')}
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
+      {loading ? (
+        <LoadingSkeleton />
+      ) : (
+        <>
+          <MediaGrid items={media} showRequestButton={!!session} onRequest={openRequestModal} />
+          
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <Button
+                variant="outline"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                {t('previous')}
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {t('page')} {page} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                {t('next')}
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
-      <RequestModal open={requestModalOpen} onOpenChange={setRequestModalOpen} item={selectedItemForRequest} />
+      <RequestModal 
+        open={requestModalOpen} 
+        onOpenChange={setRequestModalOpen} 
+        item={selectedItemForRequest} 
+      />
     </div>
   );
 };

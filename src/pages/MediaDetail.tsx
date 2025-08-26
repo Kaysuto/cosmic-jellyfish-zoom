@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,6 +65,8 @@ interface ContinueWatchingInfo {
   seasonNumber: number;
   episodeNumber: number;
   playbackPositionTicks: number;
+  runtimeTicks?: number | null;
+  progress?: number | null;
 }
 
 type RequestStatus = 'available' | 'pending' | 'approved' | 'rejected' | null;
@@ -154,8 +156,8 @@ const MediaDetailPage = () => {
     if (requestData) setRequestStatus(requestData.status as RequestStatus);
   };
 
- const fetchContinueWatching = async () => {
-   if (session?.user && (type === 'tv' || type === 'anime')) {
+ const fetchContinueWatching = useCallback(async () => {
+   if (session?.user) {
      const { data: continueData, error: continueError } = await supabase.rpc('get_continue_watching', { p_user_id: session.user.id });
      if (!continueError && continueData) {
        const seriesProgress = continueData.find((item: any) => item.id === Number(id));
@@ -163,14 +165,31 @@ const MediaDetailPage = () => {
          setContinueWatchingInfo({
            seasonNumber: seriesProgress.season_number,
            episodeNumber: seriesProgress.episode_number,
-           playbackPositionTicks: seriesProgress.playback_position_ticks
+           playbackPositionTicks: seriesProgress.playback_position_ticks,
+           runtimeTicks: seriesProgress.runtime_ticks ?? null,
+           progress: seriesProgress.progress ?? null,
          });
+       } else {
+         setContinueWatchingInfo(null);
        }
      } else if (continueError) {
        console.error("Error fetching continue watching:", continueError);
      }
    }
- };
+ }, [session, id]);
+
+ const fetchNextUp = useCallback(async (jfId: string) => {
+    try {
+      const { data: nextUpData, error: nextUpError } = await supabase.functions.invoke('get-jellyfin-next-up', { body: { seriesJellyfinId: jfId } });
+      if (nextUpError) {
+        console.error("Error fetching next up:", nextUpError);
+      } else {
+        setNextUpEpisode(nextUpData);
+      }
+    } catch (e) {
+      console.error("Exception fetching next up:", e);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchAllDetails = async () => {
@@ -196,11 +215,6 @@ const MediaDetailPage = () => {
         ];
 
         const [detailsResult, videosResult, similarResult, creditsResult, catalogResult] = await Promise.all(promises);
-
-        let continueDataResult: any = null;
-        if (session?.user) {
-          continueDataResult = await supabase.rpc('get_continue_watching', { p_user_id: session.user.id });
-        }
 
         if (detailsResult.error) throw detailsResult.error;
         const tmdbDetails = detailsResult.data;
@@ -236,54 +250,11 @@ const MediaDetailPage = () => {
               console.error("Error fetching media streams:", error);
             }
           } else if (apiMediaType === 'tv') {
-            try {
-              const { data: nextUpData, error: nextUpError } = await supabase.functions.invoke('get-jellyfin-next-up', { body: { seriesJellyfinId: jfId } });
-              if (nextUpError) {
-                console.error("Error fetching next up:", nextUpError);
-              } else {
-                setNextUpEpisode(nextUpData);
-                if (nextUpData?.seasonNumber !== undefined && nextUpData?.episodeNumber !== undefined) {
-                  const { data: streamsData, error: streamsError } = await supabase.functions.invoke('get-jellyfin-episode-details', { 
-                    body: { 
-                      seriesJellyfinId: jfId,
-                      seasonNumber: nextUpData.seasonNumber,
-                      episodeNumber: nextUpData.episodeNumber
-                    } 
-                  });
-                  if (streamsError) throw streamsError;
-                  setAudioTracks(streamsData.audioTracks || []);
-                  setSubtitleTracks(streamsData.subtitleTracks || []);
-                }
-              }
-            } catch (error: any) {
-              let errorMessage = "Impossible de se connecter à Jellyfin pour récupérer les détails de l'épisode.";
-              if (error instanceof FunctionsHttpError) {
-                try {
-                  const errorJson = await error.context.json();
-                  if (errorJson.error) {
-                    errorMessage = errorJson.error;
-                  }
-                } catch (e) { /* ignore */ }
-              }
-              setJellyfinConnectionError(errorMessage);
-              console.error("Error fetching episode streams:", error);
-            }
+            await fetchNextUp(jfId);
           }
         }
 
-        if (continueDataResult && !continueDataResult.error && continueDataResult.data) {
-          const continueData = continueDataResult.data as any[];
-          const seriesProgress = continueData.find((item: any) => item.id === Number(id));
-          if (seriesProgress) {
-            setContinueWatchingInfo({
-              seasonNumber: seriesProgress.season_number,
-              episodeNumber: seriesProgress.episode_number,
-              playbackPositionTicks: seriesProgress.playback_position_ticks
-            });
-          }
-        } else if (continueDataResult?.error) {
-          console.error("Error fetching continue watching:", continueDataResult.error);
-        }
+        await fetchContinueWatching();
 
         if (tmdbDetails.seasons?.length > 0) {
           const initialSeason = tmdbDetails.seasons.find((s: any) => s.season_number > 0) || tmdbDetails.seasons[0];
@@ -299,7 +270,7 @@ const MediaDetailPage = () => {
     };
 
     fetchAllDetails();
-  }, [type, id, i18n.language, session]);
+  }, [type, id, i18n.language, session, fetchContinueWatching, fetchNextUp]);
 
   useEffect(() => {
     if ((type === 'tv' || type === 'anime') && selectedSeasonNumber !== null) {
@@ -308,29 +279,26 @@ const MediaDetailPage = () => {
   }, [selectedSeasonNumber, type, id, i18n.language, jellyfinId]);
 
   useEffect(() => {
-    const handlePlaybackEnded = () => {
-      // Refetch continue watching info after playback ends
+    const handlePlaybackEvent = () => {
       fetchContinueWatching();
-    };
-
-    const handlePlaybackSaved = (e: any) => {
-      try {
-        // Only refetch if the saved progress is for the currently viewed media
-        if (Number(id) === e?.detail?.tmdbId) {
-          fetchContinueWatching();
-        }
-      } catch (err) {
-        console.error('Error handling playback-progress-saved event', err);
+      if (jellyfinId) {
+        fetchNextUp(jellyfinId);
       }
     };
 
-    window.addEventListener('playback-ended', handlePlaybackEnded);
+    const handlePlaybackSaved = (e: any) => {
+      if (Number(id) === e?.detail?.tmdbId) {
+        handlePlaybackEvent();
+      }
+    };
+
+    window.addEventListener('playback-ended', handlePlaybackEvent);
     window.addEventListener('playback-progress-saved', handlePlaybackSaved);
     return () => {
-      window.removeEventListener('playback-ended', handlePlaybackEnded);
+      window.removeEventListener('playback-ended', handlePlaybackEvent);
       window.removeEventListener('playback-progress-saved', handlePlaybackSaved);
     };
-  }, [session, id, type]);
+  }, [id, jellyfinId, fetchContinueWatching, fetchNextUp]);
 
   const handleRequest = () => {
     if (!details || !type) return;
@@ -379,23 +347,45 @@ const MediaDetailPage = () => {
 
     if (jellyfinId) {
       if (type === 'movie') {
+        if (continueWatchingInfo && (continueWatchingInfo.playbackPositionTicks ?? 0) > 0) {
+          const resumeSeconds = Math.floor((continueWatchingInfo.playbackPositionTicks || 0) / 10000000);
+          const resumeMinutes = Math.floor(resumeSeconds / 60);
+          const resumeSecondsOnly = Math.floor(resumeSeconds % 60);
+          const resumeTimeString = `${resumeMinutes}m ${resumeSecondsOnly}s`;
+          const hasRuntime = (continueWatchingInfo.runtimeTicks ?? 0) > 0;
+          const percent = hasRuntime ? Math.min(100, Math.round(((continueWatchingInfo.playbackPositionTicks || 0) / (continueWatchingInfo.runtimeTicks || 1)) * 100)) : (continueWatchingInfo.progress ?? 0);
+          const isNearEnd = hasRuntime ? percent >= 99 : ((continueWatchingInfo.progress ?? 0) >= 99);
+          return (
+            <Button size="lg" onClick={() => handlePlay(undefined, undefined, isNearEnd ? 0 : resumeSeconds)}>
+              <Play className="mr-2 h-4 w-4" /> {isNearEnd ? t('play') : t('resume_at', { time: resumeTimeString })}
+            </Button>
+          );
+        }
         return <Button size="lg" onClick={() => handlePlay()}><Play className="mr-2 h-4 w-4" /> {t('play')}</Button>;
       }
       if (type === 'tv' || type === 'anime') {
         if (loadingNextUp) {
           return <Button size="lg" disabled><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('finding_next_episode')}</Button>;
         }
+
         if (continueWatchingInfo && continueWatchingInfo.seasonNumber && continueWatchingInfo.episodeNumber) {
-         const resumeTime = continueWatchingInfo.playbackPositionTicks / 10000000;
-          const buttonText = resumeTime < 30 // Threshold: 30 seconds
-            ? t('play_s_e', { season: String(continueWatchingInfo.seasonNumber).padStart(2, '0'), episode: String(continueWatchingInfo.episodeNumber).padStart(2, '0') })
-            : t('resume_s_e', { season: String(continueWatchingInfo.seasonNumber).padStart(2, '0'), episode: String(continueWatchingInfo.episodeNumber).padStart(2, '0') });
-         return <Button size="lg" onClick={() => handlePlay(continueWatchingInfo.seasonNumber, continueWatchingInfo.episodeNumber, resumeTime)}><Play className="mr-2 h-4 w-4" /> {buttonText}</Button>;
+          const resumeTime = (continueWatchingInfo.playbackPositionTicks || 0) / 10000000;
+          const resumeMinutes = Math.floor(resumeTime / 60);
+          const resumeSecondsOnly = Math.floor(resumeTime % 60);
+          const resumeTimeString = `${resumeMinutes}m ${resumeSecondsOnly}s`;
+
+          const isNearEnd = (continueWatchingInfo.progress ?? 0) >= 99;
+
+          if (isNearEnd && nextUpEpisode) {
+            const buttonText = t('play_s_e', { season: String(nextUpEpisode.seasonNumber).padStart(2, '0'), episode: String(nextUpEpisode.episodeNumber).padStart(2, '0') });
+            return <Button size="lg" onClick={() => handlePlay(nextUpEpisode.seasonNumber, nextUpEpisode.episodeNumber)}><Play className="mr-2 h-4 w-4" /> {buttonText}</Button>;
+          }
+
+          return <Button size="lg" onClick={() => handlePlay(continueWatchingInfo.seasonNumber, continueWatchingInfo.episodeNumber, resumeTime)}><Play className="mr-2 h-4 w-4" /> {t('resume_at', { time: resumeTimeString })}</Button>;
         } else if (nextUpEpisode) {
           const buttonText = t('play_s_e', { season: String(nextUpEpisode.seasonNumber).padStart(2, '0'), episode: String(nextUpEpisode.episodeNumber).padStart(2, '0') });
           return <Button size="lg" onClick={() => handlePlay(nextUpEpisode.seasonNumber, nextUpEpisode.episodeNumber)}><Play className="mr-2 h-4 w-4" /> {buttonText}</Button>;
         }
-        // Fallback for series without nextUp data (e.g., fully watched)
         return <Button size="lg" onClick={() => handlePlay(1, 1)}><Play className="mr-2 h-4 w-4" /> {t('play_s01e01')}</Button>;
       }
     }

@@ -16,6 +16,8 @@ type Payload = {
   media_title?: string;
   poster_path?: string;
   media_poster_path?: string;
+  media_type?: string;
+  user_id?: string;
 };
 
 type NotificationRow = {
@@ -69,10 +71,12 @@ serve(async (req) => {
       throw error;
     }
 
-    const formatted = (data || []).map((n: NotificationRow) => {
+    const raw = (data || []).map((n: NotificationRow) => {
       let media_tmdb_id: number | null = null;
       let media_title: string | null = n.title ?? null;
       let media_poster_path: string | null = null;
+      let media_type: string | null = null;
+      let requester_user_id: string | null = null;
       
       if (n.payload) {
         try {
@@ -82,6 +86,10 @@ serve(async (req) => {
           media_tmdb_id = p.tmdb_id ?? p.media_tmdb_id ?? null;
           media_title = media_title ?? p.title ?? p.media_title ?? null;
           media_poster_path = p.poster_path ?? p.media_poster_path ?? null;
+          media_type = p.media_type ?? null;
+          requester_user_id = p.user_id ?? null;
+          
+
         } catch {
           // ignore if payload is not valid JSON
         }
@@ -95,6 +103,35 @@ serve(async (req) => {
         media_title,
         media_poster_path,
         is_read: !!n.is_read,
+        media_type,
+        requester_user_id,
+      };
+    });
+
+    // Enrich with requester profiles (batch)
+    const uniqueRequesterIds = Array.from(new Set(raw.map(r => r.requester_user_id).filter(Boolean))) as string[];
+    let requesterMap = new Map<string, any>();
+    if (uniqueRequesterIds.length > 0) {
+      const { data: profiles } = await supabaseAdmin
+        .from('profiles')
+        .select('id, first_name, last_name, email, avatar_url')
+        .in('id', uniqueRequesterIds);
+      if (profiles) {
+        requesterMap = new Map(profiles.map(p => [p.id, p]));
+      }
+    }
+
+    const formatted = raw.map(n => {
+      const p = n.requester_user_id ? requesterMap.get(n.requester_user_id) : null;
+      return {
+        ...n,
+        requester: p ? {
+          id: p.id,
+          first_name: p.first_name,
+          last_name: p.last_name,
+          email: p.email,
+          avatar_url: p.avatar_url,
+        } : null,
       };
     });
 
