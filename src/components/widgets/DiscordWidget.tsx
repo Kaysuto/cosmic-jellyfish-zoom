@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users } from 'lucide-react';
 import DiscordIcon from '@/components/icons/DiscordIcon';
 
 interface DiscordWidgetData {
@@ -36,7 +34,7 @@ const DiscordWidget = () => {
   }, []);
 
   if (loading) {
-    return <Skeleton className="h-[220px] w-full" />;
+    return <Skeleton className="h-32 w-full rounded-lg" />;
   }
 
   if (!widgetData) {
@@ -44,33 +42,29 @@ const DiscordWidget = () => {
   }
 
   return (
-    <Card className="bg-gray-800/50 border-gray-700/50">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-3 text-2xl font-bold text-white">
-          <DiscordIcon className="h-8 w-8" />
-          {t('discord_join_title')}
-        </CardTitle>
-        <CardDescription>{t('discord_join_desc')}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ul className="space-y-2 text-muted-foreground">
-          <li className="flex items-center gap-2">✓ {t('discord_benefit_1')}</li>
-          <li className="flex items-center gap-2">✓ {t('discord_benefit_2')}</li>
-          <li className="flex items-center gap-2">✓ {t('discord_benefit_3')}</li>
-        </ul>
-      </CardContent>
-      <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <Button asChild size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700">
+    <div className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div className="flex items-center gap-4 text-left">
+        <DiscordIcon className="h-12 w-12 text-[#5865F2] flex-shrink-0" />
+        <div>
+          <h3 className="text-xl font-bold text-white">{t('discord_join_title')}</h3>
+          <p className="text-muted-foreground text-sm">{t('discord_join_desc')}</p>
+        </div>
+      </div>
+      <div className="flex flex-col items-center gap-3 w-full sm:w-auto flex-shrink-0">
+        <Button asChild size="lg" className="w-full sm:w-auto bg-[#5865F2] hover:bg-[#4f5bda] text-white font-semibold shadow-lg transform hover:scale-105 transition-transform">
           <a href={widgetData.instant_invite} target="_blank" rel="noopener noreferrer">
             {t('discord_join_button')}
           </a>
         </Button>
-        <div className="flex items-center gap-2 text-green-400">
-          <Users className="h-5 w-5" />
-          <span className="font-semibold">{t('discord_online_count', { count: widgetData.presence_count })}</span>
+        <div className="flex items-center gap-2 text-green-400 text-xs">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+          <span>{t('discord_online_count', { count: widgetData.presence_count })}</span>
         </div>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 };
 
