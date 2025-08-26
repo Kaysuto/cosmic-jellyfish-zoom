@@ -2,6 +2,7 @@
 
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,7 +66,7 @@ serve(async (req) => {
   }
 
   try {
-    const { section, language, page, sortBy, genres, studios, networks, keywords } = await req.json();
+    const { section, language, page, sortBy, genres, studios, networks, keywords, availableOnly } = await req.json();
     
     if (!section) {
       throw new Error("section is required (animations, animes, films, or series)");
@@ -115,8 +116,31 @@ serve(async (req) => {
     }
     const data = await response.json();
 
+    let results = data.results;
+
+    if (availableOnly && results.length > 0) {
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      const tmdbIds = results.map(item => item.id);
+      
+      const { data: catalogData, error: catalogError } = await supabaseAdmin
+        .from('catalog_items')
+        .select('tmdb_id')
+        .in('tmdb_id', tmdbIds);
+
+      if (catalogError) {
+        console.error("Error checking catalog availability in function", catalogError);
+      } else {
+        const availableIds = new Set(catalogData.map(item => item.tmdb_id));
+        results = results.filter(item => availableIds.has(item.id));
+      }
+    }
+
     // Ajouter le type de média et la section aux résultats
-    const resultsWithMetadata = data.results.map(item => ({
+    const resultsWithMetadata = results.map(item => ({
         ...item,
         media_type: sectionConfig.mediaType,
         catalog_section: section

@@ -6,6 +6,7 @@ import i18n from 'i18next';
  const resources = {
    fr: {
      translation: {
+       "available_in_catalog": "Uniquement le contenu disponible",
        "confirm_discord_title": "Rejoindre le serveur Discord ?",
        "confirm_discord_description": "Vous allez être redirigé vers Discord pour rejoindre notre communauté. Continuer ?",
        "continue_to_discord": "Continuer vers Discord",
@@ -153,7 +154,6 @@ import i18n from 'i18next';
        "apply_filters": "Appliquer les filtres",
        "load_more": "Charger plus",
        "search_results": "Résultats de recherche",
-       "available_in_catalog": "Disponible dans le catalogue",
        "play": "Lecture",
        "view_details": "Voir la fiche",
        "search_and_request": "Rechercher & Demander",
@@ -578,6 +578,7 @@ import i18n from 'i18next';
      },
    en: {
      translation: {
+       "available_in_catalog": "Only available content",
        "confirm_discord_title": "Join the Discord Server?",
        "confirm_discord_description": "You will be redirected to Discord to join our community. Continue?",
        "continue_to_discord": "Continue to Discord",
@@ -725,7 +726,6 @@ import i18n from 'i18next';
        "apply_filters": "Apply Filters",
        "load_more": "Load more",
        "search_results": "Search Results",
-       "available_in_catalog": "Available in Catalog",
        "play": "Play",
        "view_details": "View Details",
        "search_and_request": "Search & Request",

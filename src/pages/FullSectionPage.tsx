@@ -11,6 +11,8 @@ import MediaGrid, { MediaItem } from '@/components/catalog/MediaGrid';
 import RequestModal from '@/components/catalog/RequestModal';
 import { useSession } from '@/contexts/AuthContext';
 import { useJellyfin } from '@/contexts/JellyfinContext';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 type CatalogSection = 'animations' | 'animes' | 'films' | 'series';
 
@@ -26,6 +28,7 @@ const FullSectionPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('popularity.desc');
+  const [availableOnly, setAvailableOnly] = useState(false);
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
 
@@ -41,15 +44,15 @@ const FullSectionPage = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('discover-media', {
-        body: { section, language: i18n.language, page, sortBy },
+        body: { section, language: i18n.language, page, sortBy, availableOnly },
       });
       if (error) throw error;
       
       const tmdbItems = data.results;
-      const tmdbIds = tmdbItems.map((item: MediaItem) => item.id);
-
       let items = tmdbItems;
-      if (tmdbIds.length > 0) {
+
+      if (!availableOnly && tmdbItems.length > 0) {
+        const tmdbIds = tmdbItems.map((item: MediaItem) => item.id);
         const { data: catalogData, error: catalogError } = await supabase
           .from('catalog_items')
           .select('tmdb_id')
@@ -62,7 +65,13 @@ const FullSectionPage = () => {
             isAvailable: availableIds.has(item.id),
           }));
         }
+      } else if (availableOnly) {
+        items = tmdbItems.map((item: MediaItem) => ({
+          ...item,
+          isAvailable: true,
+        }));
       }
+
       setMedia(items);
       setTotalPages(Math.min(data.total_pages ?? 1, 500));
     } catch (error: any) {
@@ -70,7 +79,7 @@ const FullSectionPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [section, i18n.language, page, sortBy]);
+  }, [section, i18n.language, page, sortBy, availableOnly]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -79,6 +88,11 @@ const FullSectionPage = () => {
 
   const handleSortByChange = (value: string) => {
     setSortBy(value);
+    setPage(1);
+  };
+
+  const handleAvailableOnlyChange = (checked: boolean) => {
+    setAvailableOnly(checked);
     setPage(1);
   };
 
@@ -152,10 +166,10 @@ const FullSectionPage = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-[200px] justify-between">
+            <Button variant="outline" className="w-full sm:w-[200px] justify-between">
               {sortOptions[sortBy as keyof typeof sortOptions]}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
@@ -168,6 +182,14 @@ const FullSectionPage = () => {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="available-only"
+            checked={availableOnly}
+            onCheckedChange={handleAvailableOnlyChange}
+          />
+          <Label htmlFor="available-only">{t('available_in_catalog')}</Label>
+        </div>
       </div>
 
       {loading ? (
