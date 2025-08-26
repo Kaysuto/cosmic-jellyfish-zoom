@@ -33,7 +33,6 @@ const FullSectionPage = () => {
     'popularity.desc': t('sort_popularity_desc'),
     'vote_average.desc': t('sort_vote_average_desc'),
     'release_date.desc': t('sort_release_date_desc'),
-    'title.asc': t('sort_title_asc'),
   };
 
   const fetchMedia = useCallback(async () => {
