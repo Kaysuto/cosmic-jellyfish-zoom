@@ -216,29 +216,58 @@ const MediaDetailPage = () => {
           const jfId = catalogResult.data.jellyfin_id;
           setJellyfinId(jfId);
 
-          try {
-            const { data: streamsData, error: streamsError } = await supabase.functions.invoke('get-jellyfin-media-streams', { body: { jellyfinId: jfId } });
-            if (streamsError) throw streamsError;
-            setAudioTracks(streamsData.audioTracks || []);
-            setSubtitleTracks(streamsData.subtitleTracks || []);
-          } catch (error: any) {
-            let errorMessage = "Impossible de se connecter à Jellyfin. Vérifiez que l'URL est correcte et que le serveur est accessible publiquement.";
-            if (error instanceof FunctionsHttpError) {
-              try {
-                const errorJson = await error.context.json();
-                if (errorJson.error) {
-                  errorMessage = errorJson.error;
-                }
-              } catch (e) { /* ignore */ }
+          if (apiMediaType === 'movie') {
+            try {
+              const { data: streamsData, error: streamsError } = await supabase.functions.invoke('get-jellyfin-media-streams', { body: { jellyfinId: jfId } });
+              if (streamsError) throw streamsError;
+              setAudioTracks(streamsData.audioTracks || []);
+              setSubtitleTracks(streamsData.subtitleTracks || []);
+            } catch (error: any) {
+              let errorMessage = "Impossible de se connecter à Jellyfin. Vérifiez que l'URL est correcte et que le serveur est accessible publiquement.";
+              if (error instanceof FunctionsHttpError) {
+                try {
+                  const errorJson = await error.context.json();
+                  if (errorJson.error) {
+                    errorMessage = errorJson.error;
+                  }
+                } catch (e) { /* ignore */ }
+              }
+              setJellyfinConnectionError(errorMessage);
+              console.error("Error fetching media streams:", error);
             }
-            setJellyfinConnectionError(errorMessage);
-            console.error("Error fetching media streams:", error);
-          }
-
-          if (apiMediaType === 'tv') {
-            const { data: nextUpData, error: nextUpError } = await supabase.functions.invoke('get-jellyfin-next-up', { body: { seriesJellyfinId: jfId } });
-            if (nextUpError) console.error("Error fetching next up:", nextUpError);
-            else setNextUpEpisode(nextUpData);
+          } else if (apiMediaType === 'tv') {
+            try {
+              const { data: nextUpData, error: nextUpError } = await supabase.functions.invoke('get-jellyfin-next-up', { body: { seriesJellyfinId: jfId } });
+              if (nextUpError) {
+                console.error("Error fetching next up:", nextUpError);
+              } else {
+                setNextUpEpisode(nextUpData);
+                if (nextUpData?.seasonNumber !== undefined && nextUpData?.episodeNumber !== undefined) {
+                  const { data: streamsData, error: streamsError } = await supabase.functions.invoke('get-jellyfin-episode-details', { 
+                    body: { 
+                      seriesJellyfinId: jfId,
+                      seasonNumber: nextUpData.seasonNumber,
+                      episodeNumber: nextUpData.episodeNumber
+                    } 
+                  });
+                  if (streamsError) throw streamsError;
+                  setAudioTracks(streamsData.audioTracks || []);
+                  setSubtitleTracks(streamsData.subtitleTracks || []);
+                }
+              }
+            } catch (error: any) {
+              let errorMessage = "Impossible de se connecter à Jellyfin pour récupérer les détails de l'épisode.";
+              if (error instanceof FunctionsHttpError) {
+                try {
+                  const errorJson = await error.context.json();
+                  if (errorJson.error) {
+                    errorMessage = errorJson.error;
+                  }
+                } catch (e) { /* ignore */ }
+              }
+              setJellyfinConnectionError(errorMessage);
+              console.error("Error fetching episode streams:", error);
+            }
           }
         }
 
