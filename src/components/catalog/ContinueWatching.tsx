@@ -100,7 +100,7 @@ const ContinueWatching = () => {
               {validItems.map((item) => {
                 return (
                   <CarouselItem key={`${item.media_type}-${item.id}`} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 pl-4">
-                    <div onClick={(e) => handleCardClick(e, item)} className="cursor-pointer h-full">
+                    <div onClick={(e) => handleCardClick(e, item)} className="cursor-pointer">
                       <MediaCard item={item} showRequestButton={false} progress={item.progress} />
                     </div>
                   </CarouselItem>

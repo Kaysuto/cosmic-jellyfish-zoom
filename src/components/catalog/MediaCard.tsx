@@ -83,14 +83,13 @@ const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, o
           </div>
         </div>
       </Link>
+      
       {progress !== undefined && progress > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 h-3 bg-black/40 pointer-events-none z-50">
-          <div
-            className="h-full bg-white rounded-sm shadow-lg"
-            style={{ width: `${progress}%` }}
-            aria-hidden="true"
-          />
-        </div>
+        <div
+          className="absolute bottom-0 left-0 h-1 bg-primary pointer-events-none z-10"
+          style={{ width: `${progress}%` }}
+          aria-hidden="true"
+        />
       )}
       
       <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-2">
