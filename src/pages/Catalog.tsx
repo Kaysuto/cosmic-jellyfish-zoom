@@ -14,7 +14,6 @@ import { useSession } from '@/contexts/AuthContext';
 import ContinueWatching from '@/components/catalog/ContinueWatching';
 import JellyfinLibrarySection from '@/components/catalog/JellyfinLibrarySection';
 import NextUpSection from '@/components/catalog/NextUpSection';
-import CatalogNavigation from '@/components/catalog/CatalogNavigation';
 import { useJellyfin } from '@/contexts/JellyfinContext';
 
 interface JellyfinLibrary {
@@ -137,9 +136,6 @@ const CatalogPage = () => {
           <div className="space-y-12">
             <ContinueWatching />
             <NextUpSection />
-            
-            {/* Navigation des sections du catalogue */}
-            <CatalogNavigation />
             
             {/* Bibliothèques Jellyfin */}
             {librariesLoading ? (
