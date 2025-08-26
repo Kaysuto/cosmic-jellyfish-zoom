@@ -5,30 +5,11 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Skeleton } from '@/components/ui/skeleton';
 import MediaCard from './MediaCard';
 import { useSession } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 const NextUpSection = () => {
   const { t } = useTranslation();
   const { session } = useSession();
   const { items, loading } = useNextUp();
-  const navigate = useNavigate();
-
-  const handleCardClick = (e: React.MouseEvent, item: NextUpItem) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!item.id || !item.media_type || !item.next_episode_to_watch) {
-      console.error('Attempted to navigate for an item missing id, media_type, or next_episode_to_watch', item);
-      return;
-    }
-    const ep = item.next_episode_to_watch as any;
-    const season = ep?.season_number ?? ep?.seasonNumber;
-    const episode = ep?.episode_number ?? ep?.episodeNumber;
-    if (!season || !episode) {
-      console.error('Next episode information incomplete', ep);
-      return;
-    }
-    navigate(`/media/${item.media_type}/${item.id}/play?season=${season}&episode=${episode}`);
-  };
 
   if (!session || (!loading && items.length === 0)) {
     return null;
@@ -59,11 +40,10 @@ const NextUpSection = () => {
                 title: episodeTitle,
                 poster_path: poster,
               } as any;
+              const playUrl = `/media/${item.media_type}/${item.id}/play?season=${season}&episode=${episode}`;
               return (
                 <CarouselItem key={`${item.media_type}-${item.id}`} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 pl-4">
-                  <div onClick={(e) => handleCardClick(e, item)} className="cursor-pointer h-full">
-                    <MediaCard item={mediaItem} showRequestButton={false} progress={0} />
-                  </div>
+                  <MediaCard item={mediaItem} showRequestButton={false} progress={0} playUrl={playUrl} />
                 </CarouselItem>
               );
             })}

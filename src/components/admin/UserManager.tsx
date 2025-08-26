@@ -24,6 +24,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import UserForm, { UserFormValues } from './UserForm';
 import { motion } from 'framer-motion';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 
 type SortByType = 'updated_at' | 'email' | 'first_name' | 'role' | 'mfa';
 
@@ -170,14 +171,12 @@ const UserManager = () => {
     if (!session?.user) return;
     setIsSubmitting(true);
     try {
-      const res: any = await supabase.functions.invoke('create-user', { body: values });
+      const { data, error } = await supabase.functions.invoke('create-user', { body: values });
 
-      if (res?.error) {
-        const errMessage = res.error?.message ?? JSON.stringify(res.error);
-        throw new Error(errMessage);
+      if (error) {
+        throw error;
       }
 
-      const data = res?.data ?? {};
       const newUser = data.user;
 
       showSuccess(t('user_created_successfully', { email: values.email }));
@@ -188,7 +187,15 @@ const UserManager = () => {
       setIsSheetOpen(false);
     } catch (error: any) {
       console.error('create-user invoke error:', error);
-      const message = error?.message ?? (typeof error === 'string' ? error : JSON.stringify(error));
+      let message = error.message;
+      if (error instanceof FunctionsHttpError) {
+        try {
+          const errorJson = await error.context.json();
+          message = errorJson.error || message;
+        } catch {
+          // Ignore if context is not valid JSON
+        }
+      }
       showError(`Erreur lors de la création de l'utilisateur: ${message}`);
     } finally {
       setIsSubmitting(false);
