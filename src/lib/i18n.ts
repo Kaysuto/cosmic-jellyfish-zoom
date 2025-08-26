@@ -6,6 +6,13 @@ import i18n from 'i18next';
  const resources = {
    fr: {
      translation: {
+       "discord_join_title": "Rejoignez notre communauté",
+       "discord_join_desc": "Discutez, partagez vos avis et participez à la vie du service.",
+       "discord_benefit_1": "Demandes de contenu en direct",
+       "discord_benefit_2": "Annonces et mises à jour",
+       "discord_benefit_3": "Support et entraide",
+       "discord_join_button": "Rejoindre le serveur",
+       "discord_online_count": "{{count}} en ligne",
        "resume_or_restart_description": "Vous avez déjà commencé à regarder ce contenu. Voulez-vous reprendre là où vous vous étiez arrêté ou recommencer depuis le début ?",
        "restart_playback": "Recommencer",
        "resume_at": "Reprendre à {{time}}",
@@ -194,7 +201,7 @@ import i18n from 'i18next';
        "approve": "Approuver",
        "reject": "Rejeter",
        "confirm_action": "Confirmer l'action ?",
-       "confirm_action_on_selected": "Voulez-vous appliquer cette action aux éléments sélectionnés ?",
+       "confirm_action_on_selected": "Voulez-vous appliquer cette action aux éléments sélectionnés ? Cette opération peut être irréversible.",
        "confirm": "Confirmer",
        "requester": "Demandeur",
        "unknown_user": "Utilisateur inconnu",
@@ -528,6 +535,13 @@ import i18n from 'i18next';
      },
    en: {
      translation: {
+       "discord_join_title": "Join Our Community",
+       "discord_join_desc": "Chat, share your opinions, and participate in the life of the service.",
+       "discord_benefit_1": "Live content requests",
+       "discord_benefit_2": "Announcements and updates",
+       "discord_benefit_3": "Support and help",
+       "discord_join_button": "Join the Server",
+       "discord_online_count": "{{count}} Online",
        "resume_or_restart_description": "You've already started watching this. Would you like to resume where you left off or start over from the beginning?",
        "restart_playback": "Start Over",
        "resume_at": "Resume at {{time}}",
