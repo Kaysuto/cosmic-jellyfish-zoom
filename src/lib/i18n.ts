@@ -6,6 +6,9 @@ import i18n from 'i18next';
  const resources = {
    fr: {
      translation: {
+       "confirm_discord_title": "Rejoindre le serveur Discord ?",
+       "confirm_discord_description": "Vous allez être redirigé vers Discord pour rejoindre notre communauté. Continuer ?",
+       "continue_to_discord": "Continuer vers Discord",
        "discord_join_title": "Rejoignez notre communauté",
        "discord_join_desc": "Discutez, partagez vos avis et participez à la vie du service.",
        "discord_benefit_1": "Demandes de contenu en direct",
@@ -535,6 +538,9 @@ import i18n from 'i18next';
      },
    en: {
      translation: {
+       "confirm_discord_title": "Join the Discord Server?",
+       "confirm_discord_description": "You will be redirected to Discord to join our community. Continue?",
+       "continue_to_discord": "Continue to Discord",
        "discord_join_title": "Join Our Community",
        "discord_join_desc": "Chat, share your opinions, and participate in the life of the service.",
        "discord_benefit_1": "Live content requests",
