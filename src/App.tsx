@@ -76,7 +76,7 @@ const App = () => (
             <JellyfinProvider>
               <AppStateInitializer>
                 <Sonner />
-                <BrowserRouter>
+                <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                   <Routes>
                     <Route element={<MainLayout />}>
                       <Route path="/" element={<Index />} />
