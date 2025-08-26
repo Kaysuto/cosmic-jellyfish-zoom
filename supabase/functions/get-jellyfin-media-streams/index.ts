@@ -93,16 +93,16 @@ class JellyfinClient {
       'X-Emby-Authorization': `MediaBrowser ApiKey="${this.apiKey}", Token="${this.accessToken}"`
     };
   }
-  async getPlaybackInfo(itemId) {
+  async getItemDetails(itemId) {
     if (!this.userId) await this.authenticate();
-    const url = `${this.baseUrl}/Items/${itemId}/PlaybackInfo?userId=${this.userId}`;
+    const url = `${this.baseUrl}/Users/${this.userId}/Items/${itemId}?fields=MediaSources`;
     const response = await fetch(url, {
-      method: 'POST',
+      method: 'GET',
       headers: await this.getAuthHeaders()
     });
     if (!response.ok) {
       const body = await response.text().catch(()=>'');
-      throw new Error(`Failed to fetch PlaybackInfo for item ${itemId}: ${response.status} ${body}`);
+      throw new Error(`Failed to fetch Item Details for item ${itemId}: ${response.status} ${body}`);
     }
     return await response.json();
   }
@@ -155,9 +155,9 @@ serve(async (req)=>{
       });
     }
     const jellyfin = new JellyfinClient(settings.url, settings.api_key);
-    let playbackInfo;
+    let itemDetails;
     try {
-      playbackInfo = await jellyfin.getPlaybackInfo(String(jellyfinId));
+      itemDetails = await jellyfin.getItemDetails(String(jellyfinId));
     } catch (jfErr) {
       // This will now contain the more detailed error from the authenticate method
       return new Response(JSON.stringify({
@@ -170,7 +170,7 @@ serve(async (req)=>{
         status: 502
       });
     }
-    const mediaSource = playbackInfo?.MediaSources?.[0];
+    const mediaSource = itemDetails?.MediaSources?.[0];
     if (!mediaSource) {
       return new Response(JSON.stringify({
         error: "No media sources found for this item on Jellyfin."
