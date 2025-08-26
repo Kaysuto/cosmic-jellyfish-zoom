@@ -31,7 +31,9 @@ class JellyfinClient {
           'X-Emby-Authorization': `MediaBrowser ApiKey="${this.apiKey}"`,
         },
       });
-      if (!authResponse.ok) throw new Error(`AuthenticateWithKey failed`);
+      if (!authResponse.ok) {
+        throw new Error(`AuthenticateWithKey failed with status ${authResponse.status}`);
+      }
       const authData = await authResponse.json();
       this.accessToken = authData.AccessToken;
       this.userId = authData.User.Id;
@@ -42,9 +44,12 @@ class JellyfinClient {
       if (directTokenResponse.ok) {
         this.useDirectToken = true;
         const users = await directTokenResponse.json();
-        const adminUser = users.find(u => u.Policy?.IsAdministrator);
-        this.userId = adminUser ? adminUser.Id : users[0]?.Id;
-        if (!this.userId) throw new Error('Direct token auth succeeded, but could not retrieve a user ID.');
+        if (Array.isArray(users) && users.length > 0) {
+          const adminUser = users.find(u => u.Policy?.IsAdministrator);
+          this.userId = adminUser ? adminUser.Id : users[0].Id;
+        } else {
+          throw new Error('Direct token auth succeeded, but could not retrieve a user ID.');
+        }
       } else {
         throw new Error('Jellyfin authentication failed for both standard and direct token methods.');
       }
