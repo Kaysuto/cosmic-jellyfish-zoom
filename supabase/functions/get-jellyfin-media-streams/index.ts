@@ -23,38 +23,47 @@ class JellyfinClient {
  }
 
  async authenticate() {
-    let authKeyError: Error | null = null;
-    let directTokenError: Error | null = null;
+    let authKeyError: string | null = null;
+    let directTokenError: string | null = null;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
     // Attempt 1: AuthenticateWithKey
     try {
+      console.log('Attempting Jellyfin auth with AuthenticateWithKey...');
       const authResponse = await fetch(`${this.baseUrl}/Users/AuthenticateWithKey`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Emby-Authorization': `MediaBrowser ApiKey="${this.apiKey}"`,
         },
+        signal: controller.signal,
       });
       if (!authResponse.ok) {
         const errorBody = await authResponse.text().catch(() => `Status: ${authResponse.status}`);
-        throw new Error(`AuthenticateWithKey failed. Status: ${authResponse.status}. Response: ${errorBody}`);
+        throw new Error(`Status: ${authResponse.status}. Response: ${errorBody}`);
       }
       const authData = await authResponse.json();
       this.accessToken = authData.AccessToken;
       this.userId = authData.User.Id;
+      console.log('Authentication successful with AuthenticateWithKey.');
+      clearTimeout(timeout);
       return; // Success
     } catch (err) {
-      authKeyError = err;
+      authKeyError = err.message;
+      console.warn(`AuthenticateWithKey method failed: ${authKeyError}`);
     }
 
     // Attempt 2: Direct Token Authentication
     try {
+      console.log('Attempting Jellyfin auth with direct token...');
       const directTokenResponse = await fetch(`${this.baseUrl}/Users`, {
         headers: { 'X-Emby-Token': this.apiKey, 'Content-Type': 'application/json' },
+        signal: controller.signal,
       });
       if (!directTokenResponse.ok) {
         const errorBody = await directTokenResponse.text().catch(() => `Status: ${directTokenResponse.status}`);
-        throw new Error(`Direct token auth failed. Status: ${directTokenResponse.status}. Response: ${errorBody}`);
+        throw new Error(`Status: ${directTokenResponse.status}. Response: ${errorBody}`);
       }
       
       this.useDirectToken = true;
@@ -62,21 +71,24 @@ class JellyfinClient {
       if (Array.isArray(users) && users.length > 0) {
         const adminUser = users.find(u => u.Policy?.IsAdministrator);
         this.userId = adminUser ? adminUser.Id : users[0].Id;
+        console.log('Authentication successful with direct token.');
+        clearTimeout(timeout);
         return; // Success
       } else {
         throw new Error('Direct token auth succeeded, but could not retrieve a user ID.');
       }
     } catch (err) {
-      directTokenError = err;
+      directTokenError = err.message;
+      console.error(`Direct token auth method also failed: ${directTokenError}`);
     }
 
+    clearTimeout(timeout);
     // If both failed, throw a detailed error
-    const errorMessage = `Jellyfin authentication failed for all methods. Please check your Jellyfin URL and API Key.
+    const errorMessage = `Jellyfin authentication failed. Please check your Jellyfin URL and API Key. Ensure your Jellyfin server is accessible from the internet.
     - URL Tried: ${this.baseUrl}
-    - API Key Auth Error: ${authKeyError?.message || 'N/A'}
-    - Direct Token Auth Error: ${directTokenError?.message || 'N/A'}`;
+    - API Key Auth Error: ${authKeyError || 'N/A'}
+    - Direct Token Auth Error: ${directTokenError || 'N/A'}`;
     
-    console.error(errorMessage);
     throw new Error(errorMessage);
   }
 
