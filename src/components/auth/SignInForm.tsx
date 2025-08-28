@@ -34,16 +34,30 @@ const SignInForm = ({ onSubmit, isLoading }: SignInFormProps) => {
     defaultValues: { email: '', password: '' },
   });
 
+
+
+
+
   useEffect(() => {
     if (Object.keys(form.formState.errors).length > 0) form.trigger();
   }, [i18n.language, form]);
+
+
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" placeholder={t('email_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
         <FormField control={form.control} name="password" render={({ field }) => (<FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" placeholder={t('password_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_in')}</Button>
+
+        <Button 
+          type="submit" 
+          variant="blueEnhanced"
+          className="w-full" 
+          disabled={isLoading}
+        >
+          {isLoading ? t('saving') : t('sign_in')}
+        </Button>
       </form>
     </Form>
   );

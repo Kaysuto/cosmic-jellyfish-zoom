@@ -25,7 +25,7 @@ const CatalogSections = () => {
   const sections: CatalogSection[] = [
     {
       id: 'animations',
-      name: t('catalog_section_animations'),
+      name: t('catalog_sections.animations'),
       icon: <Sparkles className="h-8 w-8" />,
       path: '/discover/animations',
       color: 'from-purple-500 to-pink-500',
@@ -33,7 +33,7 @@ const CatalogSections = () => {
     },
     {
       id: 'animes',
-      name: t('catalog_section_animes'),
+      name: t('catalog_sections.animes'),
       icon: <PlayCircle className="h-8 w-8" />,
       path: '/discover/animes',
       color: 'from-blue-500 to-cyan-500',
@@ -41,7 +41,7 @@ const CatalogSections = () => {
     },
     {
       id: 'films',
-      name: t('catalog_section_films'),
+      name: t('catalog_sections.films'),
       icon: <Film className="h-8 w-8" />,
       path: '/discover/films',
       color: 'from-orange-500 to-red-500',
@@ -49,7 +49,7 @@ const CatalogSections = () => {
     },
     {
       id: 'series',
-      name: t('catalog_section_series'),
+      name: t('catalog_sections.series'),
       icon: <Tv className="h-8 w-8" />,
       path: '/discover/series',
       color: 'from-green-500 to-emerald-500',
@@ -61,9 +61,9 @@ const CatalogSections = () => {
     <div className="w-full py-16">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">{t('explore_catalog_sections')}</h2>
+          <h2 className="text-3xl font-bold mb-4">{t('catalog_sections.title')}</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            {t('catalog_sections_description')}
+            {t('catalog_sections.description')}
           </p>
         </div>
 

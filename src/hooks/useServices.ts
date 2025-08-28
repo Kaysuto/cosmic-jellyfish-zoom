@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
@@ -68,5 +68,35 @@ export const useServices = () => {
     fetchServices();
   }, [fetchServices]);
 
-  return { services, loading, refreshServices };
+  // Mémoisation des données calculées pour éviter les re-renders
+  const operationalServices = useMemo(() => 
+    services.filter(s => s.status === 'operational'), 
+    [services]
+  );
+
+  const problematicServices = useMemo(() => 
+    services.filter(s => s.status === 'downtime' || s.status === 'degraded'), 
+    [services]
+  );
+
+  const maintenanceServices = useMemo(() => 
+    services.filter(s => s.status === 'maintenance'), 
+    [services]
+  );
+
+  const averageUptime = useMemo(() => {
+    if (services.length === 0) return 0;
+    const total = services.reduce((sum, service) => sum + service.uptime_percentage, 0);
+    return Math.round(total / services.length);
+  }, [services]);
+
+  return { 
+    services, 
+    loading, 
+    refreshServices,
+    operationalServices,
+    problematicServices,
+    maintenanceServices,
+    averageUptime
+  };
 };

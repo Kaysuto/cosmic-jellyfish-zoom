@@ -153,7 +153,7 @@ const LogsPage = () => {
     >
       <Card>
         <CardHeader>
-          <CardTitle>{t('audit_logs')}</CardTitle>
+          <CardTitle>{t('audit_logs_title')}</CardTitle>
           <CardDescription>{t('audit_logs_desc')}</CardDescription>
         </CardHeader>
         <CardContent>

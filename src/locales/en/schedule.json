@@ -1,0 +1,10 @@
+{
+  "schedule": "Schedule",
+  "today": "Today",
+  "previous_week": "Previous Week",
+  "next_week": "Next Week",
+  "no_releases_on_this_day": "No releases on this day.",
+  "releases_this_week": "{{count}} release this week",
+  "days_with_releases": "{{count}} day with releases",
+  "refresh": "Refresh"
+}

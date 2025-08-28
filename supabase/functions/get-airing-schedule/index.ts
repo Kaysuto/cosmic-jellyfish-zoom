@@ -58,7 +58,26 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const token = await getTvdbToken();
+    // Optimisation 1: Récupérer les données de catalog en parallèle avec les appels API
+    const [token, catalogData] = await Promise.all([
+      getTvdbToken(),
+      supabaseAdmin
+        .from('catalog_items')
+        .select('tmdb_id, jellyfin_id')
+        .then(result => result.data || [])
+        .catch(() => [])
+    ]);
+
+    const jellyfinIdMap = new Map(catalogData.map(item => [item.tmdb_id, item.jellyfin_id]));
+
+    // Optimisation 2: Récupérer les épisodes existants en parallèle
+    const episodeData = await supabaseAdmin
+      .from('jellyfin_episodes')
+      .select('tvdb_id')
+      .then(result => result.data || [])
+      .catch(() => []);
+
+    const existingEpisodeTvdbIds = new Set(episodeData.map(ep => ep.tvdb_id).filter(Boolean));
 
     let allResults = [];
     let page = 1;
@@ -73,6 +92,9 @@ serve(async (req) => {
       discoverUrl = `${TMDB_API_URL}/discover/tv?${baseParams}`;
     }
 
+    // Optimisation 3: Limiter le nombre de pages pour éviter les timeouts
+    const maxPages = 5;
+
     do {
       const response = await fetch(`${discoverUrl}&page=${page}`);
       if (!response.ok) {
@@ -83,98 +105,89 @@ serve(async (req) => {
       const data = await response.json();
       
       const seriesAiring = data.results;
-      const detailedPromises = seriesAiring.map(async (series) => {
-        if (!token) return [{ ...series, media_type: 'tv' }];
 
-        try {
-          const externalIdsUrl = `${TMDB_API_URL}/tv/${series.id}/external_ids?api_key=${TMDB_API_KEY}`;
-          const idsResponse = await fetch(externalIdsUrl);
-          if (!idsResponse.ok) return [{ ...series, media_type: 'tv' }];
-          const externalIds = await idsResponse.json();
-          const tvdbId = externalIds.tvdb_id;
+      // Optimisation 4: Traiter les séries en parallèle avec un batch limité
+      const batchSize = 10;
+      const batches = [];
+      for (let i = 0; i < seriesAiring.length; i += batchSize) {
+        batches.push(seriesAiring.slice(i, i + batchSize));
+      }
 
-          if (!tvdbId) return [{ ...series, media_type: 'tv' }];
+      for (const batch of batches) {
+        const detailedPromises = batch.map(async (series) => {
+          if (!token) return [{ ...series, media_type: 'tv' }];
 
-          const episodesUrl = `${TVDB_API_URL}/series/${tvdbId}/episodes/default?page=0`;
-          const episodesResponse = await fetch(episodesUrl, {
-            headers: { 'Authorization': `Bearer ${token}` },
-          });
-          if (!episodesResponse.ok) return [{ ...series, media_type: 'tv' }];
-          const episodesData = await episodesResponse.json();
-          if (!episodesData.data || !episodesData.data.episodes) return [{ ...series, media_type: 'tv' }];
-          
-          const start = new Date(startDate);
-          const end = new Date(endDate);
-          end.setHours(23, 59, 59, 999);
+          try {
+            const externalIdsUrl = `${TMDB_API_URL}/tv/${series.id}/external_ids?api_key=${TMDB_API_KEY}`;
+            const idsResponse = await fetch(externalIdsUrl);
+            if (!idsResponse.ok) return [{ ...series, media_type: 'tv' }];
+            const externalIds = await idsResponse.json();
+            const tvdbId = externalIds.tvdb_id;
 
-          const airingEpisodes = episodesData.data.episodes.filter(ep => {
-            if (!ep.aired) return false;
-            const airedDate = new Date(ep.aired);
-            return airedDate >= start && airedDate <= end;
-          });
+            if (!tvdbId) return [{ ...series, media_type: 'tv' }];
 
-          if (airingEpisodes.length === 0) {
-            return [{ ...series, media_type: 'tv', first_air_date: series.first_air_date }];
+            const episodesUrl = `${TVDB_API_URL}/series/${tvdbId}/episodes/default?page=0`;
+            const episodesResponse = await fetch(episodesUrl, {
+              headers: { 'Authorization': `Bearer ${token}` },
+            });
+            if (!episodesResponse.ok) return [{ ...series, media_type: 'tv' }];
+            const episodesData = await episodesResponse.json();
+            if (!episodesData.data || !episodesData.data.episodes) return [{ ...series, media_type: 'tv' }];
+            
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+
+            const airingEpisodes = episodesData.data.episodes.filter(ep => {
+              if (!ep.aired) return false;
+              const airedDate = new Date(ep.aired);
+              return airedDate >= start && airedDate <= end;
+            });
+
+            if (airingEpisodes.length === 0) {
+              return [{ ...series, media_type: 'tv', first_air_date: series.first_air_date }];
+            }
+
+            return airingEpisodes.map(ep => ({
+              ...series,
+              media_type: 'tv',
+              first_air_date: ep.aired,
+              seasonNumber: ep.seasonNumber,
+              episodeNumber: ep.number,
+              episodeName: ep.name,
+              tvdb_episode_id: ep.id,
+            }));
+          } catch (e) {
+            console.error(`Error processing series ${series.id}:`, e.message);
+            return [{ ...series, media_type: 'tv' }];
           }
+        });
 
-          return airingEpisodes.map(ep => ({
-            ...series,
-            media_type: 'tv',
-            first_air_date: ep.aired,
-            seasonNumber: ep.seasonNumber,
-            episodeNumber: ep.number,
-            episodeName: ep.name,
-            tvdb_episode_id: ep.id,
-          }));
-        } catch (e) {
-          console.error(`Error processing series ${series.id}:`, e.message);
-          return [{ ...series, media_type: 'tv' }];
-        }
-      });
-
-      const resultsBySeries = await Promise.all(detailedPromises);
-      allResults = allResults.concat(resultsBySeries.flat());
+        const batchResults = await Promise.all(detailedPromises);
+        allResults = allResults.concat(batchResults.flat());
+      }
 
       totalPages = data.total_pages;
       page++;
-    } while (page <= totalPages && page < 10);
+    } while (page <= totalPages && page <= maxPages);
 
     const uniqueResults = Array.from(new Map(allResults.map(item => [`${item.id}-${item.first_air_date}`, item])).values());
 
-    const tmdbIds = [...new Set(uniqueResults.map(item => item.id))];
-    if (tmdbIds.length > 0) {
-      const { data: catalogData, error: catalogError } = await supabaseAdmin
-        .from('catalog_items')
-        .select('tmdb_id, jellyfin_id')
-        .in('tmdb_id', tmdbIds);
-
-      if (catalogError) throw catalogError;
-
-      const jellyfinIdMap = new Map(catalogData.map(item => [item.tmdb_id, item.jellyfin_id]));
-      
-      const { data: episodeData, error: episodeError } = await supabaseAdmin
-        .from('jellyfin_episodes')
-        .select('tvdb_id');
-      
-      if (episodeError) throw episodeError;
-
-      const existingEpisodeTvdbIds = new Set(episodeData.map(ep => ep.tvdb_id).filter(Boolean));
-
-      uniqueResults.forEach(item => {
-        const jellyfinId = jellyfinIdMap.get(item.id);
-        if (jellyfinId) {
-          if (item.media_type === 'movie') {
+    // Optimisation 5: Traiter la disponibilité en une seule passe
+    uniqueResults.forEach(item => {
+      const jellyfinId = jellyfinIdMap.get(item.id);
+      if (jellyfinId) {
+        if (item.media_type === 'movie') {
+          item.isAvailable = true;
+        } else if (item.tvdb_episode_id) {
+          if (existingEpisodeTvdbIds.has(item.tvdb_episode_id)) {
             item.isAvailable = true;
-          } else if (item.tvdb_episode_id) {
-            if (existingEpisodeTvdbIds.has(item.tvdb_episode_id)) {
-              item.isAvailable = true;
-            } else {
-              item.isSoon = true;
-            }
+          } else {
+            item.isSoon = true;
           }
         }
-      });
-    }
+      }
+    });
 
     return new Response(JSON.stringify(uniqueResults), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

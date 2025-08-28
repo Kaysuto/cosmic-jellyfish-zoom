@@ -32,6 +32,8 @@ const ForgotPasswordForm = ({ onSubmit, isLoading }: ForgotPasswordFormProps) =>
     defaultValues: { email: '' },
   });
 
+
+
   useEffect(() => {
     if (Object.keys(form.formState.errors).length > 0) form.trigger();
   }, [i18n.language, form]);
@@ -40,7 +42,14 @@ const ForgotPasswordForm = ({ onSubmit, isLoading }: ForgotPasswordFormProps) =>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" placeholder={t('email_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('send_recovery_link')}</Button>
+
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isLoading}
+        >
+          {isLoading ? t('saving') : t('send_recovery_link')}
+        </Button>
       </form>
     </Form>
   );

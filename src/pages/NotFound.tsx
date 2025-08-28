@@ -3,8 +3,10 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Home, ArrowLeft, Search } from "lucide-react";
 import { FooterContent } from "@/components/layout/FooterContent";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const NotFound = () => {
   const location = useLocation();
@@ -18,43 +20,113 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-gray-900 text-white">
-      {/* Fond animé */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-transparent to-gray-900 opacity-80"></div>
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
       {/* Contenu principal */}
-      <main className="relative z-10 flex-grow flex items-center justify-center p-4">
+      <main className="flex-grow flex items-center justify-center p-4">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center max-w-md"
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="w-full max-w-lg"
         >
-          <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <AlertTriangle className="h-12 w-12 text-red-400" />
-          </div>
-          <h1 className="text-6xl font-bold mb-4 text-red-400">404</h1>
-          <p className="text-2xl text-gray-300 mb-6">{t('page_not_found')}</p>
-          <p className="text-gray-400 mb-8">
-            {t('page_not_found_desc')}
-          </p>
-          <Link to="/">
-            <Button 
-              variant="default" 
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-full shadow-lg transform hover:scale-105 transition-transform"
-            >
-              {t('return_home')}
-            </Button>
-          </Link>
+          <Card className="relative overflow-hidden border-0 shadow-xl bg-background/80 backdrop-blur-sm">
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5" />
+            
+            <CardHeader className="relative text-center pb-4">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                className="mx-auto mb-4 p-4 rounded-full bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20"
+              >
+                <AlertTriangle className="h-12 w-12 text-blue-500 mx-auto" />
+              </motion.div>
+              
+              <CardTitle className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                404
+              </CardTitle>
+              
+              <CardDescription className="text-xl text-foreground font-semibold">
+                {t('page_not_found')}
+              </CardDescription>
+              
+              <p className="text-muted-foreground mt-2">
+                {t('page_not_found_desc')}
+              </p>
+            </CardHeader>
+
+            <CardContent className="relative space-y-6">
+              {/* URL info */}
+              <div className="p-3 bg-muted/50 rounded-lg border border-border/50">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Search className="h-4 w-4" />
+                  <span>Page recherchée :</span>
+                </div>
+                <code className="block mt-1 text-xs font-mono text-foreground break-all">
+                  {location.pathname}
+                </code>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button 
+                  asChild
+                  className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white shadow-lg transform hover:scale-105 transition-all duration-200"
+                >
+                  <Link to="/">
+                    <Home className="mr-2 h-4 w-4" />
+                    Retour à l'accueil
+                  </Link>
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => window.history.back()}
+                  className="flex-1 border-border/50 hover:bg-muted/50"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Retour
+                </Button>
+              </div>
+
+              {/* Quick links */}
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground text-center">
+                  Pages populaires :
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/catalog" className="text-xs">
+                      Catalogue
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/status" className="text-xs">
+                      Statut
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/about" className="text-xs">
+                      À propos
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Help section */}
+              <div className="pt-4 border-t border-border/50">
+                <p className="text-xs text-muted-foreground text-center">
+                  Si vous pensez qu'il s'agit d'une erreur, contactez notre équipe de support.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
       </main>
 
       {/* Pied de page */}
-      <footer className="relative z-10 w-full bg-transparent">
+      <footer className="w-full">
         <FooterContent />
       </footer>
     </div>

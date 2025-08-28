@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { useTranslation } from 'react-i18next';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Incident } from '@/hooks/useIncidents';
+import { Incident } from '@/types/status';
 import { AlertTriangle } from 'lucide-react';
 
 interface IncidentStatusChartProps {
@@ -10,96 +9,63 @@ interface IncidentStatusChartProps {
 }
 
 const COLORS = {
-  investigating: '#3b82f6', // blue-500
-  identified: '#f59e0b',    // amber-500
-  monitoring: '#8b5cf6',   // violet-500
-  resolved: '#22c55e',     // green-500
-};
-
-const CustomTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="rounded-lg border bg-background p-2 shadow-sm">
-        <div className="flex flex-col">
-          <span className="text-[0.70rem] uppercase text-muted-foreground">
-            {payload[0].name}
-          </span>
-          <span className="font-bold text-foreground">
-            {payload[0].value}
-          </span>
-        </div>
-      </div>
-    );
-  }
-  return null;
+  investigating: '#facc15', // yellow-400
+  identified: '#fb923c',    // orange-400
+  monitoring: '#60a5fa',    // blue-400
+  resolved: '#4ade80',      // green-400
 };
 
 const IncidentStatusChart = ({ incidents }: IncidentStatusChartProps) => {
   const { t } = useTranslation();
 
-  const data = useMemo(() => {
-    const statusCounts = incidents.reduce((acc, incident) => {
-      acc[incident.status] = (acc[incident.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+  const statusCounts = incidents.reduce((acc, incident) => {
+    acc[incident.status] = (acc[incident.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
-    return Object.entries(statusCounts).map(([key, value]) => ({
-      key,
-      name: t(key),
-      value,
-    }));
-  }, [incidents, t]);
-
-  if (data.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
-            {t('incidents_by_status')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="h-[300px] flex items-center justify-center">
-          <p className="text-muted-foreground">{t('no_incident_data')}</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const data = Object.entries(statusCounts).map(([name, value]) => ({
+    name: t(name),
+    value,
+  }));
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5" />
-          {t('incidents_by_status')}
-        </CardTitle>
+    <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{t('incidents_by_status')}</CardTitle>
+        <AlertTriangle className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+        {incidents.length === 0 ? (
+          <div className="flex items-center justify-center h-64">
+            <p className="text-muted-foreground">{t('no_incident_data')}</p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                outerRadius={100}
+                outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
                 nameKey="name"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               >
                 {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[entry.key as keyof typeof COLORS] || '#8884d8'} />
+                  <Cell key={`cell-${index}`} fill={COLORS[Object.keys(statusCounts)[index] as keyof typeof COLORS]} />
                 ))}
               </Pie>
               <Tooltip
-                cursor={{ fill: 'hsl(var(--muted))' }}
-                content={<CustomTooltip />}
+                contentStyle={{
+                  background: "hsl(var(--background))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: "var(--radius)",
+                }}
               />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

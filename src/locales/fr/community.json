@@ -1,0 +1,23 @@
+{
+  "discord_title": "Rejoignez-nous sur Discord",
+  "discord_online": "{{count}} en ligne",
+  "discord_join_title": "Rejoignez notre communauté",
+  "discord_join_desc": "Discutez, partagez vos avis et participez à la vie du service.",
+  "discord_benefit_1": "Demandes de contenu en direct",
+  "discord_benefit_2": "Annonces et mises à jour",
+  "discord_benefit_3": "Support et entraide",
+  "discord_join_button": "Rejoindre le serveur",
+  "discord_online_count": "{{count}} en ligne",
+  
+  "confirm_discord_title": "Rejoindre le serveur Discord ?",
+  "confirm_discord_description": "Vous allez être redirigé vers Discord pour rejoindre notre communauté. Continuer ?",
+  "continue_to_discord": "Continuer vers Discord",
+  
+  "donate": "Faire un don",
+  "confirm_donation_title": "Soutenir le projet ?",
+  "confirm_donation_description": "Vous allez être redirigé vers Ko-fi pour faire un don. Chaque contribution aide à maintenir et améliorer nos services. Merci pour votre soutien !",
+  "continue_to_donation": "Continuer vers Ko-fi",
+  
+  "custom_audio_player_title": "Musique d'ambiance",
+  "recent_activity": "Activité Récente"
+}

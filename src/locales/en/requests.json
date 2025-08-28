@@ -1,0 +1,57 @@
+{
+  "requests": "Requests",
+  "new_request": "New Request",
+  "my_requests": "My Requests",
+  "my_requests_description": "Track the status of all your media requests.",
+  "admin_manage_requests": "Manage Requests",
+  "media_requests": "Media Requests",
+  
+  "request": "Request",
+  "requested": "Requested",
+  "request_successful": "Request sent successfully!",
+  "error_sending_request": "Error sending request.",
+  "already_requested": "You have already requested this media.",
+  
+  "cancel_request": "Cancel Request",
+  "confirm_cancel_request_title": "Cancel Request?",
+  "confirm_cancel_request_desc": "Are you sure you want to cancel your request for \"{{title}}\"? This action is irreversible.",
+  "request_cancelled_successfully": "Request cancelled successfully.",
+  "confirm_request_cancellation": "Confirm request cancellation",
+  "error_cancelling_request": "Error cancelling request.",
+  
+  "confirm_delete_request": "Are you sure you want to delete your request for \"{{title}}\"? This action is irreversible.",
+  "request_deleted_successfully": "Your request has been successfully deleted.",
+  "error_deleting_request": "An error occurred while deleting your request.",
+  
+  "no_requests_to_display": "No Requests to Display",
+  "no_requests_for_status": "There are currently no requests with the selected status.",
+  "no_requests_yet": "You haven't made any requests yet.",
+  "my_requests_empty_state_desc": "You haven't made any requests yet. Browse the catalog to find content to request.",
+  "go_to_catalog": "Go to Catalog",
+  "no_requests_in_this_category": "No requests in this category.",
+  "make_test_request": "Make a Test Request",
+  
+  "status_pending": "Pending",
+  "status_approved": "Approved",
+  "status_rejected": "Rejected",
+  "status_available": "Available",
+  "requested_on": "Requested on",
+  
+  "approve": "Approve",
+  "reject": "Reject",
+  "approve_selected": "Approve selected",
+  "reject_selected": "Reject selected",
+  "delete_selected": "Delete selected",
+  
+  "requester": "Requester",
+  "unknown_user": "Unknown User",
+  "filter_by_status": "Filter by status",
+  "all_statuses": "All Statuses",
+  
+  "error_updating_status": "Error updating status.",
+  "status_updated_successfully": "Status updated successfully.",
+  "requests_deleted_successfully": "Requests deleted successfully.",
+  
+  "poster": "Poster",
+  "delete_success": "Deleted successfully."
+}

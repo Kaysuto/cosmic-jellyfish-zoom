@@ -1,197 +1,261 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/AuthContext';
-import { showSuccess, showError } from '@/utils/toast';
-
+import { showError, showSuccess } from '@/utils/toast';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Terminal } from 'lucide-react';
-import { FooterContent } from '@/components/layout/FooterContent';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-import SignInForm from '@/components/auth/SignInForm';
-import SignUpForm from '@/components/auth/SignUpForm';
-import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
+import { Separator } from '@/components/ui/separator';
+import { Github, Mail } from 'lucide-react';
+import Turnstile, { TurnstileRef } from '@/components/ui/turnstile';
+import { useRef } from 'react';
 
 const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const from = location.state?.from?.pathname || '/';
-
   const { session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
-  const [view, setView] = useState<'signin' | 'signup' | 'forgot_password'>('signin');
-  const [allowRegistrations, setAllowRegistrations] = useState(false);
-  const [checkingSettings, setCheckingSettings] = useState(true);
+  const [isGithubLoading, setIsGithubLoading] = useState(false);
+  const [isRegistrationAllowed, setIsRegistrationAllowed] = useState(true);
+  const turnstileRef = useRef<TurnstileRef>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
-  useEffect(() => {
-    const checkRegistrationStatus = async () => {
-      setCheckingSettings(true);
-      const { data, error } = await supabase
-        .from('app_settings')
-        .select('value')
-        .eq('key', 'allow_registrations')
-        .single();
-
-      if (error) {
-        console.error("Error fetching registration status:", error);
-        setAllowRegistrations(false);
-      } else {
-        setAllowRegistrations(data.value === 'true');
-      }
-      setCheckingSettings(false);
-    };
-
-    checkRegistrationStatus();
-
-    const channel = supabase
-      .channel('app-settings-change')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'app_settings',
-          filter: 'key=eq.allow_registrations',
-        },
-        (payload) => {
-          const newSetting = payload.new as { value: string };
-          setAllowRegistrations(newSetting.value === 'true');
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
   useEffect(() => {
     if (session) {
-      navigate(from, { replace: true });
+      navigate('/admin/dashboard');
     }
-  }, [session, navigate, from]);
+  }, [session, navigate]);
 
-  const onLoginSubmit = async (values: any) => {
+  useEffect(() => {
+    const fetchRegistrationStatus = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('settings')
+          .select('value')
+          .eq('key', 'allow_new_registrations')
+          .single();
+        
+        if (error && error.code !== 'PGRST116') { // Ignore "exact one row was not found"
+          throw error;
+        }
+        
+        // Default to true if setting is not found
+        setIsRegistrationAllowed(data ? data.value === 'true' : true);
+      } catch (error) {
+        console.error("Error fetching registration status:", error);
+        // Default to allowing registration if there's an error fetching the setting
+        setIsRegistrationAllowed(true);
+      }
+    };
+
+    fetchRegistrationStatus();
+  }, []);
+
+  const formSchema = z.object({
+    email: z.string().email({ message: t('invalid_email') }),
+    password: z.string().min(1, { message: t('password_required') }),
+  });
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const handleTurnstileSuccess = (token: string) => {
+    setTurnstileToken(token);
+  };
+
+  const handleTurnstileExpire = () => {
+    setTurnstileToken(null);
+  };
+
+  const handleTurnstileError = () => {
+    showError(t('turnstile_error'));
+    setTurnstileToken(null);
+  };
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (turnstileSiteKey && !turnstileToken) {
+      showError(t('complete_captcha'));
+      return;
+    }
     setIsLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword(values);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
 
+      if (error) {
+        if (error.message === 'Email not confirmed') {
+          showError(t('email_not_confirmed'));
+          // Optionnel : Renvoyer l'e-mail de confirmation
+          await supabase.auth.resend({
+            type: 'signup',
+            email: values.email,
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        showSuccess(t('login_successful'));
+        navigate('/admin/dashboard');
+      }
+    } catch (error: any) {
+      showError(error.message || t('unexpected_login_error'));
+    } finally {
+      setIsLoading(false);
+      turnstileRef.current?.reset();
+      setTurnstileToken(null);
+    }
+  };
+
+  const handleGithubLogin = async () => {
+    setIsGithubLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
     if (error) {
-      if (error.message === 'Invalid login credentials') showError(t('invalid_login_credentials'));
-      else if (error.message === 'Email not confirmed') {
-        await supabase.auth.resend({ type: 'signup', email: values.email });
-        showError(t('email_not_confirmed'));
-      } else showError(t('unexpected_login_error'));
-      await supabase.from('audit_logs').insert({ user_id: data?.user?.id || null, action: 'user_login_failed', details: { email: values.email, error: error.message } });
-    } else if (data.user) {
-      showSuccess(t('login_successful'));
-      await supabase.from('audit_logs').insert({ user_id: data.user.id, action: 'user_login_success', details: { email: data.user.email } });
-      navigate(from, { replace: true });
-    }
-    setIsLoading(false);
-  };
-
-  const onSignupSubmit = async (values: any) => {
-    setIsLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.password,
-      options: { data: { first_name: values.first_name, last_name: values.last_name } },
-    });
-    if (error) showError(error.message);
-    else showSuccess(t('account_created_check_email'));
-    setIsLoading(false);
-  };
-
-  const onForgotPasswordSubmit = async (values: any) => {
-    setIsLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-      redirectTo: `${window.location.origin}/update-password`,
-    });
-    if (error) showError(error.message);
-    else showSuccess(t('password_reset_email_sent'));
-    setIsLoading(false);
-  };
-
-  const renderContent = () => {
-    if (checkingSettings) {
-      return <div className="flex items-center justify-center h-48"><Loader2 className="h-8 w-8 animate-spin text-gray-400" /></div>;
-    }
-
-    switch (view) {
-      case 'signup':
-        return (
-          <div key="signup">
-            <SignUpForm onSubmit={onSignupSubmit} isLoading={isLoading} />
-            <div className="text-center text-sm text-gray-400 mt-4">{t('already_have_account')}{' '}<Button variant="link" className="p-0 h-auto text-blue-400" onClick={() => setView('signin')}>{t('sign_in')}</Button></div>
-          </div>
-        );
-      case 'forgot_password':
-        return (
-          <div key="forgot_password">
-            <ForgotPasswordForm onSubmit={onForgotPasswordSubmit} isLoading={isLoading} />
-            <div className="text-center text-sm text-gray-400 mt-4"><Button variant="link" className="p-0 h-auto text-blue-400" onClick={() => setView('signin')}>{t('back_to_login')}</Button></div>
-          </div>
-        );
-      case 'signin':
-      default:
-        return (
-          <div key="signin">
-            <SignInForm onSubmit={onLoginSubmit} isLoading={isLoading} />
-            <div className="mt-4 space-y-2 text-center text-sm">
-                <div>
-                    <Button variant="link" type="button" className="p-0 h-auto text-blue-400" onClick={() => setView('forgot_password')}>{t('forgot_password')}</Button>
-                </div>
-                {allowRegistrations && (
-                    <div className="text-gray-400">
-                        {t('dont_have_account')}{' '}
-                        <Button variant="link" className="p-0 h-auto text-blue-400" onClick={() => setView('signup')}>{t('sign_up')}</Button>
-                    </div>
-                )}
-            </div>
-            {!allowRegistrations && <Alert className="mt-6 bg-blue-900/30 border-blue-500/30 text-blue-300"><Terminal className="h-4 w-4" /><AlertTitle>Information</AlertTitle><AlertDescription>{t('registrations_are_closed')}</AlertDescription></Alert>}
-          </div>
-        );
+      showError(error.message);
+      setIsGithubLoading(false);
     }
   };
 
-  const titles = {
-    signin: t('admin_login'),
-    signup: t('sign_up'),
-    forgot_password: t('reset_password_title'),
-  };
-
-  const descriptions = {
-    signin: t('access_your_dashboard'),
-    signup: t('create_a_new_account'),
-    forgot_password: t('reset_password_desc'),
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-gray-900 text-white">
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-transparent to-gray-900 opacity-80"></div>
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-      </div>
-      <div className="absolute top-4 left-4 z-20"><Button asChild variant="ghost" className="text-white hover:bg-white/10 hover:text-white"><Link to="/"><ArrowLeft className="mr-2 h-4 w-4" />{t('return_home')}</Link></Button></div>
-      <main className="relative z-10 flex-grow flex flex-col items-center justify-center p-4">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="w-full max-w-md">
-          <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700/50 text-white">
-            <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">{titles[view]}</CardTitle>
-              <CardDescription className="text-gray-400 pt-2">{descriptions[view]}</CardDescription>
-            </CardHeader>
-            <CardContent>{renderContent()}</CardContent>
-          </Card>
-        </motion.div>
-      </main>
-      <footer className="relative z-10 w-full bg-transparent"><FooterContent /></footer>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <motion.div
+        variants={cardVariants}
+        initial="hidden"
+        animate="visible"
+        className="w-full max-w-md"
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('access_your_dashboard')}</CardTitle>
+            <CardDescription>{t('login_to_continue')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={handleGithubLogin}
+                disabled={isGithubLoading || isLoading}
+              >
+                <Github className="mr-2 h-4 w-4" />
+                {t('login_with_github')}
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    {t('or_continue_with')}
+                  </span>
+                </div>
+              </div>
+
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('email_address')}</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              type="email" 
+                              placeholder={t('email_placeholder')} 
+                              {...field} 
+                              className="pl-9"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>{t('password')}</FormLabel>
+                          <Link to="/forgot-password" className="text-sm font-medium text-primary hover:underline">
+                            {t('forgot_password')}
+                          </Link>
+                        </div>
+                        <FormControl>
+                          <Input type="password" placeholder="••••••••" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {turnstileSiteKey && (
+                    <div className="flex justify-center">
+                      <Turnstile
+                        ref={turnstileRef}
+                        sitekey={turnstileSiteKey}
+                        onSuccess={handleTurnstileSuccess}
+                        onExpire={handleTurnstileExpire}
+                        onError={handleTurnstileError}
+                        theme="dark"
+                        size="normal"
+                        className="mx-auto"
+                      />
+                    </div>
+                  )}
+
+                  <Button type="submit" className="w-full" disabled={isLoading || isGithubLoading}>
+                    {isLoading ? t('signing_in') : t('sign_in')}
+                  </Button>
+                </form>
+              </Form>
+            </div>
+            <Separator className="my-6" />
+            <div className="text-center text-sm">
+              {isRegistrationAllowed ? (
+                <>
+                  {t('dont_have_account')}{' '}
+                  <Link to="/register" className="font-medium text-primary hover:underline">
+                    {t('sign_up')}
+                  </Link>
+                </>
+              ) : (
+                <p className="text-muted-foreground">{t('registrations_are_closed')}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };

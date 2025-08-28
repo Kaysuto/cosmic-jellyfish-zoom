@@ -32,8 +32,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading,
   };
 
-  // Ne rend les enfants que lorsque le chargement est terminé pour éviter les affichages incorrects
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  // Rendre toujours les enfants, la gestion du loading se fait dans les composants
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useSession = () => {

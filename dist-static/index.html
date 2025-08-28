@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <link rel="shortcut icon" type="image/png" href="./favicon.png" />
+    <link rel="apple-touch-icon" href="./logo.png" />
+    <link rel="manifest" href="./manifest.json" />
+    <!-- Script Google Cast chargé de manière asynchrone pour éviter le blocage -->
+    <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1" async defer></script>
+    
+    <!-- SEO Meta Tags -->
+    <title>Jelly - Votre Univers de Divertissement à Portée de Main</title>
+    <meta name="description" content="Découvrez des milliers de films, séries et animés sur Jelly. Plateforme de streaming moderne avec catalogue infini, disponible partout. Rejoignez notre communauté active !" />
+    <meta name="keywords" content="streaming, films, séries, animés, jellyfin, playjelly, jelly, catalogue, divertissement, vidéo, media, français, communauté" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Kaysuto Kimiya" />
+    <link rel="canonical" href="https://playjelly.fr" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://playjelly.fr" />
+    <meta property="og:title" content="elly - Votre Univers de Divertissement à Portée de Main" />
+    <meta property="og:description" content="Découvrez des milliers de films, séries et animés sur Jelly. Plateforme de streaming moderne avec catalogue infini, disponible partout." />
+    <meta property="og:image" content="https://playjelly.fr/logo.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Jelly" />
+    <meta property="og:locale" content="fr_FR" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@playjelly" />
+    <meta name="twitter:creator" content="@KaysutoKimiya" />
+    <meta name="twitter:url" content="https://playjelly.fr" />
+    <meta name="twitter:title" content="Jelly - Votre Univers de Divertissement à Portée de Main" />
+    <meta name="twitter:description" content="Découvrez des milliers de films, séries et animés sur Jelly. Plateforme de streaming moderne avec catalogue infini." />
+    <meta name="twitter:image" content="https://playjelly.fr/logo.png" />
+
+    <!-- Streaming Platform Meta Tags -->
+    <meta name="application-name" content="PlayJelly" />
+    <meta name="apple-mobile-web-app-title" content="PlayJelly" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="msapplication-TileColor" content="#2172E5" />
+    <meta name="msapplication-config" content="./browserconfig.xml" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2172E5" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#2172E5" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#020817" />
+    
+    <!-- Content Type Meta Tags -->
+    <meta name="content-type" content="streaming-platform" />
+    <meta name="content-category" content="entertainment" />
+    <meta name="content-language" content="fr" />
+    <meta name="content-region" content="FR" />
+    
+    <!-- Security Meta Tags -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    
+    <!-- Performance Meta Tags -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Critical CSS inline pour éviter le blocage -->
+    <style>
+      /* Critical CSS pour le rendu initial */
+      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; }
+      #root { min-height: 100vh; }
+      .loading { display: flex; align-items: center; justify-content: center; height: 100vh; }
+      .loading-spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #2172E5; border-radius: 50%; animation: spin 1s linear infinite; }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+    
+    <!-- Streaming Specific Meta Tags -->
+    <meta name="streaming-platform" content="true" />
+    <meta name="video-content" content="movies,series,anime" />
+    <meta name="content-provider" content="Jellyfin" />
+    <meta name="supported-devices" content="desktop,tablet,mobile,tv" />
+    <meta name="video-quality" content="HD,4K" />
+    <meta name="audio-formats" content="stereo,5.1,7.1" />
+    <meta name="subtitle-support" content="true" />
+    
+    <!-- Structured Data for Streaming Platform -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "PlayJelly",
+      "alternateName": "Jelly",
+      "url": "https://playjelly.fr",
+      "description": "Plateforme de streaming moderne avec catalogue infini de films, séries et animés",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Jelly",
+        "url": "https://playjelly.fr"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://playjelly.fr/catalog?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      },
+      "sameAs": [
+        "https://discord.gg/playjelly"
+      ]
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "PlayJelly",
+      "url": "https://playjelly.fr",
+      "logo": "https://playjelly.fr/logo.png",
+      "description": "Plateforme de streaming moderne avec catalogue infini de films, séries et animés",
+      "foundingDate": "2024",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "availableLanguage": "French"
+      }
+    }
+    </script>
+    <script type="module" crossorigin src="./assets/index-Cw6WSGfP.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/vendor-aQ18W7Az.js">
+    <link rel="modulepreload" crossorigin href="./assets/router-42GXI50n.js">
+    <link rel="modulepreload" crossorigin href="./assets/ui-DslYdUPK.js">
+    <link rel="modulepreload" crossorigin href="./assets/streaming-fF1zHaJi.js">
+    <link rel="modulepreload" crossorigin href="./assets/utils-D-N2hrcs.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-BfZS2RHI.css">
+  
+    <script>
+      // Debug et gestion d'erreurs pour Plesk
+      console.log('🚀 Application en cours de chargement...');
+      
+      // Fallbacks pour les variables d'environnement
+      window.ENV = window.ENV || {};
+      
+      // Variables par défaut pour éviter les erreurs
+      if (!window.ENV.SUPABASE_URL) {
+        console.warn('⚠️ VITE_SUPABASE_URL non définie, utilisation d'une URL par défaut');
+        window.ENV.SUPABASE_URL = 'https://placeholder.supabase.co';
+      }
+      
+      if (!window.ENV.SUPABASE_ANON_KEY) {
+        console.warn('⚠️ VITE_SUPABASE_ANON_KEY non définie, utilisation d'une clé par défaut');
+        window.ENV.SUPABASE_ANON_KEY = 'placeholder-key';
+      }
+      
+      if (!window.ENV.JELLYFIN_URL) {
+        console.warn('⚠️ VITE_JELLYFIN_URL non définie');
+        window.ENV.JELLYFIN_URL = '';
+      }
+      
+      if (!window.ENV.JELLYFIN_API_KEY) {
+        console.warn('⚠️ VITE_JELLYFIN_API_KEY non définie');
+        window.ENV.JELLYFIN_API_KEY = '';
+      }
+      
+      // Gestion d'erreurs globale
+      window.addEventListener('error', function(e) {
+        console.error('❌ Erreur JavaScript:', e.error);
+        
+        // Afficher une page d'erreur simple
+        if (document.getElementById('root')) {
+          document.getElementById('root').innerHTML = `
+            <div style="padding: 20px; font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto;">
+              <h1 style="color: #dc2626;">Erreur de chargement</h1>
+              <p>L'application n'a pas pu se charger correctement.</p>
+              <details style="margin-top: 20px;">
+                <summary>Détails techniques</summary>
+                <p><strong>Erreur:</strong> ${e.error.message}</p>
+                <p><strong>Fichier:</strong> ${e.filename}</p>
+                <p><strong>Ligne:</strong> ${e.lineno}</p>
+              </details>
+              <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Recharger la page
+              </button>
+            </div>
+          `;
+        }
+      });
+      
+      // Vérifier que React se charge
+      window.addEventListener('load', function() {
+        console.log('✅ Page chargée');
+        setTimeout(function() {
+          if (!document.getElementById('root').children.length) {
+            console.error('❌ React n'a pas rendu le contenu');
+            document.getElementById('root').innerHTML = `
+              <div style="padding: 20px; font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; text-align: center;">
+                <h1 style="color: #2563eb;">Statut des Services Jelly</h1>
+                <p>L'application est en cours de chargement...</p>
+                <div style="margin: 20px 0;">
+                  <div style="width: 40px; height: 40px; border: 4px solid #f3f4f6; border-top: 4px solid #2563eb; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                </div>
+                <p style="color: #6b7280; font-size: 14px;">Si cette page reste affichée, il y a un problème avec le chargement de l'application.</p>
+                <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                  Recharger
+                </button>
+              </div>
+              <style>
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              </style>
+            `;
+          }
+        }, 3000);
+      });
+      
+      // Fallback si les modules ne se chargent pas
+      setTimeout(function() {
+        if (!window.React) {
+          console.error('❌ React non chargé');
+          document.getElementById('root').innerHTML = '<div style="padding: 20px; color: red; font-family: Arial, sans-serif;"><h1>Erreur de chargement</h1><p>React n'a pas pu être chargé. Vérifiez la console pour plus de détails.</p></div>';
+        }
+      }, 5000);
+      
+      console.log('✅ Debug et fallbacks configurés');
+    </script>
+  </head>
+
+  <body>
+    <!-- Écran de chargement initial -->
+    <div id="loading" class="loading">
+      <div class="loading-spinner"></div>
+    </div>
+    <div id="root"></div>
+    <script>
+      // Masquer l'écran de chargement une fois l'app chargée
+      window.addEventListener('load', function() {
+        const loading = document.getElementById('loading');
+        if (loading) {
+          loading.style.opacity = '0';
+          setTimeout(() => loading.remove(), 300);
+        }
+      });
+    </script>
+  </body>
+</html>

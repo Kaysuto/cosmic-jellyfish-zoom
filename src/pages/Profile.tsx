@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useProfile } from '@/hooks/useProfile';
 import { useSession } from '@/contexts/AuthContext';
 import { useUserListDetails } from '@/hooks/useUserListDetails';
+import { useRequestsByUserId } from '@/hooks/useRequestsByUserId';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,8 @@ import {
   RefreshCw,
   Calendar,
   Camera,
-  Settings
+  Settings,
+  MailQuestion
 } from 'lucide-react';
 import { getGravatarURL } from '@/lib/gravatar';
 import { format } from 'date-fns';
@@ -44,6 +46,9 @@ const Profile = () => {
   // Hooks pour les listes utilisateur
   const { list: favorites, loading: favoritesLoading, refetch: refetchFavorites } = useUserListDetails(session?.user?.id || '', 'favorite');
   const { list: watchlist, loading: watchlistLoading, refetch: refetchWatchlist } = useUserListDetails(session?.user?.id || '', 'watchlist');
+  
+  // Hook pour les demandes de l'utilisateur
+  const { requests, loading: requestsLoading } = useRequestsByUserId(session?.user?.id || '');
 
   const LoadingSkeleton = () => (
     <div className="space-y-8">
@@ -168,7 +173,7 @@ const Profile = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <Heart className="h-8 w-8 mx-auto mb-2 text-red-500" />
                     <div className="text-2xl font-bold">{favorites.length}</div>
@@ -179,12 +184,11 @@ const Profile = () => {
                     <div className="text-2xl font-bold">{watchlist.length}</div>
                     <div className="text-sm text-muted-foreground">{t('watchlist')}</div>
                   </div>
-                </div>
-                <Separator />
-                <div className="text-center">
-                  <Button variant="outline" onClick={() => setActiveTab('settings')}>
-                    {t('manage_account')}
-                  </Button>
+                  <div className="text-center p-4 bg-muted/50 rounded-lg">
+                    <MailQuestion className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                    <div className="text-2xl font-bold">{requests.length}</div>
+                    <div className="text-sm text-muted-foreground">{t('requests')}</div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

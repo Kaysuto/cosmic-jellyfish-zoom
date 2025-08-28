@@ -1,0 +1,122 @@
+# Workflow de Développement et Scripts
+
+## Scripts NPM Disponibles
+Définis dans [package.json](mdc:package.json):
+
+### Développement
+```bash
+npm run dev          # Serveur de développement Vite
+npm run preview      # Prévisualisation du build
+```
+
+### Build et Production
+```bash
+npm run build              # Build production standard
+npm run build:dev          # Build development
+npm run build:optimized    # Build optimisé avec analyse
+npm run build:plesk        # Build pour Plesk
+npm run build:plesk-zip    # Build + package ZIP
+```
+
+### Qualité et Tests
+```bash
+npm run lint                    # ESLint
+npm run check-quality          # Vérification qualité complète
+npm run check-accessibility    # Tests d'accessibilité
+npm run check-performance      # Tests de performance
+npm run check-css-lint         # Vérification CSS
+```
+
+### Utilitaires
+```bash
+npm run optimize-images        # Optimisation des images
+npm run test-search           # Test de la recherche
+npm run deploy-search         # Déploiement de la recherche
+```
+
+## Structure des Scripts
+- **Scripts de build**: Dans [scripts/](mdc:scripts/)
+- **Configuration**: [vite.config.ts](mdc:vite.config.ts), [tailwind.config.ts](mdc:tailwind.config.ts)
+- **ESLint**: [eslint.config.js](mdc:eslint.config.js)
+
+## Workflow Recommandé
+
+### 1. Développement Local
+```bash
+# 1. Installer les dépendances
+npm install
+
+# 2. Lancer le serveur de développement
+npm run dev
+
+# 3. Vérifier la qualité avant commit
+npm run lint
+npm run check-quality
+```
+
+### 2. Préparation Production
+```bash
+# 1. Build optimisé
+npm run build:optimized
+
+# 2. Tests complets
+npm run check-accessibility
+npm run check-performance
+
+# 3. Build final
+npm run build:plesk
+```
+
+### 3. Déploiement
+```bash
+# Package pour Plesk
+npm run build:plesk-zip
+
+# Ou build standard
+npm run build
+```
+
+## Outils de Développement
+
+### Vite Dev Server
+- **Port**: 8080 (configuré dans [vite.config.ts](mdc:vite.config.ts))
+- **HMR**: Hot Module Replacement activé
+- **Alias**: `@` vers `./src`
+
+### ESLint Configuration
+- **Config**: [eslint.config.js](mdc:eslint.config.js)
+- **Règles**: TypeScript + React + Accessibilité
+- **Auto-fix**: `npm run lint -- --fix`
+
+### TypeScript
+- **Config**: [tsconfig.json](mdc:tsconfig.json) et [tsconfig.app.json](mdc:tsconfig.app.json)
+- **Strict mode**: Activé
+- **Path mapping**: Alias `@` configuré
+
+## Débogage et Monitoring
+
+### Error Boundary
+- **Composant**: [ErrorBoundary.tsx](mdc:src/components/ErrorBoundary.tsx)
+- **Logging**: Erreurs capturées et loggées
+- **Fallback UI**: Interface de récupération
+
+### Debug Mode
+- **Composant**: [DebugApp.tsx](mdc:src/components/DebugApp.tsx)
+- **Variables**: `__DEV__` pour le mode développement
+- **Logs**: Console logs conditionnels
+
+## Intégration Continue
+- **GitHub Actions**: Dans [.github/](mdc:.github/)
+- **Vercel**: Configuration dans [vercel.json](mdc:vercel.json)
+- **Plesk**: Scripts de déploiement automatisés
+
+## Bonnes Pratiques
+1. **Commits atomiques**: Un changement par commit
+2. **Messages clairs**: Convention conventional commits
+3. **Tests avant commit**: Lint + qualité
+4. **Documentation**: Mettre à jour la doc si nécessaire
+5. **Performance**: Vérifier l'impact sur les performances
+description:
+globs:
+alwaysApply: true
+---

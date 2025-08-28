@@ -1,0 +1,10 @@
+{
+  "schedule": "Planning",
+  "today": "Aujourd'hui",
+  "previous_week": "Semaine précédente",
+  "next_week": "Semaine suivante",
+  "no_releases_on_this_day": "Aucune sortie ce jour-là.",
+  "releases_this_week": "{{count}} sortie cette semaine",
+  "days_with_releases": "{{count}} jour avec des sorties",
+  "refresh": "Actualiser"
+}

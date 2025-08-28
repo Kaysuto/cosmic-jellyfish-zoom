@@ -1,0 +1,23 @@
+{
+  "discord_title": "Join us on Discord",
+  "discord_online": "{{count}} online",
+  "discord_join_title": "Join Our Community",
+  "discord_join_desc": "Chat, share your opinions, and participate in the life of the service.",
+  "discord_benefit_1": "Live content requests",
+  "discord_benefit_2": "Announcements and updates",
+  "discord_benefit_3": "Support and help",
+  "discord_join_button": "Join the Server",
+  "discord_online_count": "{{count}} Online",
+  
+  "confirm_discord_title": "Join the Discord Server?",
+  "confirm_discord_description": "You will be redirected to Discord to join our community. Continue?",
+  "continue_to_discord": "Continue to Discord",
+  
+  "donate": "Donate",
+  "confirm_donation_title": "Support the project?",
+  "confirm_donation_description": "You will be redirected to Ko-fi to make a donation. Every contribution helps maintain and improve our services. Thank you for your support!",
+  "continue_to_donation": "Continue to Ko-fi",
+  
+  "custom_audio_player_title": "Ambiant Music",
+  "recent_activity": "Recent Activity"
+}

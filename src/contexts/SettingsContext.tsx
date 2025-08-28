@@ -26,39 +26,47 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchSettings = useCallback(async () => {
-    console.log('Fetching app settings...');
-    const { data, error } = await supabase.from('app_settings').select('*');
-    if (error) {
-      console.error('Error fetching app settings:', error);
+    try {
+      const { data, error } = await supabase.from('app_settings').select('*');
+      if (error) {
+        console.error('Error fetching app settings:', error);
+        setSettings([]);
+      } else {
+        setSettings(data || []);
+      }
+    } catch (err) {
+      console.error('Exception in fetchSettings:', err);
       setSettings([]);
-    } else {
-      console.log('App settings fetched:', data);
-      setSettings(data || []);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
     fetchSettings();
-    const channel: RealtimeChannel = supabase
-      .channel('app-settings-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'app_settings',
-        },
-        (payload) => {
-          console.log('Realtime update for app_settings received:', payload);
-          fetchSettings();
-        }
-      )
-      .subscribe();
+    
+    try {
+      const channel: RealtimeChannel = supabase
+        .channel('app-settings-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'app_settings',
+          },
+          (payload) => {
+            fetchSettings();
+          }
+        )
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.error('Error setting up realtime subscription:', err);
+    }
   }, [fetchSettings]);
 
   const getSetting = useCallback((key: string, defaultValue: string = ''): string => {

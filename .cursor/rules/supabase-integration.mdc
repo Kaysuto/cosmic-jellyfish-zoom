@@ -1,0 +1,87 @@
+# Intégration Supabase - Bonnes Pratiques
+
+## Configuration
+- **Client**: Configuré dans [src/integrations/supabase/](mdc:src/integrations/supabase/)
+- **Authentification**: Gérée via [src/contexts/AuthContext.tsx](mdc:src/contexts/AuthContext.tsx)
+- **Migrations**: Dans [supabase/migrations/](mdc:supabase/migrations/)
+- **Fonctions**: Dans [supabase/functions/](mdc:supabase/functions/)
+
+## Hooks Personnalisés
+Utiliser les hooks existants dans [src/hooks/](mdc:src/hooks/) pour les opérations courantes:
+- `useUsers()` - Gestion des utilisateurs
+- `useServices()` - Services et statuts
+- `useNotifications()` - Notifications
+- `useRequestsByUserId()` - Demandes utilisateur
+- `useProfile()` - Profil utilisateur
+
+## Patterns de Requêtes
+```typescript
+// ✅ Bon pattern avec TanStack Query
+const { data, isLoading, error } = useQuery({
+  queryKey: ['users', userId],
+  queryFn: () => supabase.from('users').select('*').eq('id', userId),
+  enabled: !!userId
+});
+
+// ✅ Mutation avec gestion d'erreur
+const mutation = useMutation({
+  mutationFn: (data) => supabase.from('table').insert(data),
+  onSuccess: () => {
+    queryClient.invalidateQueries(['table']);
+    toast.success(t('common.success.saved'));
+  },
+  onError: (error) => {
+    toast.error(t('common.error.save_failed'));
+  }
+});
+```
+
+## Sécurité RLS
+- **Row Level Security**: Toujours activé sur les tables sensibles
+- **Policies**: Définies dans les migrations
+- **Authentification**: Vérifier `user` avant les requêtes
+- **Permissions**: Utiliser les rôles appropriés
+
+## Gestion des Erreurs
+```typescript
+// ✅ Gestion d'erreur complète
+const handleSupabaseError = (error: any) => {
+  if (error.code === 'PGRST116') {
+    return t('auth.error.invalid_credentials');
+  }
+  if (error.code === '23505') {
+    return t('common.error.duplicate_entry');
+  }
+  return t('common.error.unknown');
+};
+```
+
+## Types TypeScript
+- **Génération**: Types générés depuis la base de données
+- **Interfaces**: Définir des interfaces pour les données
+- **Validation**: Utiliser Zod pour valider les données
+
+## Exemple de Hook Complet
+```typescript
+export const useUserData = (userId: string) => {
+  return useQuery({
+    queryKey: ['user', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*, profiles(*)')
+        .eq('id', userId)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+```
+description:
+globs:
+alwaysApply: true
+---

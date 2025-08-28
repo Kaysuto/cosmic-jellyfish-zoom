@@ -1,26 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import MediaGrid, { MediaItem } from './MediaGrid';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
-import MediaCard from './MediaCard';
-import { MediaItem } from './MediaGrid';
+import { useJellyfin } from '@/contexts/JellyfinContext';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Terminal } from 'lucide-react';
 import RequestModal from './RequestModal';
 import { useSession } from '@/contexts/AuthContext';
-import { useJellyfin } from '@/contexts/JellyfinContext';
 
 interface MediaSectionProps {
   title: string;
-  section: 'animations' | 'animes' | 'films' | 'series';
-  sortBy?: string;
+  fetchFunction: (params: any) => Promise<{ data: any[], error: any }>;
+  mediaType: 'movie' | 'tv';
+  showRequestButton?: boolean;
 }
 
-const MediaSection: React.FC<MediaSectionProps> = ({ title, section, sortBy = 'popularity.desc' }) => {
-  const { t, i18n } = useTranslation();
+const MediaSection = ({ title, fetchFunction, mediaType, showRequestButton = false }: MediaSectionProps) => {
+  const { t } = useTranslation();
   const { session } = useSession();
   const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -29,102 +27,74 @@ const MediaSection: React.FC<MediaSectionProps> = ({ title, section, sortBy = 'p
   const [selectedItemForRequest, setSelectedItemForRequest] = useState<MediaItem | null>(null);
 
   useEffect(() => {
-    const fetchMedia = async () => {
+    const loadMedia = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('discover-media', {
-          body: {
-            section,
-            language: i18n.language,
-            page: 1,
-            sortBy,
-          },
-        });
+        const { data, error } = await fetchFunction({ limit: 12 });
         if (error) throw error;
-        
-        const tmdbItems = data.results.slice(0, 15);
-        const tmdbIds = tmdbItems.map((item: MediaItem) => item.id);
 
-        if (tmdbIds.length > 0) {
+        const tmdbItems = data.map((item: any) => ({ ...item, media_type: mediaType }));
+        const tmdbIds = tmdbItems.map((item: any) => item.id);
+
+        let finalItems = tmdbItems;
+        if (tmdbIds.length > 0 && !jellyfinError) {
           const { data: catalogData, error: catalogError } = await supabase
             .from('catalog_items')
-            .select('tmdb_id')
+            .select('tmdb_id, jellyfin_id')
             .in('tmdb_id', tmdbIds);
-          
-          if (catalogError) {
-            console.error("Error checking catalog availability", catalogError);
-            setItems(tmdbItems); // Fallback to showing items without availability
-          } else {
-            const availableIds = new Set(catalogData.map(item => item.tmdb_id));
-            const itemsWithAvailability = tmdbItems.map((item: MediaItem) => ({
+
+          if (!catalogError) {
+            const availabilityMap = new Map(catalogData.map(item => [item.tmdb_id, item.jellyfin_id]));
+            finalItems = tmdbItems.map((item: any) => ({
               ...item,
-              isAvailable: availableIds.has(item.id),
+              isAvailable: availabilityMap.has(item.id),
+              jellyfin_id: availabilityMap.get(item.id),
             }));
-            setItems(itemsWithAvailability);
           }
-        } else {
-          setItems(tmdbItems);
         }
+        setItems(finalItems);
       } catch (error: any) {
-        showError(error.message);
+        showError(t('error_fetching_media'), error.message);
       } finally {
         setLoading(false);
       }
     };
-    fetchMedia();
-  }, [section, sortBy, i18n.language]);
+
+    loadMedia();
+  }, [fetchFunction, mediaType, t, jellyfinError]);
 
   const openRequestModal = (item: MediaItem) => {
     setSelectedItemForRequest(item);
     setRequestModalOpen(true);
   };
 
-  if (jellyfinError) {
+  if (loading) {
     return (
-      <section className="mb-12">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">{title}</h2>
+      <div>
+        <h2 className="text-2xl font-bold mb-4">{title}</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />
+          ))}
         </div>
-        <div className="text-red-500 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-          <p>Erreur de configuration Jellyfin : {jellyfinError}</p>
-        </div>
-      </section>
+      </div>
     );
   }
 
+  if (items.length === 0) {
+    return null;
+  }
+
   return (
-    <section className="mb-12">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">{title}</h2>
-        <Button asChild variant="link">
-          <Link to={`/discover/${section}`}>
-            {t('view_all')} <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
-      {loading ? (
-        <div className="flex space-x-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="w-[16.66%] flex-shrink-0">
-              <Skeleton className="aspect-[2/3] w-full rounded-lg" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-          <CarouselContent className="-ml-4">
-            {items.map((item) => (
-              <CarouselItem key={item.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 pl-4">
-                <MediaCard item={item} onRequest={openRequestModal} showRequestButton={!!session} />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden sm:flex" />
-          <CarouselNext className="hidden sm:flex" />
-        </Carousel>
-      )}
-      <RequestModal open={requestModalOpen} onOpenChange={setRequestModalOpen} item={selectedItemForRequest} />
-    </section>
+    <div>
+      <h2 className="text-2xl font-bold mb-4">{title}</h2>
+      <MediaGrid items={items} showRequestButton={showRequestButton && !!session} onRequest={openRequestModal} />
+      <RequestModal 
+        open={requestModalOpen} 
+        onOpenChange={setRequestModalOpen} 
+        item={selectedItemForRequest} 
+      />
+    </div>
   );
 };
 

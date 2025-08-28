@@ -5,7 +5,7 @@ import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChevronLeft, ChevronRight, Calendar, CalendarOff, ChevronDown, ChevronUp } from 'lucide-react';
 import { startOfWeek, endOfWeek, add, sub, format, eachDayOfInterval, isToday } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
@@ -17,36 +17,35 @@ import { useJellyfin } from '@/contexts/JellyfinContext';
 
 const SchedulePage = () => {
   const { t, i18n } = useTranslation();
-  const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
+  const { error: jellyfinError } = useJellyfin();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [schedule, setSchedule] = useState<Record<string, MediaItem[]>>({});
   const [loading, setLoading] = useState(true);
   const [mediaType, setMediaType] = useState<'tv' | 'anime'>('tv');
   const [openStates, setOpenStates] = useState<Record<string, boolean>>({});
 
+  // Cache pour éviter de recharger les mêmes données
+  const [scheduleCache, setScheduleCache] = useState<Record<string, { data: Record<string, MediaItem[]>, timestamp: number }>>({});
+
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
   const ITEMS_PER_DAY_LIMIT = 3;
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  const checkEpisodeExists = async (seriesJellyfinId: string, seasonNumber: number, episodeNumber: number) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('check-jellyfin-episode-exists', {
-        body: { seriesJellyfinId, seasonNumber, episodeNumber },
-      });
-      if (error) {
-        console.error('check episode func error', error);
-        return false;
-      }
-      return data?.exists === true;
-    } catch (e) {
-      console.error('checkEpisodeExists', e);
-      return false;
-    }
-  };
 
   const fetchSchedule = useCallback(async () => {
     setLoading(true);
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
+
+    // Vérifier le cache
+    const cacheKey = `${mediaType}-${format(weekStart, 'yyyy-MM-dd')}-${format(weekEnd, 'yyyy-MM-dd')}-${i18n.language}`;
+    const cachedData = scheduleCache[cacheKey];
+    
+    if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_DURATION) {
+      setSchedule(cachedData.data);
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await supabase.functions.invoke('get-airing-schedule', {
@@ -60,91 +59,38 @@ const SchedulePage = () => {
       if (error) throw error;
 
       const tmdbItems = data as MediaItem[];
-      const tmdbIds = tmdbItems.map(item => item.id);
 
-      const { data: catalogData, error: catalogError } = await supabase
-        .from('catalog_items')
-        .select('tmdb_id, jellyfin_id')
-        .in('tmdb_id', tmdbIds);
+      // Optimisation 1: Les données de disponibilité sont déjà traitées côté serveur
+      // Plus besoin de vérifications individuelles d'épisodes
 
-      if (catalogError) {
-        console.error("Error checking catalog availability", catalogError);
-      }
-
-      const jellyfinMap = new Map<number, string | null>();
-      if (catalogData) {
-        for (const c of catalogData) {
-          jellyfinMap.set(c.tmdb_id, c.jellyfin_id || null);
-        }
-      }
-
-      // Ensure the returned items have the correct media_type according to the selected tab.
-      // Some backends may return 'tv' for anime schedules — force the media_type to match the selected mediaType filter.
-      const itemsWithFlags: MediaItem[] = tmdbItems.map(item => ({
-        ...item,
-        media_type: mediaType === 'anime' ? 'anime' : (item.media_type ?? mediaType),
-        isAvailable: false,
-        isSoon: false,
-      }));
-
-      const seriesCheckCache = new Map<string, Map<string, boolean>>();
-
-      const checkPromises: Promise<void>[] = itemsWithFlags.map(async (it) => {
-        if (it.media_type === 'tv' && it.seasonNumber !== undefined && it.episodeNumber !== undefined) {
-          const seriesJellyfinId = jellyfinMap.get(it.id) || null;
-          if (seriesJellyfinId) {
-            if (!seriesCheckCache.has(seriesJellyfinId)) seriesCheckCache.set(seriesJellyfinId, new Map());
-            const perSeries = seriesCheckCache.get(seriesJellyfinId)!;
-            const key = `${it.seasonNumber}:${it.episodeNumber}`;
-            if (perSeries.has(key)) {
-              const exists = perSeries.get(key)!;
-              if (exists) it.isAvailable = true;
-              else it.isSoon = true;
-            } else {
-              const exists = await checkEpisodeExists(seriesJellyfinId, it.seasonNumber, it.episodeNumber);
-              perSeries.set(key, exists);
-              if (exists) it.isAvailable = true;
-              else it.isSoon = true;
-            }
-          }
-        } else {
-          const seriesJellyfinId = jellyfinMap.get(it.id) || null;
-          if (seriesJellyfinId && it.media_type === 'movie') {
-            it.isAvailable = true;
-          }
-        }
-      });
-
-      await Promise.all(checkPromises);
-
-      // Filtrage strict :
-      // - Si "tv", on exclut les animés (genre 16 ou origine JP)
-      // - Si "anime", on ne prend que les animés
-      const isAnime = (item) => {
-        // Genre 16 (Animation) ou origine JP = animé
-        const genres = item.genre_ids || item.genres || [];
-        const hasAnimeGenre = Array.isArray(genres)
-          ? genres.includes(16) || genres.some((g) => (typeof g === 'object' ? g.id === 16 : false))
-          : false;
-        const originCountries = item.origin_country || item.origin_countries || [];
-        const isJapanese = Array.isArray(originCountries)
-          ? originCountries.includes('JP')
-          : false;
+      // Optimisation 2: Filtrage optimisé en une seule passe
+      const isAnime = (item: MediaItem) => {
+        const genres = item.genre_ids || [];
+        const hasAnimeGenre = genres.includes(16);
+        const originCountries = item.origin_country || [];
+        const isJapanese = originCountries.includes('JP');
         return item.media_type === 'anime' || hasAnimeGenre || isJapanese;
       };
 
-      const filteredItems = itemsWithFlags.filter(it => {
+      const filteredItems = tmdbItems.filter(it => {
         if (mediaType === 'anime') return isAnime(it);
         if (mediaType === 'tv') return it.media_type === 'tv' && !isAnime(it);
         return false;
       });
 
+      // Optimisation 3: Groupement optimisé
       const groupedByDay = filteredItems.reduce((acc, item) => {
         const airDate = item.first_air_date ? format(new Date(item.first_air_date), 'yyyy-MM-dd') : '';
         if (!acc[airDate]) acc[airDate] = [];
         acc[airDate].push(item);
         return acc;
       }, {} as Record<string, MediaItem[]>);
+
+      // Mettre en cache les résultats
+      setScheduleCache(prev => ({
+        ...prev,
+        [cacheKey]: { data: groupedByDay, timestamp: Date.now() }
+      }));
 
       setSchedule(groupedByDay);
     } catch (error: any) {
@@ -192,8 +138,22 @@ const SchedulePage = () => {
       <Card className="mb-8 p-4">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={goToPreviousWeek}><ChevronLeft className="h-4 w-4" /></Button>
-            <Button variant="outline" size="icon" onClick={goToNextWeek}><ChevronRight className="h-4 w-4" /></Button>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={goToPreviousWeek}
+              aria-label="Semaine précédente"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={goToNextWeek}
+              aria-label="Semaine suivante"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
             <Button variant="default" onClick={goToToday}>{t('today')}</Button>
           </div>
           <div className="flex flex-col items-center gap-1">

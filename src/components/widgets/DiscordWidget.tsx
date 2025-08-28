@@ -102,7 +102,10 @@ const DiscordWidget = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmJoin}>
+            <AlertDialogAction 
+              onClick={handleConfirmJoin}
+              className="bg-[#5865F2] hover:bg-[#4752C4] text-white border-[#5865F2]"
+            >
               {t('continue_to_discord')}
             </AlertDialogAction>
           </AlertDialogFooter>

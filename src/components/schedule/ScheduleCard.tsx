@@ -39,7 +39,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({ item, currentMediaType }) =
   return (
     <Link to={`/media/${item.media_type}/${item.id}`} className="block group">
       <Card className={
-        `overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/50 p-2 ${shouldShowAnimeRing ? 'ring-2 ring-pink-400/60' : ''}`
+        `overflow-hidden transition-all duration-300 hover:shadow-md hover:border-primary/50 p-2 ${shouldShowAnimeRing ? 'ring-2 ring-pink-400/60' : ''}`
       }>
         <div className="flex items-start gap-3">
           {item.poster_path ? (

@@ -6,7 +6,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
-import MediaCard from './MediaCard';
+import MediaCardWithPlay from './MediaCardWithPlay';
 import { useSession } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useJellyfin } from '@/contexts/JellyfinContext';
@@ -52,6 +52,23 @@ const ContinueWatching = () => {
     e.stopPropagation();
     setSelectedItem(item);
     setDialogOpen(true);
+  };
+
+  const handlePlayClick = (e: React.MouseEvent, item: ContinueWatchingItem) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!item.id || !item.media_type) {
+      console.error('Attempted to resume playback for an item missing id or media_type', item);
+      return;
+    }
+    
+    const resumeTimeInSeconds = item.playback_position_ticks / 10000000;
+    let url = `/media/${item.media_type}/${item.id}/play?t=${resumeTimeInSeconds}`;
+    if ((item.media_type === 'tv' || item.media_type === 'anime') && item.season_number && item.episode_number) {
+      url += `&season=${item.season_number}&episode=${item.episode_number}`;
+    }
+    navigate(url);
   };
 
   const handleResume = () => {
@@ -200,7 +217,7 @@ const ContinueWatching = () => {
                 return (
                   <CarouselItem key={`${item.media_type}-${item.id}`} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 pl-4">
                     <div onClick={(e) => handleCardClick(e, item)} className="cursor-pointer">
-                      <MediaCard
+                      <MediaCardWithPlay
                         item={{
                           ...item,
                           // Affiche l'épisode en cours si disponible (Sxx Exx)
@@ -212,6 +229,7 @@ const ContinueWatching = () => {
                         showRequestButton={false}
                         showRemoveButton={true}
                         onRemove={handleRemoveWrapper}
+                        onPlayClick={handlePlayClick}
                         progress={item.progress}
                         playbackPositionTicks={item.playback_position_ticks}
                         runtimeTicks={item.runtime_ticks}

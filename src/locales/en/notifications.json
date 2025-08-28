@@ -1,0 +1,15 @@
+{
+  "notifications": "Notifications",
+  "no_notifications": "No notifications.",
+  "no_notifications_desc": "You haven't received any notifications yet.",
+  "unread": "unread",
+  "unread_plural": "unread",
+  "notification_media_request": "New request for \"{{title}}\"",
+  "notification_request_approved": "Your request for \"{{title}}\" has been approved.",
+  "notification_request_rejected": "Your request for \"{{title}}\" has been rejected.",
+  "mark_all_as_read": "Mark all as read",
+  "requested_by": "Requested by",
+  "mark_as_read": "Mark as read",
+  "delete_notification": "Delete notification",
+  "clear_all_notifications": "Clear all"
+}

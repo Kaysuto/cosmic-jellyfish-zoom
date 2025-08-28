@@ -1,57 +1,104 @@
+import { useIncidents } from '@/hooks/useIncidents';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertTriangle, CheckCircle, Wrench } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useIncidents } from '@/hooks/useIncidents';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { formatDistanceToNow } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { IncidentStatus } from '@/types/status';
+
+const statusConfig: Record<IncidentStatus, { labelKey: string; color: string; icon: React.ElementType }> = {
+  investigating: { labelKey: 'investigating', color: 'bg-yellow-500', icon: AlertTriangle },
+  identified: { labelKey: 'identified', color: 'bg-orange-500', icon: AlertTriangle },
+  monitoring: { labelKey: 'monitoring', color: 'bg-blue-500', icon: Wrench },
+  resolved: { labelKey: 'resolved', color: 'bg-green-500', icon: CheckCircle },
+};
 
 const RecentIncidents = () => {
-  const { t, i18n } = useTranslation();
   const { incidents, loading } = useIncidents();
-  const currentLocale = i18n.language === 'fr' ? fr : enUS;
+  const { t } = useTranslation();
 
-  const statusConfig = {
-    investigating: { text: t('investigating'), className: 'bg-blue-500/20 text-blue-500 border-blue-500/30' },
-    identified: { text: t('identified'), className: 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30' },
-    monitoring: { text: t('monitoring'), className: 'bg-purple-500/20 text-purple-500 border-purple-500/30' },
-    resolved: { text: t('resolved'), className: 'bg-green-500/20 text-green-500 border-green-500/30' },
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Incidents Récents</CardTitle>
-        <CardDescription>Les 5 derniers incidents créés ou mis à jour.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('active_incidents')}</CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="space-y-4">
-            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {incidents.slice(0, 5).map(incident => (
-              <div key={incident.id} className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{incident.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {t('updated')} {formatDistanceToNow(new Date(incident.updated_at), { addSuffix: true, locale: currentLocale })}
-                  </p>
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-center space-x-4">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-[200px]" />
+                  <Skeleton className="h-4 w-[150px]" />
                 </div>
-                <Badge variant="outline" className={cn('border', statusConfig[incident.status].className)}>
-                  {statusConfig[incident.status].text}
-                </Badge>
               </div>
             ))}
-            <Button asChild variant="link" className="p-0 h-auto">
-              <Link to="/admin/incidents">Voir tous les incidents</Link>
-            </Button>
           </div>
-        )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const recentIncidents = incidents.slice(0, 5);
+  const activeIncidents = incidents.filter(i => i.status !== 'resolved').length;
+
+  return (
+    <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{t('active_incidents')}</CardTitle>
+        <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{activeIncidents}</div>
+        <p className="text-xs text-muted-foreground">
+          {t('incident_count_fr', { count: activeIncidents, ns: 'translation' })}
+        </p>
+        <div className="mt-4 space-y-4">
+          {recentIncidents.length > 0 ? (
+            recentIncidents.map(incident => {
+              const config = statusConfig[incident.status as IncidentStatus] || statusConfig.investigating;
+              return (
+                <div key={incident.id} className="flex items-start space-x-3">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <div className="relative flex h-5 w-5 items-center justify-center">
+                          <div className={cn("h-3 w-3 rounded-full", config.color)} />
+                          {incident.status !== 'resolved' && (
+                            <div className="absolute inset-0 h-3 w-3 rounded-full bg-current animate-ping opacity-20" />
+                          )}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t(config.labelKey)}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <div className="flex-1">
+                    <Link to={`/admin/incidents/edit/${incident.id}`} className="font-medium hover:underline">
+                      {incident.title}
+                    </Link>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(incident.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                  <Badge variant="outline">{incident.service?.name || t('system_wide_incident')}</Badge>
+                </div>
+              );
+            })
+          ) : (
+            <p className="text-sm text-muted-foreground">{t('no_incidents')}</p>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

@@ -1,0 +1,96 @@
+# Optimisation des Performances - Vite + React
+
+## Configuration Vite
+- **Build optimisé**: Configuration dans [vite.config.ts](mdc:vite.config.ts)
+- **Code splitting**: Chunks manuels pour vendor, router, ui
+- **Tree shaking**: Automatique avec ES modules
+- **Source maps**: Activées en production pour le debugging
+
+## Lazy Loading
+```typescript
+// ✅ Lazy loading des pages dans [App.tsx](mdc:src/App.tsx)
+const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+const MediaDetailPage = lazy(() => import("./pages/MediaDetail"));
+
+// ✅ Suspense wrapper
+<Suspense fallback={<LoadingSpinner />}>
+  <AdminDashboard />
+</Suspense>
+```
+
+## Optimisation React
+```typescript
+// ✅ Memoization pour les composants coûteux
+const ExpensiveComponent = React.memo(({ data }: Props) => {
+  return <div>{/* contenu */}</div>;
+});
+
+// ✅ useMemo pour les calculs coûteux
+const expensiveValue = useMemo(() => {
+  return heavyCalculation(data);
+}, [data]);
+
+// ✅ useCallback pour les fonctions passées en props
+const handleClick = useCallback((id: string) => {
+  // logique
+}, [dependencies]);
+```
+
+## Gestion des Requêtes
+```typescript
+// ✅ TanStack Query avec optimisations
+const { data, isLoading } = useQuery({
+  queryKey: ['users'],
+  queryFn: fetchUsers,
+  staleTime: 5 * 60 * 1000, // 5 minutes
+  cacheTime: 10 * 60 * 1000, // 10 minutes
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+});
+
+// ✅ Mutations avec invalidation optimisée
+const mutation = useMutation({
+  mutationFn: updateUser,
+  onSuccess: () => {
+    queryClient.invalidateQueries(['users']);
+  },
+});
+```
+
+## Optimisation des Images
+- **Format WebP**: Utiliser pour les images modernes
+- **Lazy loading**: `loading="lazy"` pour les images
+- **Responsive**: `srcset` et `sizes` pour différentes tailles
+- **Optimisation**: Scripts dans [scripts/](mdc:scripts/)
+
+## Bundle Analysis
+```bash
+# Analyser le bundle
+npm run build:analyze
+
+# Vérifier les performances
+npm run check-performance
+```
+
+## Scripts d'Optimisation
+- **Build production**: `npm run build:optimized`
+- **Vérification qualité**: `npm run check-quality`
+- **Optimisation images**: `npm run optimize-images`
+
+## Bonnes Pratiques
+1. **Imports dynamiques**: Pour les gros composants
+2. **Tree shaking**: Imports nommés plutôt que par défaut
+3. **Code splitting**: Séparer les chunks logiquement
+4. **Caching**: Utiliser les headers appropriés
+5. **Compression**: Gzip/Brotli activés
+6. **CDN**: Pour les assets statiques
+
+## Monitoring
+- **Bundle size**: Surveiller la taille des chunks
+- **Lighthouse**: Tests de performance réguliers
+- **Core Web Vitals**: LCP, FID, CLS
+- **Error tracking**: Boundary dans [ErrorBoundary.tsx](mdc:src/components/ErrorBoundary.tsx)
+description:
+globs:
+alwaysApply: true
+---

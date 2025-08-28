@@ -1,0 +1,54 @@
+{
+  "status_title": "Service Status",
+  "welcome": "Real-time status of Jelly services",
+  "homepage_description": "This page provides detailed information on our systems' availability. In case of an incident, you will find all updates here.",
+  "view_status": "View System Status",
+  "check_status": "Check Status",
+  "checking_status_now": "Checking status now...",
+  "check_complete_status_soon": "Check complete. Status will update shortly.",
+  "error_during_check": "Error during check",
+  
+  "all_systems_operational": "All Systems Operational",
+  "partial_outage": "Partial System Outage",
+  "major_outage": "Major System Outage",
+  "all_systems_operational_description": "This page shows the current status of all Jelly services. If you're experiencing issues, please check this page for updates.",
+  "systems_issues_description": "We are currently experiencing issues with some of our services. Please check this page for updates on our progress.",
+  
+  "services_status": "Services Status",
+  "operational": "Operational",
+  "degraded": "Degraded Performance",
+  "downtime": "Major Outage",
+  "maintenance": "Under Maintenance",
+  "uptime": "Uptime:",
+  "uptime_legend": "Uptime",
+  "ping_legend": "Ping (ms)",
+  
+  "incident_history": "Incident History",
+  "uptime_history": "Uptime History",
+  "no_incidents": "No incidents reported in the past 90 days.",
+  "resolved": "Resolved",
+  "investigating": "Investigating",
+  "monitoring": "Monitoring",
+  "identified": "Identified",
+  
+  "streaming_service": "Main streaming service",
+  "accounts_service": "User accounts management",
+  "vod_service": "Movie and series requests",
+  "select_service": "Select a service",
+  "all_services": "All services",
+  
+  "time_range_day": "Day",
+  "time_range_week": "Week",
+  "time_range_month": "Month",
+  "time_range_year": "Year",
+  
+  "system_wide_incident": "System-wide incident",
+  "url_monitoring": "URL de surveillance",
+  "no_url_provided": "No URL provided",
+  "scheduled_maintenance": "Scheduled Maintenance",
+  
+  "new_service_uptime_message": "Uptime history for new services is generated after 24 hours. The first data will appear tomorrow.",
+  
+  "incident_count_en_one": "Issue: {{count}}",
+  "incident_count_en_other": "Issues: {{count}}"
+}

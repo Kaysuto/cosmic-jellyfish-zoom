@@ -1,0 +1,185 @@
+{
+  "search_placeholder": "Rechercher des films, séries, animés...",
+  "no_results_found": "Aucun résultat trouvé.",
+  "no_results_for": "Aucun résultat trouvé pour \"{{term}}\"",
+  "search_results_for": "{{count}} résultat(s) trouvé(s) pour \"{{term}}\"",
+  "search_tips": "Essayez différents mots-clés ou vérifiez la grammaire",
+  "search_error": "Erreur de recherche",
+  "search_loading": "Recherche en cours...",
+  "clear_search": "Effacer la recherche",
+  "search": "Rechercher",
+  "search_for_media": "Rechercher un film ou une série...",
+  "search_in_catalog": "Rechercher dans le catalogue...",
+  "search_user_placeholder": "Rechercher par nom ou e-mail...",
+  
+  "loading": "Chargement",
+  "error": "Erreur",
+  "back": "Retour",
+  "save": "Enregistrer",
+  "saving": "Enregistrement...",
+  "cancel": "Annuler",
+  "delete": "Supprimer",
+  "edit": "Modifier",
+  "confirm": "Confirmer",
+  "apply": "Appliquer",
+  "reset": "Réinitialiser",
+  "clear": "Effacer",
+  "filter": "Filtrer",
+  "sort_by": "Trier par",
+  "view_all": "Voir tout",
+  "view_more": "Voir plus ({{count}})",
+  "view_less": "Voir moins",
+  "load_more": "Charger plus",
+  "more": "Plus",
+  
+  "navigation": "Navigation",
+  "language": "Langue",
+  "settings": "Paramètres",
+  "settings_description": "Gérez les paramètres de votre compte et les préférences du site.",
+  "profile": "Profil",
+  "home_nav": "Accueil",
+  "status": "Statut",
+  "admin": "Admin",
+  "catalog": "Catalogue",
+  "requests": "Demandes",
+  "notifications": "Notifications",
+  "community": "Communauté",
+  "legal": "Légal",
+  "about_us": "À propos de nous",
+  "privacy_policy": "Sécurité & Confidentialité",
+  "dmca_title": "Politique DMCA",
+  
+  "page_not_found": "Oups ! Page non trouvée",
+  "page_not_found_desc": "Désolé, la page que vous recherchez semble avoir disparu dans le néant.",
+  "return_home": "Retour à l'accueil",
+  
+  "disclaimer": "Ce projet est une instance privée et n'est pas affilié à Jellyfin ou The Movie Database (TMDB).",
+  "jelly_brand": "Jelly",
+  "all_rights_reserved": "Tous droits réservés",
+  "made_with_heart": "Fait avec ❤️ par Kaysuto Kimiya",
+  
+  "items_selected": "{{count}} élément(s) sélectionné(s)",
+  "items_per_page": "Éléments par page",
+  "pagination_total": "{{total}} résultats au total",
+  "page_x_of_y": "Page {{x}} sur {{y}}",
+  "page": "Page",
+  "previous": "Précédent",
+  "next": "Suivant",
+  
+  "no_data_available": "Aucune donnée disponible",
+  "no_logs_found_title": "Aucun log trouvé",
+  "no_logs_found_desc": "Il n'y a aucun événement à afficher pour le moment. Les nouvelles actions apparaîtront ici.",
+  "no_incident_data": "Aucune donnée d'incident à afficher.",
+  "no_uptime_history": "Aucun historique de disponibilité pour ce service.",
+  
+  "confirm_action": "Confirmer l'action ?",
+  "confirm_action_on_selected": "Voulez-vous appliquer cette action aux éléments sélectionnés ? Cette opération peut être irréversible.",
+  "confirm_delete_title": "Êtes-vous sûr ?",
+  "confirm_delete_description": "Voulez-vous vraiment supprimer les éléments sélectionnés ? Cette action est irréversible.",
+  "confirm_bulk_action_title": "Confirmer l'action en masse ?",
+  "confirm_bulk_action_description": "Voulez-vous appliquer cette action à tous les éléments sélectionnés ? Cette opération peut être irréversible.",
+  
+  "success": "Succès",
+  "error_occurred": "Une erreur est survenue",
+  "operation_successful": "Opération réussie",
+  "operation_failed": "Opération échouée",
+  
+  "date": "Date",
+  "time": "Heure",
+  "year": "Année",
+  "today": "Aujourd'hui",
+  "previous_week": "Semaine précédente",
+  "next_week": "Semaine suivante",
+  "last_updated": "Dernière mise à jour :",
+  "updated": "Mis à jour :",
+  "next_update_in": "Prochaine mise à jour dans",
+  "live_status_last_updated": "Statut en direct mis à jour",
+  
+  "minutes": "{{count}} min",
+  "average": "Moyenne",
+  "maximum": "Maximum",
+  "minimum": "Minimum",
+  
+  "homepage": {
+    "new_content_badge": "Nouveau contenu disponible",
+    "hero_title": "Votre univers de divertissement, à portée de main.",
+    "hero_subtitle": "Explorez les dernières tendances, découvrez de nouveaux films et séries, et plongez dans un monde de contenu infini.",
+    "explore_catalog": "Explorer le catalogue",
+    "cta_status": "Voir le statut des services",
+    "cta_requests": "Faire une demande",
+    "weekly_trends": "Tendances de la semaine",
+    "featured_media": "En vedette",
+    "stats": {
+      "movies_series": "Films & Séries",
+      "active_users": "Utilisateurs actifs",
+      "new_content_month": "Nouveautés/mois"
+    },
+    "features": {
+      "title": "Pourquoi choisir Jelly ?",
+      "subtitle": "Une expérience de streaming moderne et personnalisée",
+      "infinite_catalog": {
+        "title": "Catalogue infini",
+        "description": "Découvrez des milliers de films, séries et animés. De nouveaux contenus sont ajoutés chaque semaine pour ne jamais être à court de nouveautés."
+      },
+      "available_everywhere": {
+        "title": "Disponible partout",
+        "description": "Accédez à vos contenus préférés sur tous vos appareils : TV, ordinateur, tablette ou smartphone. Votre divertissement vous suit partout."
+      },
+      "active_community": {
+        "title": "Communauté active",
+        "description": "Rejoignez la communauté sur Discord pour discuter, faire des demandes de contenu et participer à la vie du service. Votre avis compte !"
+      }
+    },
+    "community": {
+      "title": "Rejoignez la communauté",
+      "subtitle": "Discutez, partagez vos découvertes et participez à la vie du service"
+    }
+  },
+
+  "home": {
+    "new_content_badge": "Nouveau contenu disponible",
+    "hero_title": "Votre univers de divertissement, à portée de main.",
+    "hero_subtitle": "Explorez les dernières tendances, découvrez de nouveaux films et séries, et plongez dans un monde de contenu infini.",
+    "explore_catalog": "Explorer le catalogue",
+    "cta_status": "Voir le statut des services",
+    "cta_requests": "Faire une demande",
+    "weekly_trends": "Tendances de la semaine",
+    "featured_media": "En vedette",
+    "stats": {
+      "movies_series": "Films & Séries",
+      "active_users": "Utilisateurs actifs",
+      "new_content_month": "Nouveautés/mois"
+    },
+    "features": {
+      "title": "Pourquoi choisir Jelly ?",
+      "subtitle": "Une expérience de streaming moderne et personnalisée",
+      "infinite_catalog": {
+        "title": "Catalogue infini",
+        "description": "Découvrez des milliers de films, séries et animés. De nouveaux contenus sont ajoutés chaque semaine pour ne jamais être à court de nouveautés."
+      },
+      "available_everywhere": {
+        "title": "Disponible partout",
+        "description": "Accédez à vos contenus préférés sur tous vos appareils : TV, ordinateur, tablette ou smartphone. Votre divertissement vous suit partout."
+      },
+      "active_community": {
+        "title": "Communauté active",
+        "description": "Rejoignez la communauté sur Discord pour discuter, faire des demandes de contenu et participer à la vie du service. Votre avis compte !"
+      }
+    },
+    "community": {
+      "title": "Rejoignez la communauté",
+      "subtitle": "Discutez, partagez vos découvertes et participez à la vie du service"
+    }
+  },
+
+  "catalog_sections": {
+    "title": "Explorer les sections du catalogue",
+    "description": "Découvrez notre vaste collection organisée par catégories pour trouver facilement ce qui vous plaît."
+  },
+
+  "errors": {
+    "jellyfin_configuration": "Erreur de configuration Jellyfin"
+  },
+
+  "trends": "Tendances"
+}

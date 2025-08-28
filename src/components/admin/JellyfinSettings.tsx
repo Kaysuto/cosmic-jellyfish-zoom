@@ -1,144 +1,43 @@
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { supabase } from '@/integrations/supabase/client';
-import { showSuccess, showError, showLoading, dismissToast } from '@/utils/toast';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Film, RefreshCw, Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { useJellyfinSettings } from '@/hooks/useJellyfinSettings';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Loader2 } from 'lucide-react';
 
 const jellyfinSettingsSchema = z.object({
-  url: z.string().url({ message: "Veuillez entrer une URL valide." }),
-  api_key: z.string().min(1, { message: "La clé API est requise." }),
+  url: z.string().url({ message: "Veuillez entrer une URL valide." }).optional().or(z.literal('')),
+  api_key: z.string().optional().or(z.literal('')),
 });
 
 const JellyfinSettings = () => {
+  const { settings, loading, saveSettings } = useJellyfinSettings();
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [isSyncing, setIsSyncing] = useState(false);
 
   const form = useForm<z.infer<typeof jellyfinSettingsSchema>>({
     resolver: zodResolver(jellyfinSettingsSchema),
-    defaultValues: {
-      url: '',
-      api_key: '',
+    values: {
+      url: settings.url || '',
+      api_key: settings.api_key || '',
     },
+    disabled: loading,
   });
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('jellyfin_settings')
-        .select('*')
-        .single();
-
-      if (error && error.code !== 'PGRST116') { // Ignore "no rows found" error
-        showError(t('error_loading_jellyfin_settings'));
-        console.error(error);
-      } else if (data) {
-        form.reset({
-          url: data.url || '',
-          api_key: data.api_key || '',
-        });
-      }
-      setLoading(false);
-    };
-    fetchSettings();
-  }, [form, t]);
-
   const onSubmit = async (values: z.infer<typeof jellyfinSettingsSchema>) => {
-    const { error } = await supabase
-      .from('jellyfin_settings')
-      .upsert({ id: 1, ...values, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-
-    if (error) {
-      showError(t('error_saving_jellyfin_settings') || t('error_saving_settings'));
-    } else {
-      showSuccess(t('settings_saved_successfully'));
-    }
+    await saveSettings({
+      url: values.url ?? '',
+      api_key: values.api_key ?? '',
+    });
   };
-
-  const handleSync = async () => {
-    setIsSyncing(true);
-    const toastId = showLoading('Initialisation de la synchronisation...');
-    let totalItemsProcessed = 0;
-
-    try {
-      // 1. Get the list of libraries (views)
-      const { data: viewsResponse, error: viewsError } = await supabase.functions.invoke('sync-jellyfin', { body: {} });
-      if (viewsError) throw viewsError;
-      // The function now returns structured { ok: boolean, ... }
-      if (!viewsResponse || viewsResponse.ok === false) {
-        const msg = (viewsResponse && viewsResponse.error) ? viewsResponse.error : 'Unknown error while listing views';
-        throw new Error(msg);
-      }
-      const views = viewsResponse.views;
-
-      // 2. Loop through each library
-      for (const [index, view] of views.entries()) {
-        let startIndex = 0;
-        let isViewDone = false;
-
-        while (!isViewDone) {
-          showLoading(`[${index + 1}/${views.length}] Sync: '${view.name}' (${startIndex}/${view.totalItems})`, { id: toastId });
-
-          // 3. Invoke function for each page
-          const { data: pageResponse, error: pageError } = await supabase.functions.invoke('sync-jellyfin', {
-            body: { viewId: view.id, startIndex: startIndex }
-          });
-          if (pageError) throw pageError;
-          if (!pageResponse || pageResponse.ok === false) {
-            const msg = (pageResponse && pageResponse.error) ? pageResponse.error : 'Unknown error while fetching page';
-            throw new Error(msg);
-          }
-
-          totalItemsProcessed += pageResponse.itemsProcessed || 0;
-          startIndex = pageResponse.nextStartIndex || 0;
-          isViewDone = !!pageResponse.isViewDone;
-        }
-      }
-
-      dismissToast(toastId);
-      showSuccess(`Synchronisation terminée ! ${totalItemsProcessed} éléments traités.`);
-
-    } catch (error: any) {
-      dismissToast(toastId);
-      console.error('Sync error:', error);
-      showError(`Erreur de synchronisation: ${error.message || String(error)}`);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-full" />
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-24" />
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Film className="h-5 w-5" />
-          {t('jellyfin_settings')}
-        </CardTitle>
+        <CardTitle>{t('jellyfin_settings')}</CardTitle>
         <CardDescription>{t('jellyfin_settings_desc')}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -151,7 +50,7 @@ const JellyfinSettings = () => {
                 <FormItem>
                   <FormLabel>{t('jellyfin_url')}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder={t('jellyfin_url_placeholder')} />
+                    <Input placeholder={t('jellyfin_url_placeholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -164,25 +63,16 @@ const JellyfinSettings = () => {
                 <FormItem>
                   <FormLabel>{t('jellyfin_api_key')}</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} placeholder={t('jellyfin_api_key_placeholder')} />
+                    <Input type="password" placeholder={t('jellyfin_api_key_placeholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="flex items-center gap-2 pt-2">
-              <Button type="submit" disabled={form.formState.isSubmitting || isSyncing}>
-                {form.formState.isSubmitting ? t('saving') : t('save_jellyfin_settings')}
-              </Button>
-              <Button type="button" variant="outline" onClick={handleSync} disabled={isSyncing || form.formState.isSubmitting}>
-                {isSyncing ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                )}
-                Synchroniser
-              </Button>
-            </div>
+            <Button type="submit" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('save_jellyfin_settings')}
+            </Button>
           </form>
         </Form>
       </CardContent>

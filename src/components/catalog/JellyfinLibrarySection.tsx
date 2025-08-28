@@ -1,130 +1,107 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import MediaGrid, { MediaItem } from './MediaGrid';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
-import MediaCard from './MediaCard';
-import { MediaItem } from './MediaGrid';
 import { useJellyfin } from '@/contexts/JellyfinContext';
-
-interface JellyfinLibrary {
-  id: string;
-  name: string;
-  collectionType: string;
-}
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Terminal } from 'lucide-react';
 
 interface JellyfinLibrarySectionProps {
-  library: JellyfinLibrary;
+  title: string;
+  endpoint: string;
+  itemType: 'Movie' | 'Series';
 }
 
-const JellyfinLibrarySection: React.FC<JellyfinLibrarySectionProps> = ({ library }) => {
+const JellyfinLibrarySection = ({ title, endpoint, itemType }: JellyfinLibrarySectionProps) => {
   const { t } = useTranslation();
   const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fonction pour déterminer la section appropriée basée sur le nom de la bibliothèque
-  const getAppropriateSection = (libraryName: string, collectionType: string) => {
-    const name = libraryName.toLowerCase();
-    
-    console.log('Library name:', libraryName, 'Normalized:', name, 'Collection type:', collectionType);
-    
-    // Correspondances exactes pour les cas spécifiques
-    if (name === 'animés' || name === 'animes') {
-      console.log('Exact match for animes');
-      return 'animes';
-    }
-    
-    // Détecter les bibliothèques d'animés (asiatiques) - PRIORITÉ ÉLEVÉE
-    if (name.includes('anime') || name.includes('japon') || name.includes('japanese') || name.includes('manga') || name.includes('animes') || name.includes('japan') || name.includes('corée') || name.includes('korea') || name.includes('chinese') || name.includes('chinois')) {
-      console.log('Pattern match for animes');
-      return 'animes';
-    }
-    
-    // Détecter les bibliothèques d'animations (occidentales)
-    if (name.includes('animation') || name.includes('anim') || name.includes('cartoon') || name.includes('disney') || name.includes('pixar') || name.includes('dreamworks')) {
-      console.log('Pattern match for animations');
-      return 'animations';
-    }
-    
-    // Par défaut, utiliser la logique basée sur le type de collection
-    const defaultSection = collectionType === 'movies' ? 'films' : 'series';
-    console.log('Default section:', defaultSection);
-    return defaultSection;
-  };
-
   useEffect(() => {
-    const fetchItems = async () => {
+    const fetchLatestAdditions = async () => {
+      if (jellyfinError || !jellyfinUrl) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('get-jellyfin-library-items', {
-          body: { libraryId: library.id, page: 1, limit: 15 },
+        const { data, error } = await supabase.functions.invoke('jellyfin-proxy', {
+          body: {
+            endpoint: endpoint,
+            params: {
+              IncludeItemTypes: itemType,
+              Limit: 12,
+              Fields: 'ProviderIds',
+            },
+          },
         });
+
         if (error) throw error;
+        if (data.error) throw new Error(data.error);
+
+        const mappedItems: MediaItem[] = data
+          .filter((item: any) => item.ProviderIds?.Tmdb)
+          .map((item: any) => ({
+            id: parseInt(item.ProviderIds.Tmdb, 10),
+            title: item.Name,
+            name: item.Name,
+            poster_path: item.ImageTags?.Primary ? `${jellyfinUrl}/Items/${item.Id}/Images/Primary?tag=${item.ImageTags.Primary}` : '',
+            vote_average: item.CommunityRating || 0,
+            release_date: item.PremiereDate,
+            first_air_date: item.PremiereDate,
+            media_type: itemType === 'Movie' ? 'movie' : 'tv',
+            isAvailable: true,
+            jellyfin_id: item.Id,
+          }));
         
-        const itemsWithAvailability = data.items.map((item: any) => ({
-          ...item,
-          isAvailable: true,
-        }));
-        setItems(itemsWithAvailability);
+        setItems(mappedItems);
       } catch (error: any) {
-        showError(error.message);
+        showError(t('error_fetching_latest_additions'), error.message);
       } finally {
         setLoading(false);
       }
     };
-    fetchItems();
-  }, [library.id]);
+
+    if (!jellyfinLoading) {
+      fetchLatestAdditions();
+    }
+  }, [jellyfinLoading, jellyfinError, jellyfinUrl, endpoint, itemType, t]);
 
   if (jellyfinError) {
     return (
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">{library.name}</h2>
-        </div>
-        <div className="text-red-500 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-          <p>Erreur de configuration Jellyfin : {jellyfinError}</p>
-        </div>
-      </section>
+      <Alert variant="destructive">
+        <Terminal className="h-4 w-4" />
+        <AlertTitle>{t('jellyfin_error')}</AlertTitle>
+        <AlertDescription>{jellyfinError}</AlertDescription>
+      </Alert>
     );
   }
 
-  return (
-    <section>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold">{library.name}</h2>
-        <Button asChild variant="link">
-          <Link to={`/discover/${getAppropriateSection(library.name, library.collectionType)}`} state={{ libraryName: library.name }}>
-            {t('view_all')} <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
-      {loading ? (
-        <div className="flex space-x-4">
+  if (loading || jellyfinLoading) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-4">{title}</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="w-full basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/6">
-              <Skeleton className="aspect-[2/3] w-full" />
-            </div>
+            <Skeleton key={i} className="w-full aspect-[2/3] rounded-lg" />
           ))}
         </div>
-      ) : (
-        <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-          <CarouselContent className="-ml-4">
-            {items.map((item) => (
-              <CarouselItem key={item.id} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 pl-4">
-                <MediaCard item={item} showRequestButton={false} />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden sm:flex" />
-          <CarouselNext className="hidden sm:flex" />
-        </Carousel>
-      )}
-    </section>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return null; // Don't show the section if there's nothing to show
+  }
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4">{title}</h2>
+      <MediaGrid items={items} />
+    </div>
   );
 };
 

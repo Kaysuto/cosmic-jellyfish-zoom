@@ -1,0 +1,32 @@
+# Structure du Projet et Conventions
+
+## Architecture Générale
+- **Point d'entrée**: [src/main.tsx](mdc:src/main.tsx) → [src/App.tsx](mdc:src/App.tsx)
+- **Configuration Vite**: [vite.config.ts](mdc:vite.config.ts) avec alias `@` vers `./src`
+- **Configuration TypeScript**: [tsconfig.json](mdc:tsconfig.json) et [tsconfig.app.json](mdc:tsconfig.app.json)
+- **Styling**: [tailwind.config.ts](mdc:tailwind.config.ts) avec thème personnalisé
+
+## Organisation des Dossiers
+- **Composants**: `src/components/` organisés par domaine (admin, auth, catalog, ui, etc.)
+- **Pages**: `src/pages/` avec lazy loading dans [App.tsx](mdc:src/App.tsx)
+- **Hooks**: `src/hooks/` pour la logique réutilisable
+- **Contextes**: `src/contexts/` pour l'état global (Auth, Settings, Jellyfin)
+- **Utilitaires**: `src/lib/` pour les fonctions utilitaires et [i18n.ts](mdc:src/lib/i18n.ts)
+- **Intégrations**: `src/integrations/` pour les services externes (Supabase)
+
+## Conventions de Nommage
+- **Fichiers**: kebab-case pour les dossiers, PascalCase pour les composants
+- **Composants**: PascalCase avec extension `.tsx`
+- **Hooks**: `use` + PascalCase avec extension `.ts`
+- **Types**: PascalCase avec préfixe descriptif
+- **Constantes**: UPPER_SNAKE_CASE
+- **Variables**: camelCase avec verbes auxiliaires (isLoading, hasError)
+
+## Imports et Alias
+- Utiliser l'alias `@` pour les imports depuis `src/`
+- Imports relatifs pour les fichiers proches
+- Imports absolus avec `@/` pour les composants et utilitaires
+description:
+globs:
+alwaysApply: true
+---

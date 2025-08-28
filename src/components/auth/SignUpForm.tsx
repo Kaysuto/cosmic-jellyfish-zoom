@@ -42,6 +42,8 @@ const SignUpForm = ({ onSubmit, isLoading }: SignUpFormProps) => {
     defaultValues: { email: '', password: '', first_name: '', last_name: '' },
   });
 
+
+
   useEffect(() => {
     if (Object.keys(form.formState.errors).length > 0) form.trigger();
   }, [i18n.language, form]);
@@ -55,7 +57,14 @@ const SignUpForm = ({ onSubmit, isLoading }: SignUpFormProps) => {
         </div>
         <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>{t('email_address')}</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>)} />
         <FormField control={form.control} name="password" render={({ field }) => (<FormItem><FormLabel>{t('password')}</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? t('saving') : t('sign_up')}</Button>
+
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isLoading}
+        >
+          {isLoading ? t('saving') : t('sign_up')}
+        </Button>
       </form>
     </Form>
   );

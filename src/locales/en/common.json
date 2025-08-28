@@ -1,0 +1,185 @@
+{
+  "search_placeholder": "Search for movies, series, anime...",
+  "no_results_found": "No results found.",
+  "no_results_for": "No results found for \"{{term}}\"",
+  "search_results_for": "{{count}} result(s) found for \"{{term}}\"",
+  "search_tips": "Try different keywords or check spelling",
+  "search_error": "Search error",
+  "search_loading": "Searching...",
+  "clear_search": "Clear search",
+  "search": "Search",
+  "search_for_media": "Search for a movie or TV show...",
+  "search_in_catalog": "Search in catalog...",
+  "search_user_placeholder": "Search by name or email...",
+  
+  "loading": "Loading",
+  "error": "Error",
+  "back": "Back",
+  "save": "Save",
+  "saving": "Saving...",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "confirm": "Confirm",
+  "apply": "Apply",
+  "reset": "Reset",
+  "clear": "Clear",
+  "filter": "Filter",
+  "sort_by": "Sort by",
+  "view_all": "View all",
+  "view_more": "View more ({{count}})",
+  "view_less": "View less",
+  "load_more": "Load more",
+  "more": "More",
+  
+  "navigation": "Navigation",
+  "language": "Language",
+  "settings": "Settings",
+  "settings_description": "Manage your account settings and site preferences.",
+  "profile": "Profile",
+  "home_nav": "Home",
+  "status": "Status",
+  "admin": "Admin",
+  "catalog": "Catalog",
+  "requests": "Requests",
+  "notifications": "Notifications",
+  "community": "Community",
+  "legal": "Legal",
+  "about_us": "About Us",
+  "privacy_policy": "Security & Privacy",
+  "dmca_title": "DMCA Policy",
+  
+  "page_not_found": "Oops! Page not found",
+  "page_not_found_desc": "Sorry, the page you are looking for seems to have vanished into thin air.",
+  "return_home": "Return to Home",
+  
+  "disclaimer": "This project is a private instance and is not affiliated with Jellyfin or The Movie Database (TMDB).",
+  "jelly_brand": "Jelly",
+  "all_rights_reserved": "All rights reserved",
+  "made_with_heart": "Made with ❤️ by Kaysuto Kimiya",
+  
+  "items_selected": "{{count}} element(s) selected",
+  "items_per_page": "Items per page",
+  "pagination_total": "{{total}} results in total",
+  "page_x_of_y": "Page {{x}} of {{y}}",
+  "page": "Page",
+  "previous": "Previous",
+  "next": "Next",
+  
+  "no_data_available": "No data available",
+  "no_logs_found_title": "No Logs Found",
+  "no_logs_found_desc": "There are no events to display at the moment. New actions will appear here.",
+  "no_incident_data": "No issue data to display.",
+  "no_uptime_history": "No uptime history for this service.",
+  
+  "confirm_action": "Confirm action?",
+  "confirm_action_on_selected": "Do you want to apply this action to selected items?",
+  "confirm_delete_title": "Are you sure?",
+  "confirm_delete_description": "Are you sure you want to delete the selected items? This action is irreversible.",
+  "confirm_bulk_action_title": "Confirm bulk action?",
+  "confirm_bulk_action_description": "Apply this action to all selected items? This operation may be irreversible.",
+  
+  "success": "Success",
+  "error_occurred": "An error occurred",
+  "operation_successful": "Operation successful",
+  "operation_failed": "Operation failed",
+  
+  "date": "Date",
+  "time": "Time",
+  "year": "Year",
+  "today": "Today",
+  "previous_week": "Previous Week",
+  "next_week": "Next Week",
+  "last_updated": "Last updated:",
+  "updated": "Updated:",
+  "next_update_in": "Next update in",
+  "live_status_last_updated": "Live status updated",
+  
+  "minutes": "{{count}} min",
+  "average": "Average",
+  "maximum": "Maximum",
+  "minimum": "Minimum",
+  
+  "homepage": {
+    "new_content_badge": "New content available",
+    "hero_title": "Your Entertainment Universe, At Your Fingertips.",
+    "hero_subtitle": "Explore the latest trends, discover new movies and series, and dive into a world of infinite content.",
+    "explore_catalog": "Explore catalog",
+    "cta_status": "View Services Status",
+    "cta_requests": "Make a Request",
+    "weekly_trends": "Weekly Trends",
+    "featured_media": "Featured Media",
+    "stats": {
+      "movies_series": "Movies & TV Shows",
+      "active_users": "Active users",
+      "new_content_month": "New content/month"
+    },
+    "features": {
+      "title": "Why choose Jelly?",
+      "subtitle": "A modern and personalized streaming experience",
+      "infinite_catalog": {
+        "title": "Infinite catalog",
+        "description": "Discover thousands of movies, TV shows and anime. New content is added every week so you'll never run out of new things to watch."
+      },
+      "available_everywhere": {
+        "title": "Available everywhere",
+        "description": "Access your favorite content on all your devices: TV, computer, tablet or smartphone. Your entertainment follows you everywhere."
+      },
+      "active_community": {
+        "title": "Active community",
+        "description": "Join the community on Discord to discuss, make content requests and participate in the service's life. Your opinion matters!"
+      }
+    },
+    "community": {
+      "title": "Join the community",
+      "subtitle": "Discuss, share your discoveries and participate in the service's life"
+    }
+  },
+
+  "home": {
+    "new_content_badge": "New content available",
+    "hero_title": "Your Entertainment Universe, At Your Fingertips.",
+    "hero_subtitle": "Explore the latest trends, discover new movies and series, and dive into a world of infinite content.",
+    "explore_catalog": "Explore catalog",
+    "cta_status": "View Services Status",
+    "cta_requests": "Make a Request",
+    "weekly_trends": "Weekly Trends",
+    "featured_media": "Featured Media",
+    "stats": {
+      "movies_series": "Movies & TV Shows",
+      "active_users": "Active users",
+      "new_content_month": "New content/month"
+    },
+    "features": {
+      "title": "Why choose Jelly?",
+      "subtitle": "A modern and personalized streaming experience",
+      "infinite_catalog": {
+        "title": "Infinite catalog",
+        "description": "Discover thousands of movies, TV shows and anime. New content is added every week so you'll never run out of new things to watch."
+      },
+      "available_everywhere": {
+        "title": "Available everywhere",
+        "description": "Access your favorite content on all your devices: TV, computer, tablet or smartphone. Your entertainment follows you everywhere."
+      },
+      "active_community": {
+        "title": "Active community",
+        "description": "Join the community on Discord to discuss, make content requests and participate in the service's life. Your opinion matters!"
+      }
+    },
+    "community": {
+      "title": "Join the community",
+      "subtitle": "Discuss, share your discoveries and participate in the service's life"
+    }
+  },
+
+  "catalog_sections": {
+    "title": "Explore catalog sections",
+    "description": "Discover our vast collection organized by categories to easily find what you like."
+  },
+
+  "errors": {
+    "jellyfin_configuration": "Jellyfin configuration error"
+  },
+
+  "trends": "Trends"
+}

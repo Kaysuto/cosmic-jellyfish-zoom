@@ -16,10 +16,10 @@ const DmcaPage = () => {
       >
         <div className="text-center mb-12">
           <h1 className="text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
-            Politique DMCA
+            {t('dmca_title')}
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Notre engagement envers le respect de la propriété intellectuelle.
+            {t('dmca_subtitle')}
           </p>
         </div>
 
@@ -28,12 +28,12 @@ const DmcaPage = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-white">
                 <Shield className="h-6 w-6 text-blue-400" />
-                Avis Important
+                {t('dmca_important_title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="prose prose-invert max-w-none text-muted-foreground">
               <p>
-                Notre plateforme fonctionne comme un index et une base de données de contenu disponible publiquement sur Internet, agissant de manière similaire à Google. <strong>Nous ne stockons ni n'hébergeons aucun fichier vidéo ou média sur nos serveurs.</strong> Notre service se contente de cataloguer les métadonnées et de fournir des liens vers des contenus hébergés par des tiers. Nous n'avons aucun contrôle sur ces services tiers.
+                {t('dmca_important_desc')}
               </p>
             </CardContent>
           </Card>
@@ -42,20 +42,20 @@ const DmcaPage = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-white">
                 <FileText className="h-6 w-6 text-green-400" />
-                Notification de Violation de Droits d'Auteur
+                {t('dmca_notification_title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="prose prose-invert max-w-none text-muted-foreground space-y-4">
               <p>
-                Si vous êtes titulaire de droits d'auteur et que vous pensez que du matériel disponible via notre service enfreint vos droits, vous pouvez soumettre une notification de violation de droits d'auteur. Votre notification doit inclure les éléments suivants :
+                {t('dmca_notification_desc')}
               </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Une signature physique ou électronique d'une personne autorisée à agir au nom du titulaire d'un droit exclusif prétendument violé.</li>
-                <li>L'identification de l'œuvre protégée par le droit d'auteur qui aurait été violée.</li>
-                <li>L'identification du matériel qui est prétendument en infraction et qui doit être retiré, ainsi que des informations raisonnablement suffisantes pour nous permettre de localiser le matériel.</li>
-                <li>Des informations raisonnablement suffisantes pour nous permettre de vous contacter, telles qu'une adresse, un numéro de téléphone et, si possible, une adresse e-mail.</li>
-                <li>Une déclaration selon laquelle vous estimez de bonne foi que l'utilisation du matériel de la manière incriminée n'est pas autorisée par le titulaire du droit d'auteur, son agent ou la loi.</li>
-                <li>Une déclaration selon laquelle les informations contenues dans la notification sont exactes et, sous peine de parjure, que vous êtes autorisé à agir au nom du titulaire d'un droit exclusif prétendument violé.</li>
+                <li>{t('dmca_requirement_1')}</li>
+                <li>{t('dmca_requirement_2')}</li>
+                <li>{t('dmca_requirement_3')}</li>
+                <li>{t('dmca_requirement_4')}</li>
+                <li>{t('dmca_requirement_5')}</li>
+                <li>{t('dmca_requirement_6')}</li>
               </ul>
             </CardContent>
           </Card>
@@ -64,18 +64,18 @@ const DmcaPage = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-white">
                 <Mail className="h-6 w-6 text-red-400" />
-                Où Envoyer la Notification ?
+                {t('dmca_contact_title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="prose prose-invert max-w-none text-muted-foreground">
               <p>
-                Veuillez envoyer votre notification de violation de droits d'auteur à notre agent désigné à l'adresse suivante :
+                {t('dmca_contact_desc')}
               </p>
               <p className="text-lg">
-                <strong>E-mail :</strong> <a href="mailto:contact@playjelly.fr" className="text-blue-400 hover:underline font-semibold">contact@playjelly.fr</a>
+                <strong>{t('dmca_contact_email')}</strong> <a href="mailto:contact@playjelly.fr" className="text-blue-400 hover:underline font-semibold">contact@playjelly.fr</a>
               </p>
               <p>
-                Nous examinerons et traiterons toutes les notifications conformes aux exigences ci-dessus.
+                {t('dmca_contact_final')}
               </p>
             </CardContent>
           </Card>

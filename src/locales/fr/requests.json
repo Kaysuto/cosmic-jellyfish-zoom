@@ -1,0 +1,57 @@
+{
+  "requests": "Demandes",
+  "new_request": "Nouvelle demande",
+  "my_requests": "Mes Demandes",
+  "my_requests_description": "Suivez le statut de toutes vos demandes de médias.",
+  "admin_manage_requests": "Gérer les demandes",
+  "media_requests": "Demandes de médias",
+  
+  "request": "Demander",
+  "requested": "Demandé",
+  "request_successful": "Demande envoyée avec succès !",
+  "error_sending_request": "Erreur lors de l'envoi de la demande.",
+  "already_requested": "Vous avez déjà demandé ce média.",
+  
+  "cancel_request": "Annuler la demande",
+  "confirm_cancel_request_title": "Annuler la demande ?",
+  "confirm_cancel_request_desc": "Êtes-vous sûr de vouloir annuler votre demande pour \"{{title}}\" ? Cette action est irréversible.",
+  "request_cancelled_successfully": "Demande annulée avec succès.",
+  "confirm_request_cancellation": "Confirmer l'annulation",
+  "error_cancelling_request": "Erreur lors de l'annulation de la demande.",
+  
+  "confirm_delete_request": "Êtes-vous sûr de vouloir supprimer votre demande pour \"{{title}}\" ? Cette action est irréversible.",
+  "request_deleted_successfully": "Votre demande a été supprimée avec succès.",
+  "error_deleting_request": "Une erreur est survenue lors de la suppression de votre demande.",
+  
+  "no_requests_to_display": "Aucune demande à afficher",
+  "no_requests_for_status": "Il n'y a actuellement aucune demande avec le statut sélectionné.",
+  "no_requests_yet": "Vous n'avez pas encore fait de demande.",
+  "my_requests_empty_state_desc": "Vous n'avez pas encore envoyé de demande. Parcourez le catalogue pour trouver des médias à demander.",
+  "go_to_catalog": "Aller au catalogue",
+  "no_requests_in_this_category": "Aucune demande dans cette catégorie.",
+  "make_test_request": "Faire une demande de test",
+  
+  "status_pending": "En attente",
+  "status_approved": "Approuvée",
+  "status_rejected": "Rejetée",
+  "status_available": "Disponible",
+  "requested_on": "Demandé le",
+  
+  "approve": "Approuver",
+  "reject": "Rejeter",
+  "approve_selected": "Approuver la sélection",
+  "reject_selected": "Rejeter la sélection",
+  "delete_selected": "Supprimer la sélection",
+  
+  "requester": "Demandeur",
+  "unknown_user": "Utilisateur inconnu",
+  "filter_by_status": "Filtrer par statut",
+  "all_statuses": "Tous les statuts",
+  
+  "error_updating_status": "Erreur lors de la mise à jour du statut.",
+  "status_updated_successfully": "Statut mis à jour avec succès.",
+  "requests_deleted_successfully": "Les demandes ont été supprimées avec succès.",
+  
+  "poster": "Jaquette",
+  "delete_success": "Suppression effectuée avec succès."
+}

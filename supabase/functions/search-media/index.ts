@@ -36,6 +36,7 @@ serve(async (req) => {
     
     if (!response.ok) {
       const errorBody = await response.text();
+      console.error(`TMDB API error: ${response.status} ${response.statusText}. Body: ${errorBody}`);
       throw new Error(`TMDB API error: ${response.status} ${response.statusText}. Body: ${errorBody}`);
     }
     
@@ -46,7 +47,15 @@ serve(async (req) => {
       item.media_type === 'movie' || item.media_type === 'tv'
     );
 
-    return new Response(JSON.stringify(filteredResults), {
+    // Ensure we only return valid results with required fields
+    const validResults = filteredResults.filter(item => 
+      item && 
+      item.id && 
+      item.title && 
+      (item.media_type === 'movie' || item.media_type === 'tv')
+    );
+
+    return new Response(JSON.stringify({ results: validResults }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });

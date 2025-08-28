@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import i18n from '@/lib/i18n';
+import { waitForI18n } from '@/lib/i18n';
 
 const getCountryFromIP = async (): Promise<string | null> => {
   try {
@@ -20,18 +21,34 @@ const countryToLanguage: Record<string, string> = {
 export const useLanguageDetection = (defaultLanguage: 'fr' | 'en') => {
   useEffect(() => {
     const detectLanguage = async () => {
+      // Attendre que i18n soit initialisé
+      try {
+        await waitForI18n();
+      } catch (error) {
+        console.error('Erreur lors de l\'attente d\'i18n:', error);
+        return;
+      }
+
       // 1. Priorité : la langue déjà choisie par l'utilisateur et stockée localement
       const savedLanguage = localStorage.getItem('i18nextLng');
       if (savedLanguage && ['fr', 'en'].includes(savedLanguage)) {
         if (i18n.language !== savedLanguage) {
-          i18n.changeLanguage(savedLanguage);
+          try {
+            await i18n.changeLanguage(savedLanguage);
+          } catch (error) {
+            console.error('Erreur lors du changement de langue:', error);
+          }
         }
         return;
       }
       
       // 2. Deuxième priorité : la langue par défaut définie dans les paramètres admin
       if (defaultLanguage && i18n.language !== defaultLanguage) {
-        i18n.changeLanguage(defaultLanguage);
+        try {
+          await i18n.changeLanguage(defaultLanguage);
+        } catch (error) {
+          console.error('Erreur lors du changement de langue:', error);
+        }
         return;
       }
 
@@ -39,7 +56,11 @@ export const useLanguageDetection = (defaultLanguage: 'fr' | 'en') => {
       if (!i18n.language) {
         const countryCode = await getCountryFromIP();
         const language = countryCode ? (countryToLanguage[countryCode] || defaultLanguage) : defaultLanguage;
-        i18n.changeLanguage(language);
+        try {
+          await i18n.changeLanguage(language);
+        } catch (error) {
+          console.error('Erreur lors du changement de langue:', error);
+        }
       }
     };
     

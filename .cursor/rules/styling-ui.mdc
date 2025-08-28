@@ -1,0 +1,115 @@
+# Styling et Composants UI - Système de Design
+
+## Framework CSS
+- **Tailwind CSS**: Configuration dans [tailwind.config.ts](mdc:tailwind.config.ts)
+- **Thème**: Variables CSS personnalisées dans [src/globals.css](mdc:src/globals.css)
+- **Mode sombre**: Support natif avec `dark:` prefix
+
+## Composants UI
+- **Bibliothèque**: Radix UI + Shadcn/ui dans [src/components/ui/](mdc:src/components/ui/)
+- **Icônes**: Lucide React exclusivement
+- **Thème**: Provider dans [src/components/theme-provider.tsx](mdc:src/components/theme-provider.tsx)
+
+## Conventions de Styling
+```typescript
+// ✅ Bonnes pratiques
+<div className="flex items-center justify-between p-4 bg-card rounded-lg border">
+  <h2 className="text-lg font-semibold text-foreground">
+    {t('component.title')}
+  </h2>
+  <Button variant="outline" size="sm">
+    <Icon className="w-4 h-4 mr-2" />
+    {t('common.actions.edit')}
+  </Button>
+</div>
+
+// ❌ Éviter
+<div style={{ display: 'flex', padding: '16px' }}>
+  <h2 style={{ fontSize: '18px', fontWeight: 'bold' }}>
+    Titre
+  </h2>
+</div>
+```
+
+## Classes Tailwind Recommandées
+```typescript
+// Layout
+"flex items-center justify-between"
+"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+"container mx-auto px-4"
+
+// Spacing
+"p-4" // padding
+"m-2" // margin
+"space-y-4" // espacement vertical
+"space-x-2" // espacement horizontal
+
+// Colors (utiliser les variables du thème)
+"bg-background text-foreground"
+"bg-primary text-primary-foreground"
+"bg-card text-card-foreground"
+"border-border"
+
+// Typography
+"text-sm text-muted-foreground"
+"text-lg font-semibold"
+"text-center"
+
+// States
+"hover:bg-accent hover:text-accent-foreground"
+"focus:ring-2 focus:ring-ring focus:ring-offset-2"
+"disabled:opacity-50 disabled:cursor-not-allowed"
+```
+
+## Responsive Design
+```typescript
+// Mobile-first approach
+"text-sm md:text-base lg:text-lg"
+"p-2 md:p-4 lg:p-6"
+"grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+"hidden md:block" // Masquer sur mobile
+"block md:hidden" // Afficher seulement sur mobile
+```
+
+## Animations et Transitions
+```typescript
+// Transitions fluides
+"transition-all duration-200 ease-in-out"
+"hover:scale-105 transition-transform"
+"animate-in fade-in duration-300"
+
+// Loading states
+"animate-spin" // Pour les spinners
+"animate-pulse" // Pour les skeletons
+```
+
+## Composants Personnalisés
+```typescript
+// ✅ Créer des composants réutilisables
+interface CardProps {
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}
+
+const Card = ({ title, children, className }: CardProps) => {
+  return (
+    <div className={cn(
+      "bg-card text-card-foreground rounded-lg border p-4",
+      className
+    )}>
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      {children}
+    </div>
+  );
+};
+```
+
+## Utilitaires CSS
+- **cn()**: Fonction utilitaire pour combiner les classes
+- **clsx**: Alternative pour la logique conditionnelle
+- **tailwind-merge**: Pour éviter les conflits de classes
+description:
+globs:
+alwaysApply: true
+---

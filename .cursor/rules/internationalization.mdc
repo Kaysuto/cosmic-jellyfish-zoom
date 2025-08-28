@@ -1,0 +1,89 @@
+# Internationalisation (i18n) - Règles Strictes
+
+## Configuration
+- **Système**: i18next avec [src/lib/i18n.ts](mdc:src/lib/i18n.ts)
+- **Détection**: Automatique avec `useLanguageDetection` hook
+- **Fichiers**: [public/locales/](mdc:public/locales/) pour les traductions
+
+## Règles Obligatoires
+1. **AUCUN texte en dur** dans les composants
+2. **Traduction immédiate** de tout nouveau texte
+3. **Clés hiérarchiques** avec convention: `domain.section.element`
+4. **Pluralisation** gérée avec `{{count}}`
+
+## Conventions de Clés
+```typescript
+// ✅ Bonnes clés
+"auth.login.title"
+"common.buttons.submit"
+"catalog.movies.popular"
+"admin.users.actions.edit"
+
+// ❌ Mauvaises clés
+"title"
+"button"
+"text"
+```
+
+## Utilisation dans les Composants
+```typescript
+import { useTranslation } from 'react-i18next';
+
+const Component = () => {
+  const { t } = useTranslation();
+  
+  return (
+    <div>
+      <h1>{t('component.title')}</h1>
+      <p>{t('component.description', { count: items.length })}</p>
+      <button>{t('common.buttons.save')}</button>
+    </div>
+  );
+};
+```
+
+## Structure des Fichiers de Traduction
+- **Français**: `public/locales/fr/common.json` (langue par défaut)
+- **Anglais**: `public/locales/en/common.json`
+- **Organisation**: Par domaine fonctionnel
+- **Validation**: Toutes les clés doivent exister dans toutes les langues
+
+## Exemples de Traductions
+```json
+{
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "description": "Connectez-vous à votre compte"
+    }
+  },
+  "common": {
+    "buttons": {
+      "submit": "Valider",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    },
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue"
+  }
+}
+```
+
+## Gestion des Variables
+```typescript
+// Variables simples
+t('welcome.message', { name: userName })
+
+// Pluralisation
+t('items.count', { count: itemCount })
+
+// Interpolation complexe
+t('notification.new_message', { 
+  sender: senderName, 
+  count: messageCount 
+})
+```
+description:
+globs:
+alwaysApply: true
+---

@@ -11,8 +11,19 @@ import ServiceForm, { ServiceFormValues } from './ServiceForm';
 import { showSuccess, showError, showLoading, dismissToast } from '@/utils/toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
@@ -238,24 +249,31 @@ const ServiceManager = () => {
         </CardContent>
       </Card>
 
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="sm:max-w-lg">
-          <SheetHeader>
-            <SheetTitle>{selectedService ? t('edit_service') : t('create_service')}</SheetTitle>
-            <SheetDescription>
-              {selectedService ? t('edit_service_desc') : t('create_service_desc')}
-            </SheetDescription>
-          </SheetHeader>
+      <Dialog open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedService ? t('edit_service') : t('create_service')}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedService
+                ? t('edit_service_desc')
+                : t('create_service_desc')}
+            </DialogDescription>
+          </DialogHeader>
           <ServiceForm
             service={selectedService}
             onSubmit={handleFormSubmit}
             onCancel={() => setIsSheetOpen(false)}
             isSubmitting={isSubmitting}
           />
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('confirm_delete_title')}</AlertDialogTitle>

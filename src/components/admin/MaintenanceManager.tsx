@@ -13,9 +13,27 @@ import { showSuccess, showError } from '@/utils/toast';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { useSession } from '@/contexts/AuthContext';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { motion } from 'framer-motion';
 
 const MaintenanceManager = () => {
@@ -175,14 +193,20 @@ const MaintenanceManager = () => {
         </CardContent>
       </Card>
 
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="sm:max-w-lg w-full">
-          <SheetHeader>
-            <SheetTitle>{selectedMaintenance ? t('edit_maintenance') : t('schedule_maintenance')}</SheetTitle>
-            <SheetDescription>
-              {selectedMaintenance ? t('edit_maintenance_desc') : t('schedule_maintenance_desc')}
-            </SheetDescription>
-          </SheetHeader>
+      <Dialog open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <DialogContent className="sm:max-w-lg w-full">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedMaintenance
+                ? t('edit_maintenance')
+                : t('schedule_maintenance')}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedMaintenance
+                ? t('edit_maintenance_desc')
+                : t('schedule_maintenance_desc')}
+            </DialogDescription>
+          </DialogHeader>
           <MaintenanceForm
             maintenance={selectedMaintenance}
             services={services}
@@ -190,10 +214,13 @@ const MaintenanceManager = () => {
             onCancel={() => setIsSheetOpen(false)}
             isSubmitting={isSubmitting}
           />
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('confirm_delete_title')}</AlertDialogTitle>

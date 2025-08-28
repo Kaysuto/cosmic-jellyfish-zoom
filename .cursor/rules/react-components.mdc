@@ -1,0 +1,71 @@
+# Composants React - Bonnes Pratiques
+
+## Structure des Composants
+- **Fonctionnels uniquement**: Pas de classes, utiliser des fonctions avec hooks
+- **Props typées**: Toujours définir des interfaces TypeScript pour les props
+- **Export par défaut**: Pour les composants principaux
+- **Export nommé**: Pour les sous-composants et utilitaires
+
+## Organisation du Code
+```typescript
+// 1. Imports (React, hooks, composants UI, utilitaires)
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+
+// 2. Types et interfaces
+interface ComponentProps {
+  title: string;
+  isLoading?: boolean;
+}
+
+// 3. Composant principal
+const Component = ({ title, isLoading = false }: ComponentProps) => {
+  // 4. Hooks et état
+  const [data, setData] = useState(null);
+  
+  // 5. Effets et logique
+  useEffect(() => {
+    // logique
+  }, []);
+  
+  // 6. Handlers
+  const handleClick = () => {
+    // logique
+  };
+  
+  // 7. Rendu conditionnel précoce
+  if (isLoading) return <LoadingSpinner />;
+  
+  // 8. Rendu principal
+  return (
+    <div>
+      <h1>{title}</h1>
+      <Button onClick={handleClick}>Action</Button>
+    </div>
+  );
+};
+
+export default Component;
+```
+
+## Composants UI
+- Utiliser les composants de [src/components/ui/](mdc:src/components/ui/) basés sur Radix UI
+- Respecter le système de design défini dans [tailwind.config.ts](mdc:tailwind.config.ts)
+- Utiliser les icônes Lucide React exclusivement
+- Props standardisées: `variant`, `size`, `disabled`, `className`
+
+## Gestion d'État
+- **État local**: `useState` pour l'état simple
+- **État global**: Contextes dans [src/contexts/](mdc:src/contexts/)
+- **Requêtes**: TanStack Query avec les hooks dans [src/hooks/](mdc:src/hooks/)
+- **Formulaires**: React Hook Form avec validation Zod
+
+## Performance
+- **Lazy loading**: Pour les pages dans [App.tsx](mdc:src/App.tsx)
+- **Memoization**: `useMemo` et `useCallback` quand nécessaire
+- **Code splitting**: Imports dynamiques pour les gros composants
+- **Optimisation des re-renders**: React.memo pour les composants coûteux
+description:
+globs:
+alwaysApply: true
+---

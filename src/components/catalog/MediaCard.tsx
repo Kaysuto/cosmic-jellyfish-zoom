@@ -1,195 +1,128 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { Film, Star, Plus, Check, Heart, Bookmark, Hourglass, X } from 'lucide-react';
-import { useUserList } from '@/hooks/useUserList';
-import { useSession } from '@/contexts/AuthContext';
-import { useTranslation } from 'react-i18next';
-import type { MediaItem } from './MediaGrid';
-import { useJellyfin } from '@/contexts/JellyfinContext';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Heart, Bookmark, PlayCircle, PlusCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useJellyfin } from '@/contexts/JellyfinContext';
+import { useSession } from '@/contexts/AuthContext';
+import { useUserLists } from '@/hooks/useUserLists';
+import { showSuccess, showError } from '@/utils/toast';
+
+export interface MediaItem {
+  id: number;
+  title?: string;
+  name?: string;
+  poster_path: string;
+  vote_average: number;
+  release_date?: string;
+  first_air_date?: string;
+  media_type: 'movie' | 'tv';
+  isAvailable?: boolean;
+  jellyfin_id?: string;
+}
 
 interface MediaCardProps {
   item: MediaItem;
   showRequestButton?: boolean;
   onRequest?: (item: MediaItem) => void;
-  searchTerm?: string;
-  progress?: number;
-  playUrl?: string;
-  // Optional resume information (ticks = 100-nanosecond units)
-  playbackPositionTicks?: number;
-  runtimeTicks?: number;
-  showRemoveButton?: boolean;
-  onRemove?: (item: MediaItem) => void;
 }
-  
-const MediaCard: React.FC<MediaCardProps> = ({ item, showRequestButton = true, onRequest, searchTerm, progress, playUrl, playbackPositionTicks, showRemoveButton, onRemove }) => {
+
+const MediaCard = ({ item, showRequestButton = false, onRequest }: MediaCardProps) => {
   const { t } = useTranslation();
   const { jellyfinUrl } = useJellyfin();
-  
   const { session } = useSession();
-  const { addToList: addToFavorites, removeFromList: removeFromFavorites, isInList: isInFavorites } = useUserList('favorite');
-  const { addToList: addToWatchlist, removeFromList: removeFromWatchlist, isInList: isInWatchlist } = useUserList('watchlist');
-  const title = item.title || item.name || 'No title';
-  const releaseDate = item.release_date || item.first_air_date;
-  const year = releaseDate ? new Date(releaseDate).getFullYear() : '';
-  const rating = item.vote_average ?? null;
-  const isAvailable = item.isAvailable;
-  
-  const mediaTypeForLink = item.media_type === 'anime' ? 'tv' : item.media_type;
-  const linkTo = playUrl || (searchTerm
-    ? `/media/${mediaTypeForLink}/${item.id}?fromSearch=${encodeURIComponent(searchTerm)}`
-    : `/media/${mediaTypeForLink}/${item.id}`);
+  const { favorites, watchlist, addToList, removeFromList } = useUserLists(session?.user?.id);
 
-  const getImageUrl = (path: string | null | undefined) => {
-    if (!path) return null;
-    if (path.startsWith('/')) {
-      return `https://image.tmdb.org/t/p/w500${path}`;
+  const title = item.title || item.name;
+  const releaseDate = item.release_date || item.first_air_date;
+  const year = releaseDate ? new Date(releaseDate).getFullYear() : 'N/A';
+  const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
+
+  const isFavorite = favorites.has(item.id);
+  const isWatchlisted = watchlist.has(item.id);
+
+  const handleListAction = async (list: 'favorites' | 'watchlist', isAdded: boolean) => {
+    try {
+      if (isAdded) {
+        await removeFromList(list, item.id);
+        showSuccess(t('removed_from_list'));
+      } else {
+        await addToList(list, item.id, item.media_type);
+        showSuccess(t('added_to_list'));
+      }
+    } catch (error: any) {
+      showError(error.message);
     }
-    if (jellyfinUrl && path.startsWith('Items/')) {
-      return `${jellyfinUrl}/${path}`;
-    }
-    return path;
   };
 
-  const imageUrl = getImageUrl(item.poster_path);
-  
-  // Compute resume time string (used when showing "Reprendre à Xm Ys" badges)
-  let resumeTimeString = '';
-  if ((item as any).playback_position_ticks && (item as any).playback_position_ticks > 0) {
-    const resumeSeconds = Math.floor((item as any).playback_position_ticks / 10000000);
-    const resumeMinutes = Math.floor(resumeSeconds / 60);
-    const resumeSecondsOnly = resumeSeconds % 60;
-    resumeTimeString = `${resumeMinutes}m ${resumeSecondsOnly}s`;
-  }
+  const handleRequestClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onRequest) {
+      onRequest(item);
+    }
+  };
+
+  const handlePlayClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (item.jellyfin_id && jellyfinUrl) {
+      window.open(`${jellyfinUrl}/web/index.html#!/details?id=${item.jellyfin_id}`, '_blank');
+    }
+  };
 
   return (
-    <Card className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-card h-full">
-      <Link to={linkTo} className="block h-full" aria-label={title}>
-        <div className="relative aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden h-full">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={title}
-              className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              <Film className="h-12 w-12" />
-            </div>
-          )}
+    <Link to={`/${item.media_type}/${item.id}`} className="group block">
+      <Card className="overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-105">
+        <CardContent className="p-0 relative">
+          <img
+            src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
+            alt={title}
+            className="w-full h-auto aspect-[2/3] object-cover"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
- 
-          <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-            <h3 className="font-bold text-sm line-clamp-2">{title}</h3>
-            <div className="flex items-center justify-between text-xs text-gray-300 mt-1">
-              <span>{year}</span>
-              {rating !== null && rating > 0 && (
-                <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 text-yellow-400" />
-                  <span>{rating.toFixed(1)}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Resume badge: show elapsed time if we have playback information */}
-            {((item as any).playback_position_ticks || playbackPositionTicks) && (
-              <div className="mt-2 inline-block bg-black/60 text-xs text-white px-2 py-1 rounded-md">
-                {t('resume_at', { time: resumeTimeString || (() => {
-                  if (playbackPositionTicks && playbackPositionTicks > 0) {
-                    const resumeSeconds = Math.floor(playbackPositionTicks / 10000000);
-                    const resumeMinutes = Math.floor(resumeSeconds / 60);
-                    const resumeSecondsOnly = resumeSeconds % 60;
-                    return `${resumeMinutes}m ${resumeSecondsOnly}s`;
-                  }
-                  return '';
-                })() })}
-              </div>
+          <div className="absolute top-2 right-2 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            {session && (
+              <>
+                <Button size="icon" variant="ghost" className="h-8 w-8 bg-black/50 hover:bg-black/70" onClick={(e) => { e.preventDefault(); handleListAction('favorites', isFavorite); }}>
+                  <Heart className={`h-4 w-4 ${isFavorite ? 'text-red-500 fill-current' : 'text-white'}`} />
+                </Button>
+                <Button size="icon" variant="ghost" className="h-8 w-8 bg-black/50 hover:bg-black/70" onClick={(e) => { e.preventDefault(); handleListAction('watchlist', isWatchlisted); }}>
+                  <Bookmark className={`h-4 w-4 ${isWatchlisted ? 'text-blue-500 fill-current' : 'text-white'}`} />
+                </Button>
+              </>
             )}
           </div>
-        </div>
-      </Link>
-      
-      {progress !== undefined && progress > 0 && (
-        <div
-          className="absolute bottom-0 left-0 h-1 bg-primary pointer-events-none z-10"
-          style={{ width: `${progress}%` }}
-          aria-hidden="true"
-        />
-      )}
-      
-      <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-2">
-        {isAvailable && (
-          <Badge className="bg-green-600 hover:bg-green-700 text-white border-transparent">
-            <Check className="h-3 w-3 mr-1" />
-            {t('available')}
-          </Badge>
-        )}
-        {item.isRequested && !isAvailable && (
-          <Badge className="bg-yellow-600 hover:bg-yellow-700 text-white border-transparent">
-            <Hourglass className="h-3 w-3 mr-1" />
-            {t('requested')}
-          </Badge>
-        )}
-        
-        <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          {showRemoveButton && onRemove && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onRemove(item);
-              }}
-              aria-label={`Retirer ${title} de la liste`}
-              className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center transition-colors duration-150 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-          {showRequestButton && !isAvailable && !item.isRequested && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (onRequest) onRequest(item);
-              }}
-              aria-label={`${t('request')} ${title}`}
-              className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center transition-colors duration-150 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          )}
 
-          {session && (
-            <>
-              <button
-                onClick={(e) => {
-                  e.preventDefault(); e.stopPropagation();
-                  isInFavorites(item.id, item.media_type) ? removeFromFavorites(item.id, item.media_type) : addToFavorites(item.id, item.media_type);
-                }}
-                aria-label={isInFavorites(item.id, item.media_type) ? t('remove_from_favorites') : t('add_to_favorites')}
-                className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-              >
-                <Heart className={`h-4 w-4 ${isInFavorites(item.id, item.media_type) ? 'text-red-500 fill-current' : ''}`} />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.preventDefault(); e.stopPropagation();
-                  isInWatchlist(item.id, item.media_type) ? removeFromWatchlist(item.id, item.media_type) : addToWatchlist(item.id, item.media_type);
-                }}
-                aria-label={isInWatchlist(item.id, item.media_type) ? t('remove_from_watchlist') : t('add_to_watchlist')}
-                className="h-8 w-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <Bookmark className={`h-4 w-4 ${isInWatchlist(item.id, item.media_type) ? 'text-blue-500 fill-current' : ''}`} />
-              </button>
-            </>
+          <div className="absolute bottom-0 left-0 right-0 p-3 text-white bg-gradient-to-t from-black/80 to-transparent">
+            <h3 className="font-bold truncate">{title}</h3>
+            <div className="flex items-center justify-between text-xs mt-1">
+              <span>{year}</span>
+              <Badge variant="secondary">{rating}</Badge>
+            </div>
+          </div>
+
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            {item.isAvailable ? (
+              <Button size="icon" variant="ghost" className="h-16 w-16 bg-black/50 hover:bg-black/70" onClick={handlePlayClick}>
+                <PlayCircle className="h-10 w-10 text-white" />
+              </Button>
+            ) : showRequestButton && (
+              <Button size="icon" variant="ghost" className="h-16 w-16 bg-black/50 hover:bg-black/70" onClick={handleRequestClick}>
+                <PlusCircle className="h-10 w-10 text-white" />
+              </Button>
+            )}
+          </div>
+
+          {item.isAvailable && (
+            <Badge className="absolute top-2 left-2 bg-green-600 text-white">{t('available')}</Badge>
           )}
-        </div>
-      </div>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 };
 

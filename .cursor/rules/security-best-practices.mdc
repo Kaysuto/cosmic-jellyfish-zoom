@@ -1,0 +1,122 @@
+# Sécurité et Bonnes Pratiques
+
+## Authentification et Autorisation
+- **Supabase Auth**: Géré via [src/contexts/AuthContext.tsx](mdc:src/contexts/AuthContext.tsx)
+- **Routes protégées**: [ProtectedRoute](mdc:src/components/auth/ProtectedRoute.tsx) et [AdminRoute](mdc:src/components/auth/AdminRoute.tsx)
+- **RLS**: Row Level Security activé sur toutes les tables sensibles
+- **JWT**: Tokens gérés automatiquement par Supabase
+
+## Validation des Données
+```typescript
+// ✅ Validation avec Zod
+import { z } from 'zod';
+
+const UserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(2).max(50),
+  role: z.enum(['user', 'admin'])
+});
+
+// ✅ Validation côté client et serveur
+const validateUserData = (data: unknown) => {
+  return UserSchema.parse(data);
+};
+```
+
+## Protection contre les Attaques
+```typescript
+// ✅ Échappement des données utilisateur
+const sanitizeInput = (input: string) => {
+  return input.replace(/[<>]/g, '');
+};
+
+// ✅ Validation des URLs
+const isValidUrl = (url: string) => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
+```
+
+## Gestion des Erreurs Sécurisée
+```typescript
+// ✅ Ne pas exposer les détails d'erreur en production
+const handleError = (error: any) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.error('Error details:', error);
+  }
+  
+  return {
+    message: t('common.error.generic'),
+    code: error.code || 'UNKNOWN'
+  };
+};
+```
+
+## Variables d'Environnement
+```typescript
+// ✅ Utiliser les variables d'environnement Vite
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// ✅ Validation des variables requises
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing required environment variables');
+}
+```
+
+## Sécurité des Composants
+```typescript
+// ✅ Props validation
+interface SecureComponentProps {
+  userData: UserData;
+  onAction: (id: string) => void;
+}
+
+// ✅ Vérification des permissions
+const SecureComponent = ({ userData, onAction }: SecureComponentProps) => {
+  const { user } = useAuth();
+  
+  if (!user || user.role !== 'admin') {
+    return <AccessDenied />;
+  }
+  
+  return (
+    <div>
+      {/* contenu sécurisé */}
+    </div>
+  );
+};
+```
+
+## Protection CSRF
+- **Supabase**: Protection automatique
+- **Headers**: Vérification des origin headers
+- **Tokens**: Utilisation des tokens CSRF quand nécessaire
+
+## Content Security Policy
+```html
+<!-- Dans index.html -->
+<meta http-equiv="Content-Security-Policy" 
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';">
+```
+
+## Bonnes Pratiques Générales
+1. **HTTPS uniquement**: En production
+2. **Headers de sécurité**: HSTS, X-Frame-Options, etc.
+3. **Rate limiting**: Sur les API endpoints
+4. **Logs sécurisés**: Ne pas logger les données sensibles
+5. **Mises à jour**: Maintenir les dépendances à jour
+6. **Audit**: `npm audit` régulièrement
+
+## Turnstile Integration
+- **Configuration**: Voir [TURNSTILE_SETUP.md](mdc:TURNSTILE_SETUP.md)
+- **Protection**: Contre les bots et spam
+- **Hook**: `useTurnstile` dans [src/hooks/](mdc:src/hooks/)
+description:
+globs:
+alwaysApply: true
+---

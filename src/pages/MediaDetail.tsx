@@ -345,6 +345,11 @@ const MediaDetailPage = () => {
       );
     }
 
+    // Si l'utilisateur n'est pas connecté, afficher le bouton de connexion
+    if (!session) {
+      return <Button size="lg" onClick={() => navigate('/login', { state: { from: location } })}><Play className="mr-2 h-4 w-4" /> {t('login_to_watch')}</Button>;
+    }
+
     if (jellyfinId) {
       if (type === 'movie') {
         if (continueWatchingInfo && (continueWatchingInfo.playbackPositionTicks ?? 0) > 0) {
@@ -388,10 +393,6 @@ const MediaDetailPage = () => {
         }
         return <Button size="lg" onClick={() => handlePlay(1, 1)}><Play className="mr-2 h-4 w-4" /> {t('play_s01e01')}</Button>;
       }
-    }
-
-    if (!session) {
-      return <Button size="lg" onClick={() => navigate('/login', { state: { from: location } })}><User className="mr-2 h-4 w-4" /> {t('login_to_request')}</Button>;
     }
 
     if (requestStatus === 'pending' || requestStatus === 'approved') {
@@ -494,7 +495,7 @@ const MediaDetailPage = () => {
               <p className="mt-6 text-lg text-muted-foreground">{details.overview}</p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 {renderActionButton()}
-                {jellyfinId && !loadingStreams && !jellyfinConnectionError && (
+                {session && jellyfinId && !loadingStreams && !jellyfinConnectionError && (
                   <div className="flex flex-wrap items-center gap-2">
                     {audioTracks.length > 1 && (
                       <DropdownMenu modal={false}>
@@ -674,7 +675,7 @@ const MediaDetailPage = () => {
                 )}
               </TabsContent>
               <TabsContent value="similar" className="mt-6">
-                {similarWithMediaType.length > 0 ? <MediaGrid items={similarWithMediaType} /> : <p>{t('no_similar_content')}</p>}
+                {similarWithMediaType.length > 0 ? <MediaGrid items={similarWithMediaType} showRequestButton={!!session} /> : <p>{t('no_similar_content')}</p>}
               </TabsContent>
               <TabsContent value="cast" className="mt-6">
                 <h3 className="text-2xl font-bold mb-4">{t('cast')}</h3>

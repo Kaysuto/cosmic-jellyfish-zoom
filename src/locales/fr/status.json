@@ -1,0 +1,54 @@
+{
+  "status_title": "Statut des services",
+  "welcome": "Statut en temps réel des services Jelly",
+  "homepage_description": "Cette page fournit des informations détaillées sur la disponibilité de nos systèmes. En cas d'incident, vous trouverez ici toutes les mises à jour.",
+  "view_status": "Voir le statut du système",
+  "check_status": "Vérifier le statut",
+  "checking_status_now": "Vérification du statut en cours...",
+  "check_complete_status_soon": "Vérification terminée. Le statut sera mis à jour dans quelques instants.",
+  "error_during_check": "Erreur lors de la vérification",
+  
+  "all_systems_operational": "Tous les systèmes sont opérationnels",
+  "partial_outage": "Panne partielle du système",
+  "major_outage": "Panne majeure du système",
+  "all_systems_operational_description": "Cette page montre l'état actuel de tous les services Jelly. Si vous rencontrez des problèmes, veuillez consulter cette page pour les mises à jour.",
+  "systems_issues_description": "Nous rencontrons actuellement des problèmes avec certains de nos services. Veuillez consulter cette page pour suivre notre progression.",
+  
+  "services_status": "Statut des services",
+  "operational": "Opérationnel",
+  "degraded": "Performances dégradées",
+  "downtime": "Panne majeure",
+  "maintenance": "En maintenance",
+  "uptime": "Disponibilité :",
+  "uptime_legend": "Disponibilité",
+  "ping_legend": "Ping (ms)",
+  
+  "incident_history": "Historique des incidents",
+  "uptime_history": "Historique de disponibilité",
+  "no_incidents": "Aucun incident signalé dans les 90 derniers jours.",
+  "resolved": "Résolu",
+  "investigating": "En cours d'investigation",
+  "monitoring": "Surveillance",
+  "identified": "Identifié",
+  
+  "streaming_service": "Service de streaming principal",
+  "accounts_service": "Gestion des comptes utilisateurs",
+  "vod_service": "Demande de films et séries",
+  "select_service": "Sélectionner un service",
+  "all_services": "Tous les services",
+  
+  "time_range_day": "Jour",
+  "time_range_week": "Semaine",
+  "time_range_month": "Mois",
+  "time_range_year": "Année",
+  
+  "system_wide_incident": "Incident général",
+  "url_monitoring": "URL de surveillance",
+  "no_url_provided": "Aucune URL fournie",
+  "scheduled_maintenance": "Maintenance planifiée",
+  
+  "new_service_uptime_message": "L'historique de disponibilité pour les nouveaux services est généré après 24 heures. Les premières données apparaîtront demain.",
+  
+  "incident_count_fr_one": "Incident : {{count}}",
+  "incident_count_fr_other": "Incidents : {{count}}"
+}

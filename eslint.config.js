@@ -24,6 +24,14 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       "@typescript-eslint/no-unused-vars": "off",
+      // Règles pour détecter les erreurs de syntaxe
+      "@typescript-eslint/no-unreachable": "error",
+      "@typescript-eslint/no-extra-semi": "error",
+      "@typescript-eslint/no-misplaced-newline": "error",
+      // Règles pour améliorer la qualité du code
+      "no-console": "warn",
+      "no-debugger": "error",
+      "no-alert": "warn",
     },
   },
 );

@@ -1,0 +1,10 @@
+{
+  "search_placeholder": "Search for movies, TV shows...",
+  "no_results_found": "No results found",
+  "no_results_for": "No results found for \"{term}\"",
+  "search_results_for": "{count} result(s) found for \"{term}\"",
+  "search_tips": "Try different keywords or check spelling",
+  "search_error": "Search error",
+  "search_loading": "Searching...",
+  "clear_search": "Clear search"
+}

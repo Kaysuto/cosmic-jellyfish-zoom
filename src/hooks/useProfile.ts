@@ -10,6 +10,7 @@ export interface Profile {
   role: string | null;
   avatar_url: string | null;
   updated_at: string;
+  is_active?: boolean;
 }
 
 export const useProfile = () => {

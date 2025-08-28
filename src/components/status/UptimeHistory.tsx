@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { subDays, format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -107,12 +107,13 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
             <YAxis yAxisId="left" stroke="hsl(var(--primary))" fontSize={12} tickLine={false} axisLine={false} domain={[80, 100]} tickFormatter={(value) => `${value}%`} />
-            <YAxis yAxisId="right" orientation="right" hide={true} />
+            <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}ms`} />
             <Tooltip content={<CustomTooltip />} />
+            <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px' }} />
             {chartData.length > 0 && (
               <>
-                <Bar yAxisId="right" dataKey="avg_response_time_ms" fill="hsla(var(--muted-foreground), 0.3)" barSize={20} />
-                <Line yAxisId="left" type="monotone" dataKey="uptime_percentage" stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
+                <Bar yAxisId="right" dataKey="avg_response_time_ms" name={t('ping_legend')} fill="hsl(var(--muted-foreground))" barSize={20} />
+                <Line yAxisId="left" type="monotone" dataKey="uptime_percentage" name={t('uptime_legend')} stroke="hsl(var(--primary))" dot={false} strokeWidth={2} />
               </>
             )}
           </ComposedChart>
@@ -127,7 +128,7 @@ const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeH
   };
 
   return (
-    <Card>
+    <Card className="bg-card border-border">
       <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex-grow">
             <CardTitle>{t('uptime_history')}</CardTitle>

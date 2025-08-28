@@ -13,7 +13,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { 
   User, 
-  Settings, 
   Heart, 
   Bookmark, 
   RefreshCw,
@@ -96,14 +95,6 @@ const UserPublicProfile = () => {
           <Calendar className="h-3 w-3 mr-1" />
           {t('member_since')} {format(new Date(user.updated_at), 'MMMM yyyy', { locale: currentLocale })}
         </Badge>
-        {isOwner && (
-          <Button asChild variant="outline" size="sm" className="mt-4">
-            <Link to="/profile">
-              <Settings className="mr-2 h-4 w-4" />
-              {t('edit_profile')}
-            </Link>
-          </Button>
-        )}
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4 text-sm">
@@ -138,7 +129,7 @@ const UserPublicProfile = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {requests.map((request) => (
               <Link to={`/media/${request.media_type}/${request.tmdb_id}`} key={request.id}>
-                <Card className="overflow-hidden group transition-all hover:shadow-xl hover:-translate-y-1">
+                <Card className="overflow-hidden group transition-all hover:shadow-lg hover:-translate-y-1">
                   <div className="relative aspect-[2/3]">
                     {request.poster_path ? (
                       <img src={`https://image.tmdb.org/t/p/w500${request.poster_path}`} alt={request.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />

@@ -20,26 +20,26 @@ const ScheduledMaintenances = ({ maintenances }: ScheduledMaintenancesProps) => 
   }
 
   return (
-    <Card className="bg-blue-900/30 border-blue-500/30">
+    <Card className="bg-card border-primary/30">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl text-white">
-          <Wrench className="h-5 w-5 text-blue-400" />
+        <CardTitle className="flex items-center gap-2 text-xl text-card-foreground">
+          <Wrench className="h-5 w-5 text-primary" />
           {t('scheduled_maintenance')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {upcomingMaintenances.map(m => (
-          <div key={m.id} className="p-4 rounded-lg bg-gray-800/50 border border-gray-700/50">
-            <h4 className="font-semibold text-white">{m.title}</h4>
-            <p className="text-sm text-gray-400 mt-1">{m.description}</p>
-            <div className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-700/50 flex items-center gap-2">
+          <div key={m.id} className="p-4 rounded-lg bg-muted border border-border">
+            <h4 className="font-semibold text-foreground">{m.title}</h4>
+            <p className="text-sm text-muted-foreground mt-1">{m.description}</p>
+            <div className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border flex items-center gap-2">
               <Clock className="h-3 w-3" />
               <span>
                 {format(new Date(m.start_time), 'd MMM, HH:mm', { locale: currentLocale })} - {format(new Date(m.end_time), 'HH:mm', { locale: currentLocale })}
               </span>
             </div>
              {m.services && (
-              <p className="text-xs text-blue-400 mt-2">
+              <p className="text-xs text-primary mt-2">
                 {t('Service')}: {t(m.services.name.toLowerCase().replace(/ /g, '_'))}
               </p>
             )}

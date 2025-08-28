@@ -1,0 +1,16 @@
+{
+  "system_update": "System update",
+  "playjelly.fr": "playjelly.fr",
+  "playjelly.fr_-_website": "playjelly.fr - Website",
+  "playjelly.fr_-_minecraft": "playjelly.fr - Minecraft",
+  "jellyfin": "Jellyfin",
+  "jellyseerr": "Jellyseerr",
+  "sonarr": "Sonarr",
+  "radarr": "Radarr",
+  "prowlarr": "Prowlarr",
+  "qbittorrent": "qBittorrent",
+  "homepage": "Homepage",
+  "status_page": "Status page",
+  "admin_panel": "Admin panel",
+  "admin_panel_description": "Manage your services, incidents, users and settings from this central panel."
+}
