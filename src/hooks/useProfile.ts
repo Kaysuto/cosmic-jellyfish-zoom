@@ -47,7 +47,7 @@ export const useProfile = () => {
             id: session.user.id,
             first_name: session.user.user_metadata?.full_name?.split(' ')[0] || session.user.email?.split('@')[0] || 'Utilisateur',
             last_name: session.user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
-            email: session.user.email,
+            email: session.user.email ?? null,
             role: 'user',
             avatar_url: session.user.user_metadata?.avatar_url || null,
             updated_at: new Date().toISOString(),
@@ -67,7 +67,7 @@ export const useProfile = () => {
         id: session.user.id,
         first_name: session.user.user_metadata?.full_name?.split(' ')[0] || session.user.email?.split('@')[0] || 'Utilisateur',
         last_name: session.user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
-        email: session.user.email,
+  email: session.user.email ?? null,
         role: 'user',
         avatar_url: session.user.user_metadata?.avatar_url || null,
         updated_at: new Date().toISOString(),
@@ -80,8 +80,16 @@ export const useProfile = () => {
   }, [session]);
 
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    // Ne recharge le profil que si l'ID utilisateur change (login/logout)
+    if (session?.user?.id) {
+      fetchProfile();
+    } else {
+      setProfile(null);
+      setLoading(false);
+      setError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
 
   return { profile, loading, error, refreshProfile: fetchProfile };
 };

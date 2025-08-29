@@ -13,6 +13,9 @@ export interface IncidentUpdate {
 export interface Incident {
   id: number;
   title: string;
+  description?: string;
+  title_en?: string;
+  description_en?: string;
   status: IncidentStatus;
   created_at: string;
   service_id: number | null;

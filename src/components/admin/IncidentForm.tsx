@@ -6,12 +6,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Incident } from '@/types/status';
 import { Service } from '@/types/supabase';
 import { useAdmins } from '@/hooks/useAdmins';
 
 const incidentSchema = z.object({
   title: z.string().min(1, "Le titre est requis."),
+  description: z.string().min(1, "La description est requise."),
+  title_en: z.string().optional(),
+  description_en: z.string().optional(),
   status: z.enum(['investigating', 'identified', 'monitoring', 'resolved']),
   service_id: z.number().nullable(),
   update_message: z.string().min(1, "Un message de mise à jour est requis."),
@@ -34,6 +38,9 @@ const IncidentForm = ({ incident, services, onSubmit, onCancel, isSubmitting }: 
     resolver: zodResolver(incidentSchema),
     defaultValues: {
       title: incident?.title || '',
+      description: incident?.description || '',
+      title_en: (incident as any)?.title_en || '',
+      description_en: (incident as any)?.description_en || '',
       status: incident?.status || 'investigating',
       service_id: incident?.service_id || null,
       update_message: '',
@@ -44,19 +51,68 @@ const IncidentForm = ({ incident, services, onSubmit, onCancel, isSubmitting }: 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Titre</FormLabel>
-              <FormControl>
-                <Input placeholder="Titre de l'incident" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <Tabs defaultValue="fr" className="mb-4">
+          <TabsList className="mb-2">
+            <TabsTrigger value="fr">Français</TabsTrigger>
+            <TabsTrigger value="en">English</TabsTrigger>
+          </TabsList>
+          <TabsContent value="fr">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Titre (français)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Titre de l'incident (français)" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (français)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Description de l'incident (français)" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </TabsContent>
+          <TabsContent value="en">
+            <FormField
+              control={form.control}
+              name="title_en"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title (English)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Incident title (English)" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description_en"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (English)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Incident description (English)" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </TabsContent>
+        </Tabs>
         <FormField
           control={form.control}
           name="admin_id"

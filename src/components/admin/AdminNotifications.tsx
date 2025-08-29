@@ -1,15 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+// import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bell, AlertTriangle, CheckCircle, Info, Clock, X, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -104,12 +102,12 @@ const AdminNotifications = () => {
   );
 
   // Mémoriser les fonctions de gestion des notifications
-  const markAsRead = useCallback((id: string) => {
-    const updatedNotifications = notifications.map(n => 
-      n.id === id ? { ...n, read: true } : n
-    );
-    updateNotifications(updatedNotifications);
-  }, [notifications, updateNotifications]);
+  // const markAsRead = useCallback((id: string) => {
+  //   const updatedNotifications = notifications.map(n => 
+  //     n.id === id ? { ...n, read: true } : n
+  //   );
+  //   updateNotifications(updatedNotifications);
+  // }, [notifications, updateNotifications]);
 
   const markAllAsRead = useCallback(() => {
     const updatedNotifications = notifications.map(n => ({ ...n, read: true }));
@@ -140,19 +138,6 @@ const AdminNotifications = () => {
     }
   }, []);
 
-  const getNotificationColor = useCallback((type: Notification['type']) => {
-    switch (type) {
-      case 'warning':
-        return 'border-yellow-500/20 bg-yellow-500/5';
-      case 'success':
-        return 'border-green-500/20 bg-green-500/5';
-      case 'error':
-        return 'border-red-500/20 bg-red-500/5';
-      case 'info':
-      default:
-        return 'border-blue-500/20 bg-blue-500/5';
-    }
-  }, []);
 
   const formatTimestamp = useCallback((timestamp: Date) => {
     const now = new Date();
@@ -168,7 +153,7 @@ const AdminNotifications = () => {
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="relative p-2">
-          <Bell className="h-4 w-4" />
+          <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 flex items-center justify-center">
               <span className="text-xs font-medium text-white">
@@ -178,111 +163,104 @@ const AdminNotifications = () => {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80 max-h-96 overflow-y-auto" align="end" forceMount>
-        <DropdownMenuLabel className="flex items-center justify-between">
-          <span className="font-semibold">Notifications</span>
-          <div className="flex items-center gap-1">
-            {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={markAllAsRead}
-                className="h-6 px-2 text-xs"
-              >
-                Tout marquer comme lu
-              </Button>
-            )}
-            {notifications.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearAllNotifications}
-                className="h-6 px-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        
-        <AnimatePresence>
-          {notifications.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="py-8 text-center"
-            >
-              <Bell className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Aucune notification</p>
-            </motion.div>
-          ) : (
-            notifications.map((notification, index) => (
-              <motion.div
-                key={notification.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2, delay: index * 0.05 }}
-              >
-                <DropdownMenuItem
-                  className={cn(
-                    "flex flex-col items-start gap-2 p-3 cursor-pointer border-l-4 group",
-                    getNotificationColor(notification.type),
-                    !notification.read && "bg-muted/30"
-                  )}
-                  onClick={() => markAsRead(notification.id)}
-                >
-                  <div className="flex items-start justify-between w-full">
-                    <div className="flex items-start gap-3 flex-1">
-                      {getNotificationIcon(notification.type)}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className={cn(
-                            "text-sm font-medium line-clamp-1",
-                            !notification.read && "font-semibold"
-                          )}>
-                            {notification.title}
-                          </h4>
-                          {!notification.read && (
-                            <div className="h-2 w-2 rounded-full bg-primary" />
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                          {notification.message}
-                        </p>
-                        <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {formatTimestamp(notification.timestamp)}
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 hover:text-red-600"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeNotification(notification.id);
-                      }}
+      <DropdownMenuContent className="w-96 p-0" align="end">
+        <Card className="border-0 shadow-none">
+          <CardContent className="p-0">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b bg-muted/30">
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-muted-foreground" />
+                <span className="font-semibold text-sm">Notifications</span>
+                {unreadCount > 0 && (
+                  <span className="ml-2 inline-flex items-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                {unreadCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={markAllAsRead}
+                    className="h-6 px-2 text-xs"
+                  >
+                    Tout marquer comme lu
+                  </Button>
+                )}
+                {notifications.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAllNotifications}
+                    className="h-6 px-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            </div>
+            {/* Content */}
+            <ScrollArea className="h-80">
+              {notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-8 text-center">
+                  <Bell className="h-5 w-5 text-muted-foreground/50 mb-3" />
+                  <p className="text-sm text-muted-foreground font-medium">Aucune notification</p>
+                </div>
+              ) : (
+                <div className="space-y-1 p-2">
+                  {notifications.map((notification) => (
+                    <Card
+                      key={notification.id}
+                      className={`group relative overflow-hidden transition-all duration-200 hover:shadow-md ${
+                        !notification.read 
+                          ? 'bg-blue-50/50 border-blue-200/50 dark:bg-blue-950/20 dark:border-blue-800/30' 
+                          : 'bg-card hover:bg-muted/30'
+                      }`}
                     >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </DropdownMenuItem>
-              </motion.div>
-            ))
-          )}
-        </AnimatePresence>
-        
-        {notifications.length > 0 && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-center text-xs text-muted-foreground cursor-pointer">
-              Voir toutes les notifications
-            </DropdownMenuItem>
-          </>
-        )}
+                      <CardContent className="p-3">
+                        <div className="flex items-start gap-3">
+                          {getNotificationIcon(notification.type)}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className={cn(
+                                "text-sm font-medium line-clamp-1",
+                                !notification.read && "font-semibold"
+                              )}>
+                                {notification.title}
+                              </h4>
+                              {!notification.read && (
+                                <div className="h-2 w-2 rounded-full bg-primary" />
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                              {notification.message}
+                            </p>
+                            <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              {formatTimestamp(notification.timestamp)}
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 hover:text-red-600"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeNotification(notification.id);
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </DropdownMenuContent>
     </DropdownMenu>
   );

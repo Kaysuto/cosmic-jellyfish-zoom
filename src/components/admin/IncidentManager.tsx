@@ -73,36 +73,37 @@ const IncidentManager = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
+    <Card className="bg-gradient-to-br from-background/90 to-muted/60 border border-border/50 shadow-lg backdrop-blur-md rounded-xl">
+      <CardHeader className="border-b border-border/40 bg-background/80 rounded-t-xl px-6 py-5 flex flex-row items-center justify-between">
+        <div className="flex items-center gap-3">
+          <PlusCircle className="h-6 w-6 text-primary" />
           <div>
-            <CardTitle>Gérer les incidents</CardTitle>
-            <CardDescription>Créer, modifier et suivre les incidents.</CardDescription>
+            <CardTitle className="text-xl font-bold text-foreground">Gérer les incidents</CardTitle>
+            <CardDescription className="text-muted-foreground">Créer, modifier et suivre les incidents.</CardDescription>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => handleOpenDialog()}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Créer un incident
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[625px]">
-              <DialogHeader>
-                <DialogTitle>{selectedIncident ? "Modifier l'incident" : "Créer un incident"}</DialogTitle>
-              </DialogHeader>
-              <IncidentForm
-                incident={selectedIncident}
-                services={services}
-                onSubmit={handleSubmit}
-                onCancel={handleCloseDialog}
-                isSubmitting={isSubmitting}
-              />
-            </DialogContent>
-          </Dialog>
         </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => handleOpenDialog()} variant="default" className="btn-primary px-4 py-2 text-base font-semibold shadow-sm">
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Créer un incident
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[625px]">
+            <DialogHeader>
+              <DialogTitle>{selectedIncident ? "Modifier l'incident" : "Créer un incident"}</DialogTitle>
+            </DialogHeader>
+            <IncidentForm
+              incident={selectedIncident}
+              services={services as any}
+              onSubmit={handleSubmit}
+              onCancel={handleCloseDialog}
+              isSubmitting={isSubmitting}
+            />
+          </DialogContent>
+        </Dialog>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <IncidentsTable
           incidents={incidents}
           loading={incidentsLoading || servicesLoading}

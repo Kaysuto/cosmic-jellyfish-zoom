@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Bell, CheckCheck, CheckCircle2, Trash2, X, Clock, User } from 'lucide-react';
+import { Bell, CheckCheck, CheckCircle2, Trash2, X, Clock } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
@@ -74,7 +74,7 @@ export const Notifications = () => {
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b bg-muted/30">
               <div className="flex items-center gap-2">
-                <Bell className="h-4 w-4 text-muted-foreground" />
+                <Bell className="h-5 w-5 text-muted-foreground" />
                 <h3 className="font-semibold text-sm">{t('notifications')}</h3>
                 {unreadCount > 0 && (
                   <Badge variant="secondary" className="text-xs">
@@ -111,7 +111,7 @@ export const Notifications = () => {
                 </div>
               ) : notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-8 text-center">
-                  <Bell className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                  <Bell className="h-5 w-5 text-muted-foreground/50 mb-3" />
                   <p className="text-sm text-muted-foreground font-medium">{t('no_notifications')}</p>
                   <p className="text-xs text-muted-foreground mt-1">{t('no_notifications_desc')}</p>
                 </div>

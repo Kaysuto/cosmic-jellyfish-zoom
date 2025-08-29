@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
-import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 
 interface AuthContextType {
   session: Session | null;
@@ -12,6 +12,9 @@ const AuthContext = createContext<AuthContextType>({ session: null, loading: tru
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Guard pour éviter les logs SIGNED_IN en boucle
+  const lastSignedInUserRef = React.useRef<string | null>(null);
 
   useEffect(() => {
     // Récupérer la session initiale
@@ -36,23 +39,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Écouter les changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email);
-      
       // Mettre à jour la session immédiatement
       setSession(session);
-      
-      // Gérer les états de loading selon l'événement
+
+      // Guard pour ne logger qu'une fois par utilisateur
       if (event === 'SIGNED_IN' && session) {
-        console.log('User signed in successfully:', session.user.email);
+        const email = session.user.email ?? null;
+        if (lastSignedInUserRef.current !== email) {
+          console.log('Auth state changed:', event, email);
+          console.log('User signed in successfully:', email);
+          lastSignedInUserRef.current = email;
+        }
         setLoading(false);
       } else if (event === 'SIGNED_OUT') {
+        console.log('Auth state changed:', event, session?.user?.email);
         console.log('User signed out');
+        lastSignedInUserRef.current = null;
         setLoading(false);
       } else if (event === 'TOKEN_REFRESHED' && session) {
+        console.log('Auth state changed:', event, session.user.email);
         console.log('Token refreshed for:', session.user.email);
         // Ne pas changer le loading pour les refresh de token
       } else if (event === 'INITIAL_SESSION') {
         // L'événement INITIAL_SESSION est géré par getInitialSession
+        console.log('Auth state changed:', event, session?.user?.email);
         console.log('Initial session event received');
       }
     });
