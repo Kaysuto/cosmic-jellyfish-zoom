@@ -3,9 +3,11 @@ import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Incident } from '@/types/status';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
+import i18n from '@/lib/i18n';
 import { AlertTriangle, CheckCircle, Wrench, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '../ui/skeleton';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAdmins } from '@/hooks/useAdmins';
@@ -25,6 +27,10 @@ const IncidentItem = ({ incident }: { incident: Incident }) => {
   const lastUpdate = incident.incident_updates?.[0];
   const config = statusConfig[incident.status] || statusConfig.investigating;
   const author = admins.find(a => a.id === incident.author_id);
+  const isEn = i18n.language === 'en';
+  const title = isEn ? (incident.title_en || incident.title) : incident.title;
+  const description = isEn ? (incident.description_en || incident.description) : incident.description;
+  const locale = isEn ? enUS : fr;
 
   return (
     <Card className="mb-4 bg-muted border border-border/50">
@@ -38,22 +44,27 @@ const IncidentItem = ({ incident }: { incident: Incident }) => {
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
                 <config.icon className={`h-5 w-5 ${config.color}`} />
-                <h3 className="font-semibold text-lg text-foreground">{incident.title}</h3>
+                <h3 className="font-semibold text-lg text-foreground">{title}</h3>
               </div>
               <Badge variant="outline">{t(config.labelKey)}</Badge>
             </div>
+            {description && (
+              <div className="mb-1">
+                <p className="text-sm text-muted-foreground">{description}</p>
+              </div>
+            )}
             {lastUpdate && (
               <div className="mb-1">
                 <p className="text-sm text-muted-foreground">
-                  {t('updated')} {formatDistanceToNow(new Date(lastUpdate.created_at), { addSuffix: true, locale: fr })}
+                  {t('updated')} {formatDistanceToNow(new Date(lastUpdate.created_at), { addSuffix: true, locale })}
                 </p>
                 <p className="text-sm text-foreground mt-1">{lastUpdate.message}</p>
               </div>
             )}
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-sm text-muted-foreground">{author ? (author.first_name || author.email || author.id) : 'Utilisateur'}</span>
+              <span className="text-sm text-muted-foreground">{author ? (author.first_name || author.email || author.id) : (isEn ? 'User' : 'Utilisateur')}</span>
               <span className="text-xs text-muted-foreground">•</span>
-              <span className="text-xs text-muted-foreground">{format(new Date(incident.created_at), 'd MMMM yyyy, HH:mm', { locale: fr })}</span>
+              <span className="text-xs text-muted-foreground">{format(new Date(incident.created_at), isEn ? 'MMM d, yyyy, HH:mm' : 'd MMMM yyyy, HH:mm', { locale })}</span>
             </div>
           </div>
         </div>

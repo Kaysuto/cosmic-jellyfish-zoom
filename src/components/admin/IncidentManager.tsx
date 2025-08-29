@@ -4,6 +4,7 @@ import { useServices } from '@/hooks/useServices';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
 import { PlusCircle } from 'lucide-react';
 import IncidentForm from './IncidentForm';
 import IncidentsTable from './IncidentsTable';
@@ -11,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showError, showSuccess } from '@/utils/toast';
 import { Incident } from '@/types/status';
 import { useSession } from '@/contexts/AuthContext';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 
 const IncidentManager = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -19,6 +21,7 @@ const IncidentManager = () => {
   const { session } = useSession();
   const { incidents, loading: incidentsLoading, refreshIncidents } = useIncidents();
   const { services, loading: servicesLoading } = useServices();
+  const { t } = useSafeTranslation();
 
   const handleOpenDialog = (incident: Incident | null = null) => {
     setSelectedIncident(incident);
@@ -78,20 +81,20 @@ const IncidentManager = () => {
         <div className="flex items-center gap-3">
           <PlusCircle className="h-6 w-6 text-primary" />
           <div>
-            <CardTitle className="text-xl font-bold text-foreground">Gérer les incidents</CardTitle>
-            <CardDescription className="text-muted-foreground">Créer, modifier et suivre les incidents.</CardDescription>
+            <CardTitle className="text-xl font-bold text-foreground">{t('manage_incidents')}</CardTitle>
+            <CardDescription className="text-muted-foreground">{t('manage_incidents_desc')}</CardDescription>
           </div>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => handleOpenDialog()} variant="default" className="btn-primary px-4 py-2 text-base font-semibold shadow-sm">
               <PlusCircle className="mr-2 h-5 w-5" />
-              Créer un incident
+              {t('create_incident')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[625px]">
             <DialogHeader>
-              <DialogTitle>{selectedIncident ? "Modifier l'incident" : "Créer un incident"}</DialogTitle>
+              <DialogTitle>{selectedIncident ? t('edit_incident') : t('create_incident')}</DialogTitle>
             </DialogHeader>
             <IncidentForm
               incident={selectedIncident}

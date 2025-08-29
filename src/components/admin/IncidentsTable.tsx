@@ -18,7 +18,7 @@ interface IncidentsTableProps {
 }
 
 const IncidentsTable = ({ incidents, loading, onEdit, onRefresh }: IncidentsTableProps) => {
-  const { t } = useSafeTranslation();
+  const { t, i18n } = useSafeTranslation();
   const { admins } = useAdmins();
 
   const statusVariantMap: { [key: string]: "default" | "destructive" | "secondary" | "outline" } = {
@@ -37,11 +37,12 @@ const IncidentsTable = ({ incidents, loading, onEdit, onRefresh }: IncidentsTabl
         </Button>
       </div>
       <div className="overflow-x-auto rounded-xl shadow-sm bg-card border border-border/40">
-        <Table className="min-w-[700px]">
+        <Table className="min-w-[900px]">
           <TableHeader className="bg-muted/60">
             <TableRow>
               <TableHead className="font-semibold text-muted-foreground">{t('status')}</TableHead>
               <TableHead className="font-semibold text-muted-foreground">{t('title')}</TableHead>
+              <TableHead className="font-semibold text-muted-foreground">{t('description')}</TableHead>
               <TableHead className="font-semibold text-muted-foreground">{t('service')}</TableHead>
               <TableHead className="font-semibold text-muted-foreground">Admin</TableHead>
               <TableHead className="font-semibold text-muted-foreground">{t('last_update')}</TableHead>
@@ -51,15 +52,19 @@ const IncidentsTable = ({ incidents, loading, onEdit, onRefresh }: IncidentsTabl
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">{t('loading')}...</TableCell>
+                <TableCell colSpan={7} className="text-center">{t('loading')}...</TableCell>
               </TableRow>
             ) : incidents.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">{t('no_incidents')}</TableCell>
+                <TableCell colSpan={7} className="text-center">{t('no_incidents')}</TableCell>
               </TableRow>
             ) : (
               incidents.map(incident => {
                 const admin = admins.find(a => a.id === incident.author_id);
+                const isEn = i18n.language === 'en';
+                const title = isEn ? (incident.title_en || incident.title) : incident.title;
+                const description = isEn ? (incident.description_en || incident.description) : incident.description;
+                const locale = isEn ? undefined : fr;
                 return (
                   <TableRow key={incident.id} className="transition-all hover:bg-muted/30">
                     <TableCell>
@@ -67,7 +72,8 @@ const IncidentsTable = ({ incidents, loading, onEdit, onRefresh }: IncidentsTabl
                         {t(incident.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-medium text-foreground max-w-[220px] truncate">{incident.title}</TableCell>
+                    <TableCell className="font-medium text-foreground max-w-[220px] truncate">{title}</TableCell>
+                    <TableCell className="text-muted-foreground max-w-[300px] truncate">{description}</TableCell>
                     <TableCell className="text-muted-foreground">{incident.service?.name || t('system_wide_incident')}</TableCell>
                     <TableCell>
                       {admin ? (
@@ -80,7 +86,7 @@ const IncidentsTable = ({ incidents, loading, onEdit, onRefresh }: IncidentsTabl
                         </div>
                       ) : <span className="text-xs text-muted-foreground">-</span>}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{format(new Date(incident.incident_updates[0]?.created_at || incident.created_at), 'd MMM yyyy, HH:mm', { locale: fr })}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{format(new Date(incident.incident_updates[0]?.created_at || incident.created_at), isEn ? 'MMM d, yyyy, HH:mm' : 'd MMM yyyy, HH:mm', { locale })}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" onClick={() => onEdit(incident)} className="hover:bg-primary/10">
                         <Edit className="h-4 w-4 text-muted-foreground" />
