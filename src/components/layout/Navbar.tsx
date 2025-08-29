@@ -148,13 +148,13 @@ const Navbar = () => {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to={`/profile/${profile?.id}`} className="w-full cursor-pointer flex items-center gap-2">
-            <User className="h-4 w-4" />
+            <User className="h-4 w-4 text-primary" />
             <span>Mon Profil</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/requests" className="w-full cursor-pointer flex items-center gap-2">
-            <MailQuestion className="h-4 w-4" />
+            <MailQuestion className="h-4 w-4 text-primary" />
             <span>{t('my_requests')}</span>
           </Link>
         </DropdownMenuItem>
@@ -235,13 +235,13 @@ const Navbar = () => {
                   <DropdownMenuContent className="w-48 p-2">
                     <DropdownMenuItem asChild className="cursor-pointer rounded-lg text-white">
                       <Link to="/status" className="flex items-center gap-3">
-                        <Activity className="h-4 w-4" />
+                        <Activity className="h-4 w-4 text-primary" />
                         {t('status')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="cursor-pointer rounded-lg text-white">
                       <Link to="/about" className="flex items-center gap-3">
-                        <User className="h-4 w-4" />
+                        <User className="h-4 w-4 text-primary" />
                         {t('about_us')}
                       </Link>
                     </DropdownMenuItem>
@@ -278,13 +278,13 @@ const Navbar = () => {
                       <DropdownMenuContent className="w-56 p-2">
                         <DropdownMenuItem asChild className="cursor-pointer rounded-lg text-white">
                           <Link to="/admin" className="flex items-center gap-3">
-                            <Shield className="h-4 w-4" />
+                            <Shield className="h-4 w-4 text-primary" />
                             {t('admin_dashboard')}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild className="cursor-pointer rounded-lg text-white">
                           <Link to="/requests/manage" className="flex items-center gap-3">
-                            <MailQuestion className="h-4 w-4" />
+                            <MailQuestion className="h-4 w-4 text-primary" />
                             {t('requests')}
                           </Link>
                         </DropdownMenuItem>

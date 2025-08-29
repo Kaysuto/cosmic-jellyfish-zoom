@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSafeTranslation } from '@/hooks/useSafeTranslation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import {
   Tooltip,
@@ -46,16 +46,11 @@ const ServicesStatus = ({ services }: ServicesStatusProps) => {
   const { t } = useSafeTranslation();
   const [currentPage, setCurrentPage] = useState(1);
   const SERVICES_PER_PAGE = 4;
-
   const totalPages = Math.ceil(services.length / SERVICES_PER_PAGE);
   const startIndex = (currentPage - 1) * SERVICES_PER_PAGE;
   const currentServices = services.slice(startIndex, startIndex + SERVICES_PER_PAGE);
-
   return (
     <Card className="flex flex-col h-full bg-card">
-      <CardHeader>
-        <CardTitle>{t('services_status')}</CardTitle>
-      </CardHeader>
       <CardContent className="flex-grow flex flex-col justify-start overflow-y-auto py-4">
         <AnimatePresence mode="wait">
           <motion.div

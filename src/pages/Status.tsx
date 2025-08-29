@@ -60,9 +60,9 @@ const Status = () => {
   const isOperational = activeIncidents.length === 0;
   const statusTitle = isOperational ? t('all_systems_operational') : t('systems_issues_description');
   const StatusIcon = isOperational ? CheckCircle : AlertTriangle;
-  const statusColor = isOperational ? 'text-green-500' : 'text-yellow-500';
-  const statusBgColor = isOperational ? 'bg-green-500/10' : 'bg-yellow-500/10';
-  const statusBorderColor = isOperational ? 'border-green-500/20' : 'border-yellow-500/20';
+  const statusColor = 'text-primary';
+  const statusBgColor = 'bg-primary/10';
+  const statusBorderColor = 'border-primary/20';
 
   const operationalServices = services.filter(s => s.status === 'operational').length;
   const totalServices = services.length;
@@ -121,8 +121,8 @@ const Status = () => {
           <Card className="backdrop-blur-sm border-border/50">
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                  <Server className="h-5 w-5 text-blue-500" />
+                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                  <Server className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{t('total_services')}</p>
@@ -135,8 +135,8 @@ const Status = () => {
           <Card className="backdrop-blur-sm border-border/50">
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                  <CheckCircle className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{t('operational_services')}</p>
@@ -149,8 +149,8 @@ const Status = () => {
           <Card className="backdrop-blur-sm border-border/50">
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                  <AlertTriangle className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{t('active_incidents')}</p>
@@ -163,8 +163,9 @@ const Status = () => {
 
         {/* Main Content Grid */}
         <motion.div variants={itemVariants} className="grid gap-8 lg:grid-cols-3">
-          {/* Services Status - 2/3 width */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* Colonne principale élargie : Statut, Incidents, Disponibilité */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Statut des services, incidents et disponibilité regroupés */}
             <Card className="backdrop-blur-sm border-border/50">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
@@ -172,7 +173,7 @@ const Status = () => {
                   <span>{t('services_status')}</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-8">
                 {isLoading ? (
                   <div className="space-y-4">
                     <Skeleton className="h-12 w-full" />
@@ -182,76 +183,42 @@ const Status = () => {
                 ) : (
                   <ServicesStatus services={services} />
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Incident History */}
-            <Card className="backdrop-blur-sm border-border/50">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  <span>{t('incident_history')}</span>
-                  {activeIncidents.length > 0 && (
-                    <Badge variant="destructive" className="ml-2">
-                      {activeIncidents.length}
-                    </Badge>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <IncidentHistory />
-              </CardContent>
-            </Card>
-
-            {/* Uptime History */}
-            <Card className="backdrop-blur-sm border-border/50">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  <span>{t('uptime_history')}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <UptimeHistory 
-                  services={services} 
-                  selectedServiceId={selectedServiceId} 
-                  onServiceChange={setSelectedServiceId} 
-                />
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Clock className="h-5 w-5 text-primary" />
+                      <span className="text-2xl font-bold text-foreground">{t('incident_history')}</span>
+                      {activeIncidents.length > 0 && (
+                        <Badge variant="destructive" className="ml-2">
+                          {activeIncidents.length}
+                        </Badge>
+                      )}
+                    </div>
+                    <IncidentHistory />
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      {/* Pas de titre en doublon */}
+                    </div>
+                    <UptimeHistory 
+                      services={services} 
+                      selectedServiceId={selectedServiceId} 
+                      onServiceChange={setSelectedServiceId} 
+                    />
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Sidebar - 1/3 width */}
+          {/* Sidebar : Discord uniquement si présent */}
           <div className="space-y-6">
-            {/* Discord Widget */}
             {getSetting('discord_widget_url') && (
               <motion.div variants={itemVariants}>
                 <DiscordWidget />
               </motion.div>
             )}
-
-            {/* System Info */}
-            <Card className="backdrop-blur-sm border-border/50">
-              <CardHeader>
-                <CardTitle className="text-lg">{t('system_info')}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">{t('last_updated')}</span>
-                  <span className="text-sm font-medium">
-                    {new Date().toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">{t('uptime')}</span>
-                  <span className="text-sm font-medium">99.9%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">{t('response_time')}</span>
-                  <span className="text-sm font-medium">~50ms</span>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </motion.div>
       </motion.div>

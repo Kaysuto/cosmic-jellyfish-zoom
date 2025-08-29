@@ -43,6 +43,7 @@ const IncidentManager = () => {
             serviceId: data.service_id,
             message: data.update_message,
             userId: session?.user.id,
+            authorId: data.admin_id || null,
           }
         });
         if (error) throw error;
@@ -56,6 +57,7 @@ const IncidentManager = () => {
             serviceId: data.service_id,
             message: data.update_message,
             userId: session?.user.id,
+            authorId: data.admin_id || null,
           }
         });
         if (error) throw error;

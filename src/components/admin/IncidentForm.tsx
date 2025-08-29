@@ -8,12 +8,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Incident } from '@/types/status';
 import { Service } from '@/types/supabase';
+import { useAdmins } from '@/hooks/useAdmins';
 
 const incidentSchema = z.object({
   title: z.string().min(1, "Le titre est requis."),
   status: z.enum(['investigating', 'identified', 'monitoring', 'resolved']),
   service_id: z.number().nullable(),
   update_message: z.string().min(1, "Un message de mise à jour est requis."),
+  admin_id: z.string().optional(),
 });
 
 type IncidentFormValues = z.infer<typeof incidentSchema>;
@@ -27,6 +29,7 @@ interface IncidentFormProps {
 }
 
 const IncidentForm = ({ incident, services, onSubmit, onCancel, isSubmitting }: IncidentFormProps) => {
+  const { admins, loading: loadingAdmins } = useAdmins();
   const form = useForm<IncidentFormValues>({
     resolver: zodResolver(incidentSchema),
     defaultValues: {
@@ -34,6 +37,7 @@ const IncidentForm = ({ incident, services, onSubmit, onCancel, isSubmitting }: 
       status: incident?.status || 'investigating',
       service_id: incident?.service_id || null,
       update_message: '',
+      admin_id: incident?.author_id || '',
     },
   });
 
@@ -48,6 +52,34 @@ const IncidentForm = ({ incident, services, onSubmit, onCancel, isSubmitting }: 
               <FormLabel>Titre</FormLabel>
               <FormControl>
                 <Input placeholder="Titre de l'incident" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="admin_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Administrateur associé</FormLabel>
+              <FormControl>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={loadingAdmins}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un admin..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {admins.map((admin) => (
+                      <SelectItem key={admin.id} value={admin.id}>
+                        {admin.first_name || admin.email || admin.id}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -71,6 +103,7 @@ const IncidentForm = ({ incident, services, onSubmit, onCancel, isSubmitting }: 
                     <SelectItem value="identified">Identifié</SelectItem>
                     <SelectItem value="monitoring">Surveillance</SelectItem>
                     <SelectItem value="resolved">Résolu</SelectItem>
+                    <SelectItem value="null">Aucun (incident général)</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -90,7 +123,7 @@ const IncidentForm = ({ incident, services, onSubmit, onCancel, isSubmitting }: 
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Aucun (incident général)</SelectItem>
+                    <SelectItem value="null">Aucun (incident général)</SelectItem>
                     {services.map(service => (
                       <SelectItem key={service.id} value={String(service.id)}>
                         {service.name}

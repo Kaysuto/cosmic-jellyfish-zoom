@@ -18,4 +18,5 @@ export interface Incident {
   service_id: number | null;
   service: Service | null;
   incident_updates: IncidentUpdate[];
+  author_id?: string | null;
 }

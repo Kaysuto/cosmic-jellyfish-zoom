@@ -24,7 +24,8 @@ export const useIncidents = () => {
         return {
           ...incident,
           incident_updates: [], // Table incident_updates n'existe pas encore
-          service: null // Temporairement null jusqu'à ce que la relation soit corrigée
+          service: null, // Temporairement null jusqu'à ce que la relation soit corrigée
+          author_id: incident.author_id ?? null,
         };
       });
 
