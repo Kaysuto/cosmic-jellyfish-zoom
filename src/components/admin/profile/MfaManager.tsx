@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +13,7 @@ import { Factor } from '@supabase/supabase-js';
 import { useSession } from '@/contexts/AuthContext';
 
 const MfaManager = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { session } = useSession();
   const [mfaFactors, setMfaFactors] = useState<Factor[]>([]);
   const [isLoadingMfa, setIsLoadingMfa] = useState(true);

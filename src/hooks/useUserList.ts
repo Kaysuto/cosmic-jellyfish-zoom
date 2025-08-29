@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/AuthContext';
 import { showError, showSuccess } from '@/utils/toast';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 
 type ListType = 'favorite' | 'watchlist';
 
 export const useUserList = (listType: ListType) => {
   const { session } = useSession();
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const [list, setList] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 

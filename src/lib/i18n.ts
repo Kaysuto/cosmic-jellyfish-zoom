@@ -77,56 +77,36 @@ const loadTranslations = async () => {
   }
 };
 
-// Promesse pour attendre l'initialisation complète
-let i18nInitialized = false;
-let i18nInitPromise: Promise<void> | null = null;
-
 // Initialisation d'i18n avec chargement asynchrone
 const initializeI18n = async () => {
-  if (i18nInitialized) return;
-  
-  if (i18nInitPromise) {
-    return i18nInitPromise;
-  }
+  const resources = await loadTranslations();
 
-  i18nInitPromise = (async () => {
-    const resources = await loadTranslations();
-
-    await i18n
-      .use(LanguageDetector)
-      .use(initReactI18next)
-      .init({
-        resources,
-        fallbackLng: 'fr',
-        debug: false,
-        interpolation: {
-          escapeValue: false,
-        },
-        detection: {
-          order: ['querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag'],
-          caches: ['localStorage', 'cookie'],
-        },
-        // Ajouter une vérification de sécurité pour éviter les erreurs
-        react: {
-          useSuspense: false,
-        },
-      });
-    
-    i18nInitialized = true;
-  })();
-
-  return i18nInitPromise;
+  await i18n
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+      resources,
+      fallbackLng: 'fr',
+      debug: false,
+      interpolation: {
+        escapeValue: false,
+      },
+      detection: {
+        order: ['querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag'],
+        caches: ['localStorage', 'cookie'],
+      },
+      react: {
+        useSuspense: false,
+      },
+    });
 };
 
-// Initialiser immédiatement
-initializeI18n();
+// Initialiser immédiatement et exporter la promesse
+const i18nInitPromise = initializeI18n();
 
 // Fonction utilitaire pour attendre l'initialisation
 export const waitForI18n = () => {
-  if (i18nInitialized) {
-    return Promise.resolve();
-  }
-  return i18nInitPromise || initializeI18n();
+  return i18nInitPromise;
 };
 
 export default i18n;

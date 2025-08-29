@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -29,7 +29,7 @@ const statusConfig = {
 };
 
 const OverallStatus = ({ status, lastUpdatedText }: OverallStatusProps) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const config = statusConfig[status];
   const Icon = config.icon;
 

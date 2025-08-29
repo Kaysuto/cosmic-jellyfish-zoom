@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
+import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,18 +9,34 @@ import { useSession } from '@/contexts/AuthContext';
 import { useJellyfin } from '@/contexts/JellyfinContext';
 import JellyfinLibrarySection from '@/components/catalog/JellyfinLibrarySection';
 import PopularMediaSection from '@/components/catalog/PopularMediaSection';
+import CatalogSections from '@/components/home/CatalogSections';
+import ContinueWatching from '@/components/catalog/ContinueWatching';
+import WatchlistSection from '@/components/catalog/WatchlistSection';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const Catalog = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { session } = useSession();
   const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+  
+  // Debounce le terme de recherche pour éviter les redirections trop fréquentes
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  const sections = [
-    { name: t('catalog_section_films'), desc: t('catalog_section_films_desc'), icon: Film, path: '/discover/films' },
-    { name: t('catalog_section_series'), desc: t('catalog_section_series_desc'), icon: Tv, path: '/discover/series' },
-    { name: t('catalog_section_animes'), desc: t('catalog_section_animes_desc'), icon: Video, path: '/discover/animes' },
-  ];
+  // Rediriger automatiquement vers la page de recherche quand l'utilisateur tape
+  useEffect(() => {
+    if (debouncedSearchTerm && debouncedSearchTerm.trim()) {
+      navigate(`/catalog/search?q=${encodeURIComponent(debouncedSearchTerm.trim())}`);
+    }
+  }, [debouncedSearchTerm, navigate]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/catalog/search?q=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-12">
@@ -30,28 +46,23 @@ const Catalog = () => {
         <p className="mt-2 text-lg text-muted-foreground">{t('catalog_description')}</p>
       </header>
 
-      {/* Search and Request */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('search_and_request')}</CardTitle>
-          <CardDescription>{t('search_and_request_desc')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex w-full max-w-lg mx-auto items-center space-x-2">
+      {/* Search */}
+      <div className="flex justify-center">
+        <div className="w-full max-w-lg">
+          <form onSubmit={handleSearch}>
             <Input
               type="search"
               placeholder={t('search_in_catalog')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full"
             />
-            <Button asChild>
-              <Link to={`/search?q=${encodeURIComponent(searchTerm)}`}>
-                <Search className="mr-2 h-4 w-4" /> {t('search')}
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </form>
+        </div>
+      </div>
+
+      {/* Catalog Sections */}
+      <CatalogSections />
 
       {/* Jellyfin Sections */}
       {!jellyfinError && !jellyfinLoading && jellyfinUrl && (
@@ -61,33 +72,31 @@ const Catalog = () => {
         </>
       )}
 
-      {/* Popular Media Sections */}
-      <PopularMediaSection title={t('popular_movies')} mediaType="movie" />
-      <PopularMediaSection title={t('popular_tv_shows')} mediaType="tv" />
+      {/* Watchlist Section */}
+      <WatchlistSection />
 
-      {/* Discover Sections */}
-      <div>
-        <h2 className="text-3xl font-bold text-center mb-6">{t('explore_catalog_sections')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {sections.map((section) => (
-            <Link to={section.path} key={section.name}>
-              <Card className="hover:shadow-lg transition-shadow h-full">
-                <CardHeader>
-                  <div className="flex items-center space-x-4">
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                      <section.icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle>{section.name}</CardTitle>
-                      <CardDescription>{section.desc}</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div>
+      {/* Continue Watching Section */}
+      <ContinueWatching />
+
+      {/* Popular Media Sections */}
+      <PopularMediaSection 
+        title={t('popular_movies')} 
+        mediaType="movie" 
+        maxItems={10}
+        showViewMore={true}
+      />
+      <PopularMediaSection 
+        title={t('popular_tv_shows')} 
+        mediaType="tv" 
+        maxItems={10}
+        showViewMore={true}
+      />
+      <PopularMediaSection 
+        title={t('popular_animes')} 
+        mediaType="anime" 
+        maxItems={10}
+        showViewMore={true}
+      />
     </div>
   );
 };

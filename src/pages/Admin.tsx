@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Button } from '@/components/ui/button';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,7 +35,7 @@ import AdminNotifications from '@/components/admin/AdminNotifications';
 import { cn } from '@/lib/utils';
 
 const Admin = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const navigate = useNavigate();
   const { profile, loading: profileLoading } = useProfile();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);

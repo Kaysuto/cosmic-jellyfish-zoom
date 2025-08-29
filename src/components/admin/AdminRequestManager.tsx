@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { supabase } from '@/integrations/supabase/client';
+import { useJellyfin } from '@/contexts/JellyfinContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -8,7 +9,7 @@ import { fr, enUS } from 'date-fns/locale';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Check, X, Download, Hourglass, MailQuestion, Trash2, LayoutGrid, List } from 'lucide-react';
+import { MoreHorizontal, Check, X, Download, Hourglass, MailQuestion, Trash2, LayoutGrid, List, RefreshCw } from 'lucide-react';
 import { showError, showSuccess } from '@/utils/toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getGravatarURL } from '@/lib/gravatar';
@@ -27,19 +28,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { MediaRequest as BaseMediaRequest } from '@/types/supabase';
 
-interface MediaRequest {
-  id: string;
-  title: string;
-  status: 'pending' | 'approved' | 'rejected' | 'available';
-  requested_at: string;
-  media_type: 'movie' | 'tv' | 'anime' | string;
-  user_id: string;
-  media_tmdb_id?: number | null;
-  // Canonical poster field used across the app
-  poster_path?: string | null;
-  // legacy / alternative field used by some server responses
-  media_poster_path?: string | null;
+interface MediaRequest extends BaseMediaRequest {
   profiles: {
     first_name: string | null;
     last_name: string | null;
@@ -49,15 +40,17 @@ interface MediaRequest {
 }
 
 const AdminRequestManager = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
+  const { syncApprovedRequests, connectionStatus } = useJellyfin();
   const [requests, setRequests] = useState<MediaRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
-  const [bulkAction, setBulkAction] = useState<'approve' | 'reject' | 'delete' | 'set_available' | 'set_pending' | null>(null);
+  const [bulkAction, setBulkAction] = useState<'approve' | 'reject' | 'delete' | 'set_completed' | 'set_pending' | null>(null);
   
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
@@ -68,7 +61,7 @@ const AdminRequestManager = () => {
       if (filterStatus !== 'all') {
         requestQuery = requestQuery.eq('status', filterStatus);
       }
-      const { data: requestData, error: requestError } = await requestQuery.order('requested_at', { ascending: false });
+      const { data: requestData, error: requestError } = await requestQuery.order('updated_at', { ascending: false });
 
       if (requestError) {
         throw requestError;
@@ -123,7 +116,7 @@ const AdminRequestManager = () => {
     };
   }, [filterStatus]);
 
-  const handleStatusChange = async (ids: string[], newStatus: MediaRequest['status']) => {
+  const handleStatusChange = async (ids: number[], newStatus: BaseMediaRequest['status']) => {
     const { error } = await supabase
       .from('media_requests')
       .update({ status: newStatus, updated_at: new Date().toISOString() })
@@ -137,7 +130,7 @@ const AdminRequestManager = () => {
     }
   };
   
-  const handleDelete = async (ids: string[]) => {
+  const handleDelete = async (ids: number[]) => {
     const { error } = await supabase.from('media_requests').delete().in('id', ids);
     if (error) {
       showError(t('error_deleting_requests'));
@@ -148,7 +141,7 @@ const AdminRequestManager = () => {
     }
   };
 
-  const toggleSelect = (id: string) => {
+  const toggleSelect = (id: number) => {
     setSelectedIds(prev => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -180,7 +173,7 @@ const AdminRequestManager = () => {
     if (bulkAction === 'delete') {
       await handleDelete(ids);
     } else if (bulkAction) {
-      const newStatus = bulkAction.replace('set_', '') as MediaRequest['status'];
+      const newStatus = bulkAction.replace('set_', '') as BaseMediaRequest['status'];
       await handleStatusChange(ids, newStatus);
     }
 
@@ -188,15 +181,33 @@ const AdminRequestManager = () => {
     setSelectedIds(new Set());
   };
 
+  const handleSyncRequests = async () => {
+    if (connectionStatus !== 'connected') {
+      showError(t('jellyfin_not_connected'));
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      await syncApprovedRequests();
+      showSuccess(t('sync_success'));
+      fetchRequests(); // Rafraîchir les données
+    } catch (error: any) {
+      showError(t('sync_error') + ': ' + error.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const statusConfig = {
     pending: { text: t('status_pending'), className: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
     approved: { text: t('status_approved'), className: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
     rejected: { text: t('status_rejected'), className: 'bg-red-500/20 text-red-400 border-red-500/30' },
-    available: { text: t('status_available'), className: 'bg-green-500/20 text-green-400 border-green-500/30' },
+    completed: { text: t('status_completed'), className: 'bg-green-500/20 text-green-400 border-green-500/30' },
   };
 
   // Helper to resolve poster path: prefer canonical `poster_path`, fallback to `media_poster_path`.
-  const getPosterPath = (r: MediaRequest) => r.poster_path ?? r.media_poster_path ?? '';
+  const getPosterPath = (r: MediaRequest) => r.poster_path ?? '';
 
   useEffect(() => {
     const handleResize = () => {
@@ -231,7 +242,7 @@ const AdminRequestManager = () => {
             <TableCell>
               <img src={`https://image.tmdb.org/t/p/w92${getPosterPath(req)}`} alt="" className="h-12 w-9 rounded-md object-cover" />
             </TableCell>
-            <TableCell><Link to={`/media/${req.media_type}/${req.media_tmdb_id}`} className="font-medium hover:underline">{req.title}</Link></TableCell>
+            <TableCell><Link to={`/media/${req.media_type}/${req.tmdb_id}`} className="font-medium hover:underline">{req.title}</Link></TableCell>
             <TableCell>
               <Link to={`/profile/${req.user_id}`} className="flex items-center gap-2 hover:underline">
                 <Avatar className="h-8 w-8">
@@ -241,14 +252,14 @@ const AdminRequestManager = () => {
                 {req.profiles?.first_name} {req.profiles?.last_name}
               </Link>
             </TableCell>
-            <TableCell>{format(new Date(req.requested_at), 'd MMM yyyy', { locale: currentLocale })}</TableCell>
+            <TableCell>{format(new Date(req.updated_at), 'd MMM yyyy', { locale: currentLocale })}</TableCell>
             <TableCell><Badge variant="outline" className={statusConfig[req.status]?.className}>{statusConfig[req.status].text}</Badge></TableCell>
             <TableCell className="text-right">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => handleStatusChange([req.id], 'approved')}><Check className="mr-2 h-4 w-4" /> {t('status_approved')}</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleStatusChange([req.id], 'available')}><Download className="mr-2 h-4 w-4" /> {t('status_available')}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleStatusChange([req.id], 'completed')}><Download className="mr-2 h-4 w-4" /> {t('status_completed')}</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleStatusChange([req.id], 'rejected')}><X className="mr-2 h-4 w-4" /> {t('status_rejected')}</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleStatusChange([req.id], 'pending')}><Hourglass className="mr-2 h-4 w-4" /> {t('status_pending')}</DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -263,46 +274,48 @@ const AdminRequestManager = () => {
   );
 
   const renderRequestGrid = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {requests.map(req => (
-        <Card key={req.id} className={`overflow-hidden transition-all ${selectedIds.has(req.id) ? 'border-primary ring-2 ring-primary' : ''}`}>
-          <CardHeader className="p-0">
-            <div className="relative">
-              <Checkbox
-                checked={selectedIds.has(req.id)}
-                onCheckedChange={() => toggleSelect(req.id)}
-                className="absolute top-2 left-2 z-10 bg-background/50 border-white/50"
-              />
-              <img src={`https://image.tmdb.org/t/p/w500${getPosterPath(req)}`} alt="" className="aspect-[2/3] object-cover w-full" />
-              <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
-              <Badge variant="outline" className={`absolute top-2 right-2 ${statusConfig[req.status]?.className}`}>
-                {statusConfig[req.status].text}
-              </Badge>
-              <Link to={`/media/${req.media_type}/${req.media_tmdb_id}`} className="absolute bottom-2 left-3 right-3 font-bold text-white hover:underline text-lg">
-                {req.title}
+    <div className="relative">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        {requests.map(req => (
+          <Card key={req.id} className={`overflow-hidden transition-all ${selectedIds.has(req.id) ? 'border-primary ring-2 ring-primary' : ''}`}>
+            <CardHeader className="p-0">
+              <div className="relative">
+                <Checkbox
+                  checked={selectedIds.has(req.id)}
+                  onCheckedChange={() => toggleSelect(req.id)}
+                  className="absolute top-2 left-2 z-10 bg-background/50 border-white/50"
+                />
+                <img src={`https://image.tmdb.org/t/p/w500${getPosterPath(req)}`} alt="" className="aspect-[2/3] object-cover w-full" />
+                <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
+                <Badge variant="outline" className={`absolute top-2 right-2 ${statusConfig[req.status]?.className}`}>
+                  {statusConfig[req.status].text}
+                </Badge>
+                <Link to={`/media/${req.media_type}/${req.tmdb_id}`} className="absolute bottom-2 left-3 right-3 font-bold text-white hover:underline text-sm">
+                  {req.title}
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="p-2">
+              <Link to={`/profile/${req.user_id}`} className="flex items-center gap-2 hover:underline text-xs">
+                <Avatar className="h-5 w-5">
+                  <AvatarImage src={req.profiles?.avatar_url || getGravatarURL(req.profiles?.email)} />
+                  <AvatarFallback>{req.profiles?.first_name?.[0] || 'U'}</AvatarFallback>
+                </Avatar>
+                <span className="truncate">{req.profiles?.first_name} {req.profiles?.last_name}</span>
               </Link>
-            </div>
-          </CardHeader>
-          <CardContent className="p-3">
-            <Link to={`/profile/${req.user_id}`} className="flex items-center gap-2 hover:underline text-sm">
-              <Avatar className="h-7 w-7">
-                <AvatarImage src={req.profiles?.avatar_url || getGravatarURL(req.profiles?.email)} />
-                <AvatarFallback>{req.profiles?.first_name?.[0] || 'U'}</AvatarFallback>
-              </Avatar>
-              {req.profiles?.first_name} {req.profiles?.last_name}
-            </Link>
-            <p className="text-xs text-muted-foreground mt-1">{format(new Date(req.requested_at), 'd MMM yyyy, HH:mm', { locale: currentLocale })}</p>
-          </CardContent>
-          <CardFooter className="p-2 bg-muted/30 border-t"> 
-            <div className="flex w-full gap-2">
-              <Button title={t('approve')} size="sm" className="flex-1" variant="outline" onClick={() => handleStatusChange([req.id], 'approved')}><Check className="h-4 w-4" /></Button>
-              <Button title={t('reject')} size="sm" className="flex-1" variant="outline" onClick={() => handleStatusChange([req.id], 'rejected')}><X className="h-4 w-4" /></Button>
-              <Button title={t('set_available')} size="sm" className="flex-1" variant="outline" onClick={() => handleStatusChange([req.id], 'available')}><Download className="h-4 w-4" /></Button>
-              <Button title={t('delete')} size="sm" className="flex-1 text-red-500" variant="outline" onClick={() => handleDelete([req.id])}><Trash2 className="h-4 w-4" /></Button>
-            </div>
-          </CardFooter>
-        </Card>
-      ))}
+              <p className="text-xs text-muted-foreground mt-1">{format(new Date(req.updated_at), 'd MMM yyyy', { locale: currentLocale })}</p>
+            </CardContent>
+            <CardFooter className="p-2 bg-muted/30 border-t"> 
+              <div className="flex w-full gap-1">
+                <Button title={t('approve')} size="sm" className="flex-1 h-7" variant="outline" onClick={() => handleStatusChange([req.id], 'approved')}><Check className="h-3 w-3" /></Button>
+                <Button title={t('reject')} size="sm" className="flex-1 h-7" variant="outline" onClick={() => handleStatusChange([req.id], 'rejected')}><X className="h-3 w-3" /></Button>
+                <Button title={t('set_completed')} size="sm" className="flex-1 h-7" variant="outline" onClick={() => handleStatusChange([req.id], 'completed')}><Download className="h-3 w-3" /></Button>
+                <Button title={t('delete')} size="sm" className="flex-1 h-7 text-red-500" variant="outline" onClick={() => handleDelete([req.id])}><Trash2 className="h-3 w-3" /></Button>
+              </div>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 
@@ -324,9 +337,22 @@ const AdminRequestManager = () => {
               <SelectItem value="pending">{t('status_pending')}</SelectItem>
               <SelectItem value="approved">{t('status_approved')}</SelectItem>
               <SelectItem value="rejected">{t('status_rejected')}</SelectItem>
-              <SelectItem value="available">{t('status_available')}</SelectItem>
+              <SelectItem value="completed">{t('status_completed')}</SelectItem>
             </SelectContent>
           </Select>
+          <Button 
+            variant="outline" 
+            onClick={handleSyncRequests} 
+            disabled={syncing || connectionStatus !== 'connected'}
+            className="flex items-center gap-2"
+          >
+            {syncing ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            {syncing ? t('sync_in_progress') : t('sync_approved_requests')}
+          </Button>
           <div className="hidden md:flex p-1 bg-muted rounded-lg">
             <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="sm" onClick={() => setViewMode('list')}><List className="h-4 w-4" /></Button>
             <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="sm" onClick={() => setViewMode('grid')}><LayoutGrid className="h-4 w-4" /></Button>
@@ -347,7 +373,7 @@ const AdminRequestManager = () => {
                <DropdownMenu>
                 <DropdownMenuTrigger asChild><Button variant="ghost" size="sm"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => openBulkConfirm('set_available')}><Download className="mr-2 h-4 w-4" /> {t('status_available')}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openBulkConfirm('set_completed')}><Download className="mr-2 h-4 w-4" /> {t('status_completed')}</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => openBulkConfirm('set_pending')}><Hourglass className="mr-2 h-4 w-4" /> {t('status_pending')}</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

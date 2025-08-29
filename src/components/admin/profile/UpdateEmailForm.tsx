@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -22,7 +22,7 @@ interface UpdateEmailFormProps {
 }
 
 const UpdateEmailForm = ({ profile }: UpdateEmailFormProps) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const { session } = useSession();
 
   const emailSchema = useMemo(() => z.object({

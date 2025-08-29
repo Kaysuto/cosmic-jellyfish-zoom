@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,7 +13,7 @@ import { useMemo, useEffect } from 'react';
 import { useSession } from '@/contexts/AuthContext';
 
 const UpdatePasswordForm = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const { session } = useSession();
 
   const passwordSchema = useMemo(() => z.object({

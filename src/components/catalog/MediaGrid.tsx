@@ -38,12 +38,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, 
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
 
   const mediaIds = useMemo(() => items.map(item => item.id), [items]);
-  const { requestedIds: initialRequestedIds } = useRequestStatus(mediaIds);
-  const [newlyRequestedIds, setNewlyRequestedIds] = useState<Set<number>>(new Set());
-
-  const requestedIds = useMemo(() => {
-    return new Set([...Array.from(initialRequestedIds), ...Array.from(newlyRequestedIds)]);
-  }, [initialRequestedIds, newlyRequestedIds]);
+  const { requestedIds, addRequestedIdAndRefresh, forceRefresh } = useRequestStatus(mediaIds);
 
   const handleRequest = (item: MediaItem) => {
     if (onRequest) {
@@ -56,7 +51,12 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, 
 
   const onModalSuccess = () => {
     if (selectedItem) {
-      setNewlyRequestedIds(prev => new Set(prev).add(selectedItem.id));
+      // Si l'item est déjà marqué comme demandé, forcer le rafraîchissement
+      if (selectedItem.isRequested) {
+        forceRefresh();
+      } else {
+        addRequestedIdAndRefresh(selectedItem.id);
+      }
     }
   }
 
@@ -76,10 +76,10 @@ const MediaGrid: React.FC<MediaGridProps> = ({ items, showRequestButton = true, 
             transition={{ duration: 0.5, delay: index * 0.03, ease: "easeInOut" }}
           >
             <MediaCard
-              item={{ ...item, isRequested: requestedIds.has(item.id) }}
-              onRequest={handleRequest}
+              key={`${item.id}-${item.media_type}`}
+              item={{ ...item, poster_path: item.poster_path || '', isRequested: requestedIds.has(item.id) }}
               showRequestButton={showRequestButton}
-              searchTerm={searchTerm}
+              onRequest={onRequest}
             />
           </motion.div>
         ))}

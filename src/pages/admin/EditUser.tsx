@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { useUserById } from '@/hooks/useUserById';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import { useSession } from '@/contexts/AuthContext';
 const EditUserPage = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { user, loading, refreshUser } = useUserById(userId);
   const { session } = useSession();
 

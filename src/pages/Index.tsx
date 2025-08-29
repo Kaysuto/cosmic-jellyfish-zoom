@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { motion } from 'framer-motion';
 import { Clapperboard, Smartphone, Users, Play, TrendingUp, Sparkles } from 'lucide-react';
 import FeaturedMedia from '@/components/home/FeaturedMedia';
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DiscordWidget from '@/components/widgets/DiscordWidget';
 
 const Index = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   const features = [
     {

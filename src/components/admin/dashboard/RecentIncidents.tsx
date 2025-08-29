@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertTriangle, CheckCircle, Wrench } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
@@ -23,7 +23,7 @@ const statusConfig: Record<IncidentStatus, { labelKey: string; color: string; ic
 
 const RecentIncidents = () => {
   const { incidents, loading } = useIncidents();
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   if (loading) {
     return (

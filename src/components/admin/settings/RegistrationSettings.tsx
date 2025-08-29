@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from '@/components/ui/skeleton';
 import { Shield } from 'lucide-react';
 import { useSession } from '@/contexts/AuthContext';
-import { AppSetting } from '@/contexts/SettingsContext';
+import { AppSetting } from '@/types/supabase';
 
 interface RegistrationSettingsProps {
   settings: AppSetting[];
@@ -17,7 +17,7 @@ interface RegistrationSettingsProps {
 }
 
 const RegistrationSettings = ({ settings, loading, onUpdate }: RegistrationSettingsProps) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { session } = useSession();
   const [allowRegistrations, setAllowRegistrations] = useState(true);
 

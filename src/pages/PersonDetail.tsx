@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,7 +27,7 @@ interface PersonCredits {
 
 const PersonDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const navigate = useNavigate();
   const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [person, setPerson] = useState<PersonDetails | null>(null);

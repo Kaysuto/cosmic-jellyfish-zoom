@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { motion } from 'framer-motion';
 import { 
   Film, 
@@ -20,7 +20,7 @@ interface CatalogSection {
 }
 
 const CatalogSections = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   const sections: CatalogSection[] = [
     {
@@ -59,7 +59,7 @@ const CatalogSections = () => {
 
   return (
     <div className="w-full py-16">
-      <div className="container mx-auto px-4">
+      <div className="container-responsive">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">{t('catalog_sections.title')}</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">

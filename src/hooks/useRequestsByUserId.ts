@@ -2,10 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface UserMediaRequest {
-  id: string;
+  id: number;
   title: string;
-  status: 'pending' | 'approved' | 'rejected' | 'available';
-  requested_at: string;
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  updated_at: string;
   media_type: 'movie' | 'tv' | 'anime';
   poster_path: string | null;
   tmdb_id: number;
@@ -23,9 +23,9 @@ export const useRequestsByUserId = (userId: string | undefined) => {
     setLoading(true);
     const { data, error } = await supabase
       .from('media_requests')
-      .select('id, title, status, requested_at, media_type, poster_path, tmdb_id')
+      .select('id, title, status, updated_at, media_type, poster_path, tmdb_id')
       .eq('user_id', userId)
-      .order('requested_at', { ascending: false });
+      .order('updated_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching user requests:', error);

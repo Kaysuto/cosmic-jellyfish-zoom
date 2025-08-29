@@ -1,0 +1,164 @@
+-- ========================================
+-- CORRECTION DES TABLES MANQUANTES
+-- ========================================
+-- Date: 2025-01-28
+-- Description: Création des tables manquantes qui causent les erreurs 404
+
+-- ========================================
+-- 1. CRÉER LA TABLE CATALOG_ITEMS
+-- ========================================
+CREATE TABLE IF NOT EXISTS public.catalog_items (
+  id SERIAL PRIMARY KEY,
+  tmdb_id INTEGER NOT NULL,
+  jellyfin_id TEXT,
+  media_type TEXT NOT NULL CHECK (media_type IN ('movie', 'tv', 'anime')),
+  title TEXT NOT NULL,
+  overview TEXT,
+  poster_path TEXT,
+  backdrop_path TEXT,
+  release_date DATE,
+  vote_average DECIMAL(3,1),
+  vote_count INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(tmdb_id, media_type)
+);
+
+-- Index pour les performances
+CREATE INDEX IF NOT EXISTS idx_catalog_items_tmdb_id ON public.catalog_items(tmdb_id);
+CREATE INDEX IF NOT EXISTS idx_catalog_items_media_type ON public.catalog_items(media_type);
+CREATE INDEX IF NOT EXISTS idx_catalog_items_jellyfin_id ON public.catalog_items(jellyfin_id);
+
+-- ========================================
+-- 2. CRÉER LA TABLE MEDIA_REQUESTS
+-- ========================================
+CREATE TABLE IF NOT EXISTS public.media_requests (
+  id SERIAL PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  tmdb_id INTEGER NOT NULL,
+  media_type TEXT NOT NULL CHECK (media_type IN ('movie', 'tv', 'anime')),
+  title TEXT NOT NULL,
+  overview TEXT,
+  poster_path TEXT,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'completed')),
+  admin_notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index pour les performances
+CREATE INDEX IF NOT EXISTS idx_media_requests_user_id ON public.media_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_media_requests_tmdb_id ON public.media_requests(tmdb_id);
+CREATE INDEX IF NOT EXISTS idx_media_requests_status ON public.media_requests(status);
+
+-- ========================================
+-- 3. CRÉER LA TABLE APP_SETTINGS (alias de settings)
+-- ========================================
+CREATE TABLE IF NOT EXISTS public.app_settings (
+  id SERIAL PRIMARY KEY,
+  key TEXT UNIQUE NOT NULL,
+  value TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ========================================
+-- 4. CONFIGURER RLS POUR CATALOG_ITEMS
+-- ========================================
+ALTER TABLE public.catalog_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read access to catalog_items" ON public.catalog_items
+  FOR SELECT USING (true);
+
+CREATE POLICY "Allow admins to manage catalog_items" ON public.catalog_items
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.role = 'admin'
+    )
+  );
+
+-- ========================================
+-- 5. CONFIGURER RLS POUR MEDIA_REQUESTS
+-- ========================================
+ALTER TABLE public.media_requests ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own requests" ON public.media_requests
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create their own requests" ON public.media_requests
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Admins can manage all requests" ON public.media_requests
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.role = 'admin'
+    )
+  );
+
+-- ========================================
+-- 6. CONFIGURER RLS POUR APP_SETTINGS
+-- ========================================
+ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read access to app_settings" ON public.app_settings
+  FOR SELECT USING (true);
+
+CREATE POLICY "Allow admins to manage app_settings" ON public.app_settings
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.role = 'admin'
+    )
+  );
+
+-- ========================================
+-- 7. INSÉRER LES DONNÉES PAR DÉFAUT
+-- ========================================
+
+-- Données par défaut pour app_settings
+INSERT INTO public.app_settings (key, value) 
+VALUES 
+  ('allow_new_registrations', 'true'),
+  ('maintenance_mode', 'false'),
+  ('site_name', 'Cosmic Jellyfish'),
+  ('site_description', 'Plateforme de streaming personnalisée')
+ON CONFLICT (key) DO NOTHING;
+
+-- ========================================
+-- 8. CORRIGER LA TABLE PROFILES POUR L'ERREUR 406
+-- ========================================
+-- S'assurer que la table profiles existe et a les bonnes colonnes
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
+
+CREATE POLICY "Users can view own profile" ON public.profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile" ON public.profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Admins can view all profiles" ON public.profiles
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.role = 'admin'
+    )
+  );
+
+-- ========================================
+-- 9. VÉRIFICATION FINALE
+-- ========================================
+SELECT 'Migration terminée avec succès' as status, 
+       COUNT(*) as tables_count 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+  AND table_name IN ('catalog_items', 'media_requests', 'app_settings', 'jellyfin_settings', 'settings', 'profiles');

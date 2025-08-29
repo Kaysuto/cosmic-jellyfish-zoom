@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import DiscordIcon from '@/components/icons/DiscordIcon';
@@ -21,7 +21,7 @@ interface DiscordWidgetData {
 }
 
 const DiscordWidget = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const [widgetData, setWidgetData] = useState<DiscordWidgetData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);

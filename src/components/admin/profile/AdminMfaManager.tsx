@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +15,7 @@ interface AdminMfaManagerProps {
 }
 
 const AdminMfaManager = ({ user }: AdminMfaManagerProps) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { session } = useSession();
   const [hasMfa, setHasMfa] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

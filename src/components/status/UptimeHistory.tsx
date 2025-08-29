@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useUptimeHistory } from '@/hooks/useUptimeHistory';
 
 const NextUpdateTimer = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {
@@ -48,7 +48,7 @@ interface UptimeHistoryProps {
 }
 
 const UptimeHistory = ({ services, selectedServiceId, onServiceChange }: UptimeHistoryProps) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month'>('day');
   const { uptimeData, loading } = useUptimeHistory(selectedServiceId, timeRange);
 

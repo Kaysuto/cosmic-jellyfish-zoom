@@ -147,10 +147,12 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       streamUrl, 
+      title: itemDetails.Name || 'Film',
       container: 'application/x-mpegURL',
       chapters: itemDetails.Chapters || [],
       audioTracks,
-      subtitleTracks
+      subtitleTracks,
+      totalDuration: itemDetails.RunTimeTicks ? itemDetails.RunTimeTicks / 10000000 : 0
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

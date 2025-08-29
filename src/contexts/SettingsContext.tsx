@@ -1,11 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
-
-export interface AppSetting {
-  key: string;
-  value: string;
-}
+import { AppSetting } from '@/types/supabase';
 
 interface SettingsContextType {
   settings: AppSetting[];
@@ -27,7 +23,16 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchSettings = useCallback(async () => {
     try {
-      const { data, error } = await supabase.from('app_settings').select('*');
+      // Essayer d'abord app_settings, puis settings comme fallback
+      let { data, error } = await supabase.from('app_settings').select('*');
+      
+      if (error && (error.code === 'PGRST116' || error.code === '42P01')) {
+        // Si app_settings n'existe pas, essayer settings
+        const result = await supabase.from('settings').select('*');
+        data = result.data;
+        error = result.error;
+      }
+      
       if (error) {
         console.error('Error fetching app settings:', error);
         setSettings([]);
@@ -54,6 +59,17 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
             event: '*',
             schema: 'public',
             table: 'app_settings',
+          },
+          (payload) => {
+            fetchSettings();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'settings',
           },
           (payload) => {
             fetchSettings();

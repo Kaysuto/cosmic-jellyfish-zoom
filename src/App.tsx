@@ -12,15 +12,17 @@ import { SettingsProvider, useSettings } from "./contexts/SettingsContext";
 import { JellyfinProvider } from "./contexts/JellyfinContext";
 import { useEffect, lazy, Suspense } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import DebugApp from "@/components/DebugApp";
+import { usePlaybackProgress } from "@/hooks/usePlaybackProgress";
 
 
 
-// Lazy loaded components
+// Lazy loaded components avec gestion d'erreur améliorée
 const Index = lazy(() => import("./pages/Index"));
 const StatusPage = lazy(() => import("./pages/Status"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
 const Settings = lazy(() => import("./pages/admin/Settings"));
 const ProfileIndex = lazy(() => import("./pages/ProfileIndex"));
@@ -32,21 +34,29 @@ const MaintenanceManager = lazy(() => import("./components/admin/MaintenanceMana
 const UserManager = lazy(() => import("./components/admin/UserManager"));
 const EditUserPage = lazy(() => import("./pages/admin/EditUser"));
 const LogsPage = lazy(() => import("./pages/admin/Logs"));
-const MediaDetailPage = lazy(() => import("./pages/MediaDetail"));
+
+// MediaDetail avec gestion d'erreur spécifique
+const MediaDetailPage = lazy(() => 
+  import("./pages/MediaDetail").catch((error) => {
+    console.error('Erreur de chargement MediaDetail:', error);
+    // Retourner un composant de fallback
+    return import("./pages/NotFound");
+  })
+);
+
 const PersonDetailPage = lazy(() => import("./pages/PersonDetail"));
 const CatalogPage = lazy(() => import("./pages/Catalog"));
+const SearchPage = lazy(() => import("./pages/Search"));
 const FullSectionPage = lazy(() => import("./pages/FullSectionPage"));
 const AdminRequestManager = lazy(() => import("./components/admin/AdminRequestManager"));
 const DmcaPage = lazy(() => import("./pages/Dmca"));
 const AboutPage = lazy(() => import("./pages/About"));
 const PrivacyPage = lazy(() => import("./pages/Privacy"));
 const SchedulePage = lazy(() => import("./pages/Schedule"));
-const UserPublicProfile = lazy(() => import('./pages/UserPublicProfile'));
 const Profile = lazy(() => import('./pages/Profile'));
 const MyRequestsPage = lazy(() => import('./pages/MyRequests'));
 const PlayerPage = lazy(() => import("./pages/PlayerPage"));
 const JellyfinAdminPage = lazy(() => import("./pages/admin/Jellyfin"));
-
 
 
 const queryClient = new QueryClient({
@@ -62,19 +72,20 @@ const queryClient = new QueryClient({
 
 
 const AppStateInitializer = ({ children }: { children: React.ReactNode }) => {
+  const { getSetting, loading: settingsLoading } = useSettings();
+  const defaultLanguage = getSetting('default_language', 'fr') as 'fr' | 'en';
+  
+  useLanguageDetection(defaultLanguage);
+  usePlaybackProgress(); // Initialiser le système de sauvegarde de progression
+
+  useEffect(() => {
+    if (!settingsLoading) {
+      const siteTitle = getSetting('site_title', 'Statut des Services Jelly');
+      document.title = siteTitle;
+    }
+  }, [settingsLoading, getSetting]);
+
   try {
-    const { getSetting, loading: settingsLoading } = useSettings();
-    const defaultLanguage = getSetting('default_language', 'fr') as 'fr' | 'en';
-    
-    useLanguageDetection(defaultLanguage);
-
-    useEffect(() => {
-      if (!settingsLoading) {
-        const siteTitle = getSetting('site_title', 'Statut des Services Jelly');
-        document.title = siteTitle;
-      }
-    }, [settingsLoading, getSetting]);
-
     return <>{children}</>;
   } catch (error) {
     console.error('❌ AppStateInitializer: Erreur:', error);
@@ -106,7 +117,6 @@ const App = () => {
                       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                         <Suspense fallback={<LoadingSpinner />}>
                           <Routes>
-                            <Route path="/debug" element={<DebugApp />} />
                             <Route element={<MainLayout />}>
                               <Route path="/" element={<Index />} />
                               <Route path="/status" element={<StatusPage />} />
@@ -117,6 +127,7 @@ const App = () => {
                               <Route path="/media/:mediaType/:tmdbId" element={<MediaDetailPage />} />
                               <Route path="/person/:personId" element={<PersonDetailPage />} />
                               <Route path="/catalog" element={<CatalogPage />} />
+                              <Route path="/catalog/search" element={<SearchPage />} />
                               <Route path="/discover/:section" element={<FullSectionPage />} />
                               <Route path="/profile/:userId" element={<ProfileIndex />} />
                               <Route path="/profile" element={<Profile />} />
@@ -151,6 +162,8 @@ const App = () => {
                             </Route>
                             
                             <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
+                            <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/update-password" element={<UpdatePassword />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
@@ -167,7 +180,7 @@ const App = () => {
     );
   } catch (error) {
     console.error('❌ App: Erreur lors du rendu:', error);
-    return <DebugApp />;
+    return <LoadingSpinner />;
   }
 };
 

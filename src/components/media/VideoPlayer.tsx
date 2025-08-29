@@ -18,7 +18,7 @@ import type {
 } from 'vidstack';
 import { showError } from '@/utils/toast';
 import { useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -27,7 +27,6 @@ interface VideoPlayerProps {
   title: string;
   container?: string | null;
   chapters?: any[] | null;
-  audioTracks?: any[];
   subtitleTracks?: any[];
   startTime?: number | null;
   onTimeUpdate?: (time: number) => void;
@@ -38,11 +37,16 @@ interface VideoPlayerProps {
 
 const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTime, onTimeUpdate, onDurationChange, selectedSubtitleIndex, onBack }: VideoPlayerProps) => {
   const player = useRef<MediaPlayerElement>(null);
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   const onLoadedMetadata = (_event: MediaLoadedMetadataEvent) => {
     const playerRef = player.current as any;
     if (!playerRef) return;
+
+    // Notifier la durée dès que les métadonnées sont chargées
+    if (onDurationChange && !isNaN(playerRef.duration) && playerRef.duration > 0) {
+      onDurationChange(playerRef.duration);
+    }
 
     // Add Chapters (with fallbacks and title normalization)
     const existingTracks = playerRef.textTracks.getByKind('chapters');
@@ -150,7 +154,11 @@ const VideoPlayer = ({ src, title, container, chapters, subtitleTracks, startTim
       aspectRatio={16 / 9}
     >
       <MediaOutlet />
-      <MediaCommunitySkin />
+      <MediaCommunitySkin 
+        style={{
+          '--media-pip-button-display': 'none'
+        } as React.CSSProperties}
+      />
       <Button
         variant="ghost"
         size="icon"

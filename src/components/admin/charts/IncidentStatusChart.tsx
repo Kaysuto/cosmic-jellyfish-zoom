@@ -1,5 +1,5 @@
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Incident } from '@/types/status';
 import { AlertTriangle } from 'lucide-react';
@@ -16,7 +16,7 @@ const COLORS = {
 };
 
 const IncidentStatusChart = ({ incidents }: IncidentStatusChartProps) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   const statusCounts = incidents.reduce((acc, incident) => {
     acc[incident.status] = (acc[incident.status] || 0) + 1;

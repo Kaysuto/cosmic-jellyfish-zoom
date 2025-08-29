@@ -1,5 +1,5 @@
 import { ResponsiveContainer, BarChart, XAxis, YAxis, Bar, Tooltip } from 'recharts';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Incident } from '@/types/status';
 import { subDays, format, eachDayOfInterval, startOfDay } from 'date-fns';
@@ -10,7 +10,7 @@ interface IncidentHistoryChartProps {
 }
 
 const IncidentHistoryChart = ({ incidents }: IncidentHistoryChartProps) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   const endDate = new Date();
   const startDate = subDays(endDate, 29);

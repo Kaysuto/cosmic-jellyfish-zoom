@@ -76,6 +76,9 @@
   "soon": "Soon",
   "soon_available": "Coming soon",
   "series_available": "Series available",
+  "no_available_content_found": "No available content found",
+  "no_content_found": "No content found",
+  "try_disabling_available_filter": "Try disabling the availability filter",
   
   "media_type": "Media Type",
   "login_to_request": "Login to Request",

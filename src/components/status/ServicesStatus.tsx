@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import {
@@ -43,7 +43,7 @@ const statusIndicatorConfig = {
 };
 
 const ServicesStatus = ({ services }: ServicesStatusProps) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const [currentPage, setCurrentPage] = useState(1);
   const SERVICES_PER_PAGE = 4;
 

@@ -45,8 +45,10 @@ serve(async (req) => {
         first_name,
         last_name,
       },
-      // Optionally confirm email automatically if desired (commented out by default)
-      // email_confirm: true,
+      // Confirm email automatically to allow immediate access
+      email_confirm: true,
+      // Also set email_confirmed_at to ensure the user is considered confirmed
+      email_confirmed_at: new Date().toISOString(),
     };
 
     const { data, error } = await supabaseAdmin.auth.admin.createUser(createPayload);

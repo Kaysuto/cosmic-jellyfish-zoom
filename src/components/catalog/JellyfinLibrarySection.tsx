@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import MediaGrid, { MediaItem } from './MediaGrid';
@@ -15,7 +15,7 @@ interface JellyfinLibrarySectionProps {
 }
 
 const JellyfinLibrarySection = ({ title, endpoint, itemType }: JellyfinLibrarySectionProps) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { jellyfinUrl, loading: jellyfinLoading, error: jellyfinError } = useJellyfin();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,11 +30,13 @@ const JellyfinLibrarySection = ({ title, endpoint, itemType }: JellyfinLibrarySe
       try {
         const { data, error } = await supabase.functions.invoke('jellyfin-proxy', {
           body: {
-            endpoint: endpoint,
+            endpoint: 'Items',
             params: {
               IncludeItemTypes: itemType,
               Limit: 12,
-              Fields: 'ProviderIds',
+              Fields: 'ProviderIds,DateCreated,ImageTags,PremiereDate,CommunityRating',
+              SortBy: 'DateCreated',
+              SortOrder: 'Descending',
             },
           },
         });
@@ -42,7 +44,10 @@ const JellyfinLibrarySection = ({ title, endpoint, itemType }: JellyfinLibrarySe
         if (error) throw error;
         if (data.error) throw new Error(data.error);
 
-        const mappedItems: MediaItem[] = data
+        // L'endpoint Items retourne { Items: [...] }
+        const items = data.Items || data;
+        
+        const mappedItems: MediaItem[] = items
           .filter((item: any) => item.ProviderIds?.Tmdb)
           .map((item: any) => ({
             id: parseInt(item.ProviderIds.Tmdb, 10),

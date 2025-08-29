@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,7 @@ const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const WEBHOOK_URL = "https://tgffkwoekuaetahrwioo.supabase.co/rest/v1/rpc/handle_webhook";
 
 const WebhookInstructions = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   const copyToClipboard = (text: string, successMessage: string) => {
     navigator.clipboard.writeText(text);

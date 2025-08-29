@@ -1,29 +1,28 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useMemo, useState } from 'react';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Link } from 'react-router-dom';
 import { useContinueWatching, ContinueWatchingItem } from '@/hooks/useContinueWatching';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
-import MediaCardWithPlay from './MediaCardWithPlay';
+import { ArrowRight, PlayCircle } from 'lucide-react';
+import MediaCard from './MediaCard';
+import ResumePlaybackDialog from './ResumePlaybackDialog';
 import { useSession } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useJellyfin } from '@/contexts/JellyfinContext';
-import ResumePlaybackDialog from './ResumePlaybackDialog';
-import { supabase } from '@/integrations/supabase/client';
 
 const ContinueWatching = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { session } = useSession();
   const { items, loading } = useContinueWatching();
   const { error: jellyfinError } = useJellyfin();
   const navigate = useNavigate();
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<ContinueWatchingItem | null>(null);
   const [nowPlayingId, setNowPlayingId] = useState<number | null>(null);
   const [lastWatchedId, setLastWatchedId] = useState<number | null>(null);
+  const [resumeDialogOpen, setResumeDialogOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<ContinueWatchingItem | null>(null);
 
   useEffect(() => {
     // Récupérer le dernier média regardé depuis localStorage
@@ -47,101 +46,39 @@ const ContinueWatching = () => {
     return () => window.removeEventListener('playback-progress-saved', onSaved);
   }, []);
 
-  const handleCardClick = (e: React.MouseEvent, item: ContinueWatchingItem) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleItemClick = (item: ContinueWatchingItem) => {
     setSelectedItem(item);
-    setDialogOpen(true);
-  };
-
-  const handlePlayClick = (e: React.MouseEvent, item: ContinueWatchingItem) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!item.id || !item.media_type) {
-      console.error('Attempted to resume playback for an item missing id or media_type', item);
-      return;
-    }
-    
-    const resumeTimeInSeconds = item.playback_position_ticks / 10000000;
-    let url = `/media/${item.media_type}/${item.id}/play?t=${resumeTimeInSeconds}`;
-    if ((item.media_type === 'tv' || item.media_type === 'anime') && item.season_number && item.episode_number) {
-      url += `&season=${item.season_number}&episode=${item.episode_number}`;
-    }
-    navigate(url);
+    setResumeDialogOpen(true);
   };
 
   const handleResume = () => {
-    if (!selectedItem) return;
-    if (!selectedItem.id || !selectedItem.media_type) {
-      console.error('Attempted to resume playback for an item missing id or media_type', selectedItem);
-      setDialogOpen(false);
-      return;
+    if (selectedItem) {
+      // Naviguer vers le lecteur avec la position de reprise
+      const resumeTimeInSeconds = Math.floor(selectedItem.playback_position_ticks / 10000000);
+      navigate(`/player/${selectedItem.media_type}/${selectedItem.id}?resume=${resumeTimeInSeconds}`);
     }
-    const resumeTimeInSeconds = selectedItem.playback_position_ticks / 10000000;
-   let url = `/media/${selectedItem.media_type}/${selectedItem.id}/play?t=${resumeTimeInSeconds}`;
-   if ((selectedItem.media_type === 'tv' || selectedItem.media_type === 'anime') && selectedItem.season_number && selectedItem.episode_number) {
-     url += `&season=${selectedItem.season_number}&episode=${selectedItem.episode_number}`;
-   }
-   navigate(url);
-    setDialogOpen(false);
+    setResumeDialogOpen(false);
   };
 
   const handleRestart = () => {
-    if (!selectedItem) return;
-    if (!selectedItem.id || !selectedItem.media_type) {
-      console.error('Attempted to restart playback for an item missing id or media_type', selectedItem);
-      setDialogOpen(false);
-      return;
+    if (selectedItem) {
+      // Naviguer vers le lecteur sans position de reprise
+      navigate(`/player/${selectedItem.media_type}/${selectedItem.id}`);
     }
-    navigate(`/media/${selectedItem.media_type}/${selectedItem.id}/play`);
-    setDialogOpen(false);
+    setResumeDialogOpen(false);
   };
 
   const handleViewDetails = () => {
-    if (!selectedItem) return;
-    if (!selectedItem.id || !selectedItem.media_type) {
-      console.error('Attempted to view details for an item missing id or media_type', selectedItem);
-      setDialogOpen(false);
-      return;
+    if (selectedItem) {
+      // Naviguer vers la page de détails
+      navigate(`/media/${selectedItem.media_type}/${selectedItem.id}`);
     }
-    navigate(`/media/${selectedItem.media_type}/${selectedItem.id}`);
-    setDialogOpen(false);
+    setResumeDialogOpen(false);
   };
 
-  const handleRemoveFromContinueWatching = async (item: ContinueWatchingItem) => {
-    if (!session?.user || !item.id || !item.media_type) return;
-    
-    try {
-      // Supprimer toutes les entrées de playback_progress pour ce média
-      const { error } = await supabase
-        .from('playback_progress')
-        .delete()
-        .eq('user_id', session.user.id)
-        .eq('tmdb_id', item.id)
-        .eq('media_type', item.media_type);
-      
-      if (error) {
-        console.error('Error removing from continue watching:', error);
-        return;
-      }
-      
-      // Rafraîchir la liste
-      window.dispatchEvent(new CustomEvent('playback-progress-saved', {
-        detail: { tmdbId: item.id, mediaType: item.media_type }
-      }));
-    } catch (err) {
-      console.error('Error removing from continue watching:', err);
-    }
-  };
 
-  const handleRemoveWrapper = (mediaItem: any) => {
-    // Trouver l'item correspondant dans sortedItems
-    const continueItem = sortedItems.find(item => item.id === mediaItem.id && item.media_type === mediaItem.media_type);
-    if (continueItem) {
-      handleRemoveFromContinueWatching(continueItem);
-    }
-  };
+
+
 
   // Filter out invalid items (missing id or media_type) to avoid generating invalid routes
   const validItems = useMemo(() => (Array.isArray(items) ? items.filter(i => i && i.id && i.media_type) : []), [items]);
@@ -195,7 +132,10 @@ const ContinueWatching = () => {
     <>
       <section className="mb-12">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">{t('continue_watching')}</h2>
+          <div className="flex items-center gap-3">
+            <PlayCircle className="h-6 w-6 text-blue-500" />
+            <h2 className="text-2xl font-bold">{t('continue_watching')}</h2>
+          </div>
           <Button asChild variant="link">
             <Link to="/catalog">
               {t('view_all')} <ArrowRight className="ml-2 h-4 w-4" />
@@ -216,25 +156,22 @@ const ContinueWatching = () => {
               {sortedItems.map((item) => {
                 return (
                   <CarouselItem key={`${item.media_type}-${item.id}`} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 pl-4">
-                    <div onClick={(e) => handleCardClick(e, item)} className="cursor-pointer">
-                      <MediaCardWithPlay
-                        item={{
-                          ...item,
-                          // Affiche l'épisode en cours si disponible (Sxx Exx)
-                          title:
-                            (item.media_type !== 'movie' && item.season_number && item.episode_number)
-                              ? `${item.title || item.name || ''} • S${String(item.season_number).padStart(2,'0')} E${String(item.episode_number).padStart(2,'0')}`
-                              : item.title || item.name,
-                        } as any}
-                        showRequestButton={false}
-                        showRemoveButton={true}
-                        onRemove={handleRemoveWrapper}
-                        onPlayClick={handlePlayClick}
-                        progress={item.progress}
-                        playbackPositionTicks={item.playback_position_ticks}
-                        runtimeTicks={item.runtime_ticks}
-                      />
-                    </div>
+                    <MediaCard
+                      item={{
+                        ...item,
+                        // Affiche l'épisode en cours si disponible (Sxx Exx)
+                        title:
+                          (item.media_type !== 'movie' && item.season_number && item.episode_number)
+                            ? `${item.title || item.name || ''} • S${String(item.season_number).padStart(2,'0')} E${String(item.episode_number).padStart(2,'0')}`
+                            : item.title || item.name,
+                        media_type: item.media_type === 'anime' ? 'tv' : item.media_type,
+                        poster_path: item.poster_path || '',
+                        vote_average: item.vote_average || 0,
+                      }}
+                      showRequestButton={false}
+                      onRequest={() => {}} // Fonction vide car pas de demande dans cette section
+                      onClick={() => handleItemClick(item as ContinueWatchingItem)}
+                    />
                   </CarouselItem>
                 );
               })}
@@ -244,9 +181,10 @@ const ContinueWatching = () => {
           </Carousel>
         )}
       </section>
+
       <ResumePlaybackDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        open={resumeDialogOpen}
+        onOpenChange={setResumeDialogOpen}
         item={selectedItem}
         onResume={handleResume}
         onRestart={handleRestart}

@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Plus, AlertTriangle, Calendar, Users, Settings, Zap } from 'lucide-reac
 import { cn } from '@/lib/utils';
 
 const QuickActions = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   const actions = [
     {

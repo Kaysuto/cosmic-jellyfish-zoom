@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { useProfile } from '@/hooks/useProfile';
 import { useSettings } from '@/contexts/SettingsContext';
 import { motion } from 'framer-motion';
@@ -6,7 +6,7 @@ import GeneralSettingsForm from '@/components/admin/settings/GeneralSettingsForm
 import RegistrationSettings from '@/components/admin/settings/RegistrationSettings';
 
 const Settings = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { profile } = useProfile();
   const { settings, loading: settingsLoading, refreshSettings } = useSettings();
 

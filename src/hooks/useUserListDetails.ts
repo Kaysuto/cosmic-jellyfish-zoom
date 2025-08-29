@@ -2,14 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/AuthContext';
 import { showError } from '@/utils/toast';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { MediaItem } from '@/components/catalog/MediaGrid';
 
 type ListType = 'favorite' | 'watchlist';
 
 export const useUserListDetails = (userId: string, listType: ListType) => {
   const { session } = useSession();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const [list, setList] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
 

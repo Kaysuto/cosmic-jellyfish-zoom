@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { useJellyfin } from '@/contexts/JellyfinContext';
 
 const SchedulePage = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const { error: jellyfinError } = useJellyfin();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [schedule, setSchedule] = useState<Record<string, MediaItem[]>>({});

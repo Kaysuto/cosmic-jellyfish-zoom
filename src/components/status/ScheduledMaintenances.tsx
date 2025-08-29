@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Wrench, Clock } from 'lucide-react';
 import { format } from 'date-fns';
@@ -10,7 +10,7 @@ interface ScheduledMaintenancesProps {
 }
 
 const ScheduledMaintenances = ({ maintenances }: ScheduledMaintenancesProps) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
 
   const upcomingMaintenances = maintenances.filter(m => new Date(m.end_time) > new Date());

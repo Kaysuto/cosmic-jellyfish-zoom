@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useServices, Service } from '@/hooks/useServices';
 import { supabase } from '@/integrations/supabase/client';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -29,7 +29,7 @@ import { useSession } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 
 const ServiceManager = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { services, loading, refreshServices } = useServices();
   const { session } = useSession();
   const [isSheetOpen, setIsSheetOpen] = useState(false);

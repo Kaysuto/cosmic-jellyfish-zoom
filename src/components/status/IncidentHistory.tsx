@@ -1,5 +1,5 @@
 import { useIncidents } from '@/hooks/useIncidents';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Incident } from '@/types/status';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -16,7 +16,7 @@ const statusConfig = {
 };
 
 const IncidentItem = ({ incident }: { incident: Incident }) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const lastUpdate = incident.incident_updates?.[0];
   const config = statusConfig[incident.status] || statusConfig.investigating;
 
@@ -45,7 +45,7 @@ const IncidentItem = ({ incident }: { incident: Incident }) => {
 
 const IncidentHistory = () => {
   const { incidents, loading } = useIncidents();
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   if (loading) {
     return (

@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -12,21 +12,12 @@ const emailRegex = new RegExp(
 );
 
 interface SignUpFormProps {
-  onSubmit: (values: z.infer<typeof signupSchema>) => void;
+  onSubmit: (values: { email: string; password: string; first_name: string; last_name: string }) => void;
   isLoading: boolean;
 }
 
-const signupSchema = z.object({
-  email: z.string().regex(emailRegex, { message: 'Adresse e-mail invalide' }),
-  password: z.string()
-    .min(6, { message: 'Le mot de passe doit contenir au moins 6 caractères.' })
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, { message: 'Doit contenir une majuscule, une minuscule et un chiffre.' }),
-  first_name: z.string().min(1, { message: 'Le prénom est requis.' }),
-  last_name: z.string().min(1, { message: 'Le nom de famille est requis.' }),
-});
-
 const SignUpForm = ({ onSubmit, isLoading }: SignUpFormProps) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
 
   const dynamicSignupSchema = useMemo(() => z.object({
     email: z.string().regex(emailRegex, { message: t('invalid_email') }),

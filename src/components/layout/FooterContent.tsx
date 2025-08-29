@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -25,7 +25,7 @@ import { useMemo, useState, useEffect } from 'react';
 import logo from '/logo.png';
 
 export const FooterContent = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;

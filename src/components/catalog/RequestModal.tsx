@@ -33,6 +33,28 @@ const RequestModal: React.FC<RequestModalProps> = ({ open, onOpenChange, item, o
     }
     if (!item) return;
 
+    // Vérifier si une demande existe déjà pour ce média
+    const { data: existingRequest, error: checkError } = await supabase
+      .from('media_requests')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .eq('tmdb_id', item.id)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+      console.error('Error checking existing request:', checkError);
+      showError('Erreur lors de la vérification des demandes existantes.');
+      return;
+    }
+
+    if (existingRequest) {
+      showError('Vous avez déjà fait une demande pour ce média.');
+      onOpenChange(false);
+      // Mettre à jour l'état même si la demande existe déjà
+      onSuccess?.();
+      return;
+    }
+
     setSubmitting(true);
     try {
       const { error } = await supabase.from('media_requests').insert({
@@ -42,7 +64,6 @@ const RequestModal: React.FC<RequestModalProps> = ({ open, onOpenChange, item, o
         title: item.title || item.name || '',
         poster_path: item.poster_path || null,
         overview: notes || null,
-        requested_at: new Date().toISOString(),
       });
 
       if (error) throw error;
@@ -61,30 +82,45 @@ const RequestModal: React.FC<RequestModalProps> = ({ open, onOpenChange, item, o
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Demander : {item?.title || item?.name}</DialogTitle>
+          <DialogTitle>
+            {item?.isRequested ? 'Déjà demandé' : `Demander : ${item?.title || item?.name}`}
+          </DialogTitle>
           <DialogDescription>
-            Vous pouvez ajouter une note ou un commentaire à la demande (optionnel).
+            {item?.isRequested 
+              ? 'Vous avez déjà fait une demande pour ce média.'
+              : 'Vous pouvez ajouter une note ou un commentaire à la demande (optionnel).'
+            }
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          <div>
-            <label className="text-sm text-muted-foreground block mb-1">Titre</label>
-            <Input value={item?.title || item?.name || ''} readOnly />
-          </div>
+        {!item?.isRequested && (
+          <>
+            <div className="space-y-4 py-2">
+              <div>
+                <label className="text-sm text-muted-foreground block mb-1">Titre</label>
+                <Input value={item?.title || item?.name || ''} readOnly />
+              </div>
 
-          <div>
-            <label className="text-sm text-muted-foreground block mb-1">Notes (optionnel)</label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={5} />
-          </div>
-        </div>
+              <div>
+                <label className="text-sm text-muted-foreground block mb-1">Notes (optionnel)</label>
+                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={5} />
+              </div>
+            </div>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>Annuler</Button>
-          <Button onClick={handleSubmit} disabled={submitting}>
-            {submitting ? 'Envoi...' : 'Envoyer la demande'}
-          </Button>
-        </DialogFooter>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>Annuler</Button>
+              <Button onClick={handleSubmit} disabled={submitting}>
+                {submitting ? 'Envoi...' : 'Envoyer la demande'}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+
+        {item?.isRequested && (
+          <DialogFooter>
+            <Button onClick={() => onOpenChange(false)}>Fermer</Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

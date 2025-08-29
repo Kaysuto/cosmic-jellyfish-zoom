@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { 
@@ -22,7 +22,7 @@ interface NavItem {
 }
 
 const AdminNavigation = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   const navItems: NavItem[] = [
     { 

@@ -166,7 +166,8 @@ serve(async (req) => {
       container: 'application/x-mpegURL',
       chapters: episode.Chapters || [],
       audioTracks,
-      subtitleTracks
+      subtitleTracks,
+      totalDuration: episode.RunTimeTicks ? episode.RunTimeTicks / 10000000 : 0
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -6,7 +6,7 @@ import { Copy } from 'lucide-react';
 import { showSuccess } from '@/utils/toast';
 
 const Webhooks = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const baseUrl = `${window.location.origin}/api/webhooks/jellyfin`;
   const apiKey = "SUPABASE_ANON_KEY"; // This should be handled more securely
 

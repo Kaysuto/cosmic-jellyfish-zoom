@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { useProfile } from '@/hooks/useProfile';
 import { useSession } from '@/contexts/AuthContext';
 import { useUserListDetails } from '@/hooks/useUserListDetails';
@@ -37,7 +37,7 @@ import UpdatePasswordForm from '@/components/admin/profile/UpdatePasswordForm';
 import MfaManager from '@/components/admin/profile/MfaManager';
 
 const Profile = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const { profile, loading: profileLoading } = useProfile();
   const { session } = useSession();
   const [activeTab, setActiveTab] = useState('overview');

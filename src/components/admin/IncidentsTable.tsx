@@ -5,7 +5,7 @@ import { Incident } from '@/types/status';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Edit, RefreshCw } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 
 interface IncidentsTableProps {
   incidents: Incident[];
@@ -15,7 +15,7 @@ interface IncidentsTableProps {
 }
 
 const IncidentsTable = ({ incidents, loading, onEdit, onRefresh }: IncidentsTableProps) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   const statusVariantMap: { [key: string]: "default" | "destructive" | "secondary" | "outline" } = {
     resolved: 'secondary',

@@ -1,7 +1,7 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Settings as SettingsIcon } from 'lucide-react';
 import { useSession } from '@/contexts/AuthContext';
-import { AppSetting } from '@/contexts/SettingsContext';
+import { AppSetting } from '@/types/supabase';
 import { useMemo, useEffect, useState } from 'react';
 import {
   AlertDialog,
@@ -32,7 +32,7 @@ interface GeneralSettingsFormProps {
 }
 
 const GeneralSettingsForm = ({ settings, loading, onUpdate }: GeneralSettingsFormProps) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { session } = useSession();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingSettings, setPendingSettings] = useState<z.infer<typeof generalSettingsSchema> | null>(null);

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMaintenances, Maintenance } from '@/hooks/useMaintenances';
 import { useServices } from '@/hooks/useServices';
 import { supabase } from '@/integrations/supabase/client';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -37,7 +37,7 @@ import {
 import { motion } from 'framer-motion';
 
 const MaintenanceManager = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const { session } = useSession();
   const { maintenances, loading: maintenancesLoading, refreshMaintenances } = useMaintenances();
   const { services, loading: servicesLoading } = useServices();

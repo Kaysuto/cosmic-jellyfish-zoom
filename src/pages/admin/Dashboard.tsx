@@ -1,5 +1,5 @@
 import { motion, Variants } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { useUsers } from '@/hooks/useUsers';
 import { useIncidents } from '@/hooks/useIncidents';
 import { useServices } from '@/hooks/useServices';
@@ -48,7 +48,7 @@ const slideInFromLeft: Variants = {
 };
 
 const Dashboard = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { session } = useSession();
   const { users } = useUsers();
   const { incidents } = useIncidents();

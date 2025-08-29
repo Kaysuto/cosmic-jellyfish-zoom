@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { useUserById } from '@/hooks/useUserById';
 import { useRequestsByUserId } from '@/hooks/useRequestsByUserId';
 import { useUserListDetails } from '@/hooks/useUserListDetails';
@@ -29,7 +29,7 @@ import { useSession } from '@/contexts/AuthContext';
 
 const UserPublicProfile = () => {
   const { userId } = useParams<{ userId: string }>();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const { user, loading: userLoading } = useUserById(userId);
   const { requests, loading: requestsLoading } = useRequestsByUserId(userId);
   const { session } = useSession();

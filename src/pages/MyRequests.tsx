@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { useSession } from '@/contexts/AuthContext';
 import { useRequestsByUserId, UserMediaRequest } from '@/hooks/useRequestsByUserId';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,7 +16,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 const MyRequestsPage = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const { session } = useSession();
   const { requests, loading, refreshRequests } = useRequestsByUserId(session?.user?.id);
   const [requestToDelete, setRequestToDelete] = useState<UserMediaRequest | null>(null);
@@ -27,7 +27,7 @@ const MyRequestsPage = () => {
     pending: { text: t('status_pending'), className: 'bg-gray-500/20 text-gray-400 border-gray-500/30', ring: 'ring-gray-500/30' },
     approved: { text: t('status_approved'), className: 'bg-blue-500/20 text-blue-400 border-blue-500/30', ring: 'ring-blue-500/30' },
     rejected: { text: t('status_rejected'), className: 'bg-red-500/20 text-red-400 border-red-500/30', ring: 'ring-red-500/30' },
-    available: { text: t('status_available'), className: 'bg-green-500/20 text-green-400 border-green-500/30', ring: 'ring-green-500/30' },
+    completed: { text: t('status_completed'), className: 'bg-green-500/20 text-green-400 border-green-500/30', ring: 'ring-green-500/30' },
   };
 
   const mediaTypeIcons = {
@@ -108,7 +108,7 @@ const MyRequestsPage = () => {
                 <CardContent className="p-4 pt-0 flex-grow">
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Calendar className="mr-2 h-4 w-4" />
-                    <span>{format(new Date(request.requested_at), 'd MMMM yyyy', { locale: currentLocale })}</span>
+                    <span>{format(new Date(request.updated_at), 'd MMMM yyyy', { locale: currentLocale })}</span>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground mt-1">
                     {mediaTypeIcons[request.media_type]}

@@ -9,11 +9,11 @@ import { Bell, CheckCheck, CheckCircle2, Trash2, X, Clock, User } from 'lucide-r
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Link } from 'react-router-dom';
 
 export const Notifications = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, clearAllNotifications, loading } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
@@ -153,10 +153,32 @@ export const Notifications = () => {
 
                             {/* Content */}
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-2 mb-1">
-                                                                 <p className="text-sm font-medium leading-tight line-clamp-2">
-                                   {t(`notification_${notif.notification_type}`, { title: getCleanTitle(notif) })}
-                                 </p>
+                              <p className="text-sm font-medium leading-tight line-clamp-2 mb-1">
+                                {t(`notification_${notif.notification_type || 'undefined'}`, { title: getCleanTitle(notif) })}
+                              </p>
+
+                              {/* Requester info */}
+                              {notif.requester && (
+                                <div className="flex items-center gap-2 mb-1">
+                                  <img
+                                    src={notif.requester.avatar_url || getGravatarURL(notif.requester.email, 40)}
+                                    className="h-4 w-4 rounded-full object-cover border border-border"
+                                    alt="avatar"
+                                  />
+                                  <span className="text-xs text-muted-foreground">
+                                    {t('requested_by')} {notif.requester.first_name} {notif.requester.last_name}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Time and Actions */}
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  <Clock className="h-3 w-3" />
+                                  {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: currentLocale })}
+                                </div>
+                                
+                                {/* Action buttons */}
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                   {!notif.is_read && (
                                     <Button
@@ -179,27 +201,6 @@ export const Notifications = () => {
                                     <Trash2 className="h-3 w-3" />
                                   </Button>
                                 </div>
-                              </div>
-
-                              {/* Requester info */}
-                              {notif.requester && (
-                                <div className="flex items-center gap-2 mb-1">
-                                  <img
-                                    src={notif.requester.avatar_url || getGravatarURL(notif.requester.email, 40)}
-                                    className="h-4 w-4 rounded-full object-cover border border-border"
-                                    alt="avatar"
-                                  />
-                                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                    <User className="h-3 w-3" />
-                                    {t('requested_by')} {notif.requester.first_name} {notif.requester.last_name}
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* Time */}
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <Clock className="h-3 w-3" />
-                                {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: currentLocale })}
                               </div>
                             </div>
                           </div>

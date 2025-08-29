@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -30,7 +30,7 @@ interface UserProfileCardProps {
 }
 
 const UserProfileCard = ({ profile, session, onProfileUpdate }: UserProfileCardProps) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);

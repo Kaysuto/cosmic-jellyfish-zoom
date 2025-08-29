@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { motion } from 'framer-motion';
 import { Users, Heart, Rocket, Clapperboard, Code, Database, Globe, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import logo from '/logo.png';
 
 const AboutPage = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   return (
     <div className="container mx-auto px-4 py-16">

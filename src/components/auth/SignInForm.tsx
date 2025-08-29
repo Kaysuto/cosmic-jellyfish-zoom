@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -12,17 +12,14 @@ const emailRegex = new RegExp(
 );
 
 interface SignInFormProps {
-  onSubmit: (values: z.infer<typeof loginSchema>) => void;
+  onSubmit: (values: { email: string; password: string }) => void;
   isLoading: boolean;
 }
 
-const loginSchema = z.object({
-  email: z.string().regex(emailRegex, { message: 'Adresse e-mail invalide' }),
-  password: z.string().min(1, { message: 'Le mot de passe est requis.' }),
-});
+
 
 const SignInForm = ({ onSubmit, isLoading }: SignInFormProps) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
 
   const dynamicLoginSchema = useMemo(() => z.object({
     email: z.string().regex(emailRegex, { message: t('invalid_email') }),

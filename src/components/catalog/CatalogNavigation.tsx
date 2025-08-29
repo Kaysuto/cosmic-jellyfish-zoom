@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { 
@@ -20,7 +20,7 @@ interface CatalogSection {
 }
 
 const CatalogNavigation = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const location = useLocation();
 
   const sections: CatalogSection[] = [

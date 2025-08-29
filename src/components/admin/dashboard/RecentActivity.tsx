@@ -1,7 +1,7 @@
 import { useLogs } from '@/hooks/useLogs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Activity } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
@@ -10,7 +10,7 @@ import { useUsers } from '@/hooks/useUsers';
 const RecentActivity = () => {
   const { logs, loading } = useLogs();
   const { users, loading: usersLoading } = useUsers();
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   if (loading || usersLoading) {
     return <Skeleton className="h-[300px]" />;

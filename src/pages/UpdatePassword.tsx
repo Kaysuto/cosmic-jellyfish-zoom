@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { motion } from 'framer-motion';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -18,7 +18,7 @@ import { FooterContent } from '@/components/layout/FooterContent';
 import { useSession } from '@/contexts/AuthContext';
 
 const UpdatePassword = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const { session, loading: sessionLoading } = useSession();

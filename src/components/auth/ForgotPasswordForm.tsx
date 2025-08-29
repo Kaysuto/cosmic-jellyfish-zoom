@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -12,16 +12,12 @@ const emailRegex = new RegExp(
 );
 
 interface ForgotPasswordFormProps {
-  onSubmit: (values: z.infer<typeof forgotPasswordSchema>) => void;
+  onSubmit: (values: { email: string }) => void;
   isLoading: boolean;
 }
 
-const forgotPasswordSchema = z.object({
-  email: z.string().regex(emailRegex, { message: 'Adresse e-mail invalide' }),
-});
-
 const ForgotPasswordForm = ({ onSubmit, isLoading }: ForgotPasswordFormProps) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
 
   const dynamicForgotPasswordSchema = useMemo(() => z.object({
     email: z.string().regex(emailRegex, { message: t('invalid_email') }),

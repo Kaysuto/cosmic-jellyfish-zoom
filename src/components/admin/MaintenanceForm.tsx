@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -30,7 +30,7 @@ interface MaintenanceFormProps {
 }
 
 const MaintenanceForm = ({ maintenance, services, onSubmit, onCancel, isSubmitting }: MaintenanceFormProps) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   const formatDateForInput = (date: Date | string | undefined) => {
     if (!date) return '';

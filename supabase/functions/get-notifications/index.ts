@@ -2,147 +2,94 @@
 // @ts-nocheck
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-type Payload = {
-  tmdb_id?: number;
-  media_tmdb_id?: number;
-  title?: string;
-  media_title?: string;
-  poster_path?: string;
-  media_poster_path?: string;
-  media_type?: string;
-  user_id?: string;
-};
-
-type NotificationRow = {
-  id: string;
-  created_at: string;
-  type: string;
-  payload?: Payload | undefined;
-  title?: string | null;
-  is_read?: boolean;
-};
-
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders, status: 200 });
   }
 
   try {
+    // Récupérer l'utilisateur depuis le token d'authentification
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'No authorization header' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Utiliser le client admin pour contourner les politiques RLS
     const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get user from Authorization header (more secure)
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing Authorization header" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Vérifier l'authentification avec le client admin
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''));
     
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
-
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    const userId = user.id;
 
-    const { data, error } = await supabaseAdmin
-      .from("notifications")
-      .select("id, created_at, type, payload, title, is_read")
-      .eq("recipient_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(50);
+    // Récupérer les notifications de l'utilisateur connecté
+    const { data: notifications, error } = await supabaseAdmin
+      .from('notifications')
+      .select('*')
+      .eq('recipient_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20);
 
     if (error) {
-      throw error;
+      console.error('Error fetching notifications:', error);
+      return new Response(JSON.stringify({ error: 'Failed to fetch notifications' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    const raw = (data || []).map((n: NotificationRow) => {
-      let media_tmdb_id: number | null = null;
-      let media_title: string | null = n.title ?? null;
-      let media_poster_path: string | null = null;
-      let media_type: string | null = null;
-      let requester_user_id: string | null = null;
+    // Mapper les données pour correspondre à l'interface TypeScript
+    const mappedNotifications = (notifications || []).map(notification => {
+      const payload = notification.payload || {};
       
-      if (n.payload) {
-        try {
-          const p = typeof n.payload === "string"
-            ? (JSON.parse(n.payload as string) as Payload)
-            : (n.payload as Payload);
-          media_tmdb_id = p.tmdb_id ?? p.media_tmdb_id ?? null;
-          media_title = media_title ?? p.title ?? p.media_title ?? null;
-          media_poster_path = p.poster_path ?? p.media_poster_path ?? null;
-          media_type = p.media_type ?? null;
-          requester_user_id = p.user_id ?? null;
-          
-
-        } catch {
-          // ignore if payload is not valid JSON
-        }
-      }
-
       return {
-        id: n.id,
-        created_at: n.created_at,
-        notification_type: n.type || "unknown",
-        media_tmdb_id,
-        media_title,
-        media_poster_path,
-        is_read: !!n.is_read,
-        media_type,
-        requester_user_id,
+        id: notification.id,
+        created_at: notification.created_at,
+        notification_type: notification.type, // Mapper 'type' vers 'notification_type'
+        media_tmdb_id: payload.tmdb_id || null,
+        media_title: notification.title || payload.title || null,
+        media_poster_path: payload.poster_path || null,
+        is_read: notification.is_read,
+        recipient_id: notification.recipient_id,
+        media_type: payload.media_type || null,
+        requester: payload.user_id ? {
+          id: payload.user_id,
+          first_name: payload.first_name || '',
+          last_name: payload.last_name || '',
+          email: payload.email || '',
+          avatar_url: payload.avatar_url || null,
+        } : undefined,
       };
     });
 
-    // Enrich with requester profiles (batch)
-    const uniqueRequesterIds = Array.from(new Set(raw.map(r => r.requester_user_id).filter(Boolean))) as string[];
-    let requesterMap = new Map<string, any>();
-    if (uniqueRequesterIds.length > 0) {
-      const { data: profiles } = await supabaseAdmin
-        .from('profiles')
-        .select('id, first_name, last_name, email, avatar_url')
-        .in('id', uniqueRequesterIds);
-      if (profiles) {
-        requesterMap = new Map(profiles.map(p => [p.id, p]));
-      }
-    }
-
-    const formatted = raw.map(n => {
-      const p = n.requester_user_id ? requesterMap.get(n.requester_user_id) : null;
-      return {
-        ...n,
-        requester: p ? {
-          id: p.id,
-          first_name: p.first_name,
-          last_name: p.last_name,
-          email: p.email,
-          avatar_url: p.avatar_url,
-        } : null,
-      };
-    });
-
-    return new Response(JSON.stringify(formatted), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify(mappedNotifications), {
       status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message ?? String(error) }), {
+    console.error('get-notifications unexpected error:', error);
+    return new Response(JSON.stringify({ error: error?.message ?? String(error) }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

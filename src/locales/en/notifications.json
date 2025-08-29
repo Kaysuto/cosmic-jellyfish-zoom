@@ -7,9 +7,13 @@
   "notification_media_request": "New request for \"{{title}}\"",
   "notification_request_approved": "Your request for \"{{title}}\" has been approved.",
   "notification_request_rejected": "Your request for \"{{title}}\" has been rejected.",
+  "notification_undefined": "Notification for \"{{title}}\"",
   "mark_all_as_read": "Mark all as read",
   "requested_by": "Requested by",
   "mark_as_read": "Mark as read",
   "delete_notification": "Delete notification",
-  "clear_all_notifications": "Clear all"
+  "clear_all_notifications": "Clear all",
+  "notification_deleted": "Notification deleted.",
+  "notification_deleted_error": "Failed to delete notification.",
+  "mark_all_read_error": "Failed to mark all notifications as read."
 }

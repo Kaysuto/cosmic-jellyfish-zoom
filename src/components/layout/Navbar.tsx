@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo, useCallback } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { useSafeTranslation } from "@/hooks/useSafeTranslation";
-import { Menu, LayoutDashboard, User, LogOut, ChevronDown, Heart, MailQuestion, Film, Calendar, Activity, Users, LayoutGrid, Shield } from "lucide-react";
+import { Menu, LayoutDashboard, User, LogOut, ChevronDown, Heart, MailQuestion, Film, Calendar, Activity, LayoutGrid, Shield } from "lucide-react";
 import { Notifications } from './Notifications';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { session } = useSession();
+  const { session, loading: sessionLoading } = useSession();
   const { profile } = useProfile();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [isDonateDialogOpen, setIsDonateDialogOpen] = useState(false);
@@ -233,13 +233,13 @@ const Navbar = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-48 p-2">
-                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
+                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg text-white">
                       <Link to="/status" className="flex items-center gap-3">
                         <Activity className="h-4 w-4" />
                         {t('status')}
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
+                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg text-white">
                       <Link to="/about" className="flex items-center gap-3">
                         <User className="h-4 w-4" />
                         {t('about_us')}
@@ -266,7 +266,7 @@ const Navbar = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="hidden md:flex items-center gap-3"
             >
-              {session && profile ? (
+              {session && !sessionLoading ? (
                 <>
                   {profile?.role === 'admin' && (
                     <DropdownMenu modal={false}>
@@ -276,22 +276,16 @@ const Navbar = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-56 p-2">
-                        <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
+                        <DropdownMenuItem asChild className="cursor-pointer rounded-lg text-white">
                           <Link to="/admin" className="flex items-center gap-3">
                             <Shield className="h-4 w-4" />
                             {t('admin_dashboard')}
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
+                        <DropdownMenuItem asChild className="cursor-pointer rounded-lg text-white">
                           <Link to="/requests/manage" className="flex items-center gap-3">
                             <MailQuestion className="h-4 w-4" />
                             {t('requests')}
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
-                          <Link to="/admin/users" className="flex items-center gap-3">
-                            <Users className="h-4 w-4" />
-                            {t('manage_users')}
                           </Link>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -312,7 +306,7 @@ const Navbar = () => {
             {/* Menu mobile - Notifications et menu burger */}
             <div className="md:hidden flex items-center gap-2">
               {/* Notifications */}
-              {session && profile && <Notifications />}
+              {session && !sessionLoading && <Notifications />}
               
               {/* Menu burger */}
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -335,10 +329,14 @@ const Navbar = () => {
                       <div className="flex items-center gap-3">
                         <img src={logo} alt="Jelly Logo" className="h-8 w-auto" />
                         <div className="flex-1">
-                          {session && profile ? (
+                          {session && !sessionLoading ? (
                             <>
-                              <p className="font-semibold text-foreground">{profile.first_name} {profile.last_name}</p>
-                              <p className="text-sm text-muted-foreground">{profile.email}</p>
+                              <p className="font-semibold text-foreground">
+                                {profile ? `${profile.first_name} ${profile.last_name}` : session.user?.email?.split('@')[0] || 'Utilisateur'}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {profile?.email || session.user?.email || ''}
+                              </p>
                             </>
                           ) : (
                             <p className="font-semibold text-foreground">{t('welcome')}</p>
@@ -384,12 +382,12 @@ const Navbar = () => {
                       <div className="border-t border-border/50 my-4" />
 
                       {/* Section utilisateur mobile */}
-                      {session && profile ? (
+                      {session && !sessionLoading ? (
                         <>
                           <div className="px-2 text-xs text-muted-foreground uppercase font-semibold tracking-wider">
                             {t('user')}
                           </div>
-                          <NavLink to={`/profile/${profile.id}`} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
+                          <NavLink to={`/profile/${profile?.id || session.user?.id}`} className={mobileNavLinkClasses} onClick={() => setIsSheetOpen(false)}>
                             <User className="h-5 w-5" />
                             {t('profile')}
                           </NavLink>
@@ -399,7 +397,7 @@ const Navbar = () => {
                           </NavLink>
 
                           {/* Outils admin mobile */}
-                          {profile.role === 'admin' && (
+                          {profile?.role === 'admin' && (
                             <>
                               <div className="border-t border-border/50 my-4" />
                               <div className="px-2 text-xs text-muted-foreground uppercase font-semibold tracking-wider">
@@ -425,7 +423,7 @@ const Navbar = () => {
 
                     {/* Footer du menu mobile */}
                     <div className="px-4 pb-6">
-                      {session && profile ? (
+                      {session && !sessionLoading ? (
                         <Button 
                           onClick={() => { setIsSheetOpen(false); handleLogoutClick(); }} 
                           variant="destructive" 

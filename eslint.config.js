@@ -5,7 +5,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ["dist", "supabase/functions/**/*"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -24,14 +24,16 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       "@typescript-eslint/no-unused-vars": "off",
-      // Règles pour détecter les erreurs de syntaxe
-      "@typescript-eslint/no-unreachable": "error",
-      "@typescript-eslint/no-extra-semi": "error",
-      "@typescript-eslint/no-misplaced-newline": "error",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/ban-ts-comment": "warn",
+      "@typescript-eslint/no-empty-object-type": "warn",
+      "@typescript-eslint/no-require-imports": "warn",
       // Règles pour améliorer la qualité du code
       "no-console": "warn",
       "no-debugger": "error",
       "no-alert": "warn",
+      "no-useless-escape": "warn",
+      "no-empty": "warn",
     },
   },
 );

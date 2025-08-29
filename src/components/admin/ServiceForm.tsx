@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -37,7 +37,7 @@ interface ServiceFormProps {
 }
 
 const ServiceForm = ({ service, onSubmit, onCancel, isSubmitting }: ServiceFormProps) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),

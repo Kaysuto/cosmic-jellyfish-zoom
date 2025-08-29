@@ -38,7 +38,7 @@ AS $$
         'still_path', je.still_path
       )
       FROM public.jellyfin_episodes je
-      WHERE je.series_jellyfin_id = nu.jellyfin_id
+      WHERE je.jellyfin_id = nu.jellyfin_id
       ORDER BY je.season_number, je.episode_number
       LIMIT 1
     ) as next_episode_to_watch

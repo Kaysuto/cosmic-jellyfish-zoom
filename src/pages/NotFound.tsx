@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useSafeTranslation } from "@/hooks/useSafeTranslation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Home, ArrowLeft, Search } from "lucide-react";
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 
 const NotFound = () => {
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   useEffect(() => {
     console.error(

@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useServices } from '@/hooks/useServices';
@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Activity, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 
 const ServicesOverview = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { services, loading } = useServices();
   const navigate = useNavigate();
 

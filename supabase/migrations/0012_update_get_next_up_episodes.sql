@@ -52,7 +52,7 @@ AS $$
         'still_path', je.still_path
       )
       FROM public.jellyfin_episodes je
-      WHERE je.series_jellyfin_id = ws.jellyfin_id
+      WHERE je.jellyfin_id = ws.jellyfin_id
         AND (
           (je.season_number > (SELECT last_season FROM mapped mm WHERE mm.tmdb_id = ws.tmdb_id)) OR
           (

@@ -20,6 +20,24 @@ const UserManager = () => {
   const { users, loading, refreshUsers } = useUsers();
   const { syncUserToJellyfin, connectionStatus } = useJellyfin();
 
+  // Debug logs
+  console.log('🔍 UserManager - Données reçues:', {
+    sessionUserId: session?.user?.id,
+    totalUsers: users?.length || 0,
+    users: users,
+    loading
+  });
+
+  // Temporairement désactiver le filtre pour voir l'utilisateur connecté
+  const filteredUsers = users; // users.filter(u => u.id !== session?.user.id);
+  
+  console.log('🔍 UserManager - Utilisateurs filtrés:', {
+    filteredCount: filteredUsers.length,
+    filteredUsers: filteredUsers,
+    excludedUserId: session?.user?.id,
+    note: 'Filtre temporairement désactivé pour test'
+  });
+
   const handleOpenDialog = (user: Profile | null = null) => {
     setSelectedUser(user);
     setIsDialogOpen(true);
@@ -35,16 +53,56 @@ const UserManager = () => {
     try {
       if (selectedUser) {
         // Update logic
-        const { error } = await supabase.functions.invoke('update-user', {
+        const updateAttributes: any = {
+          user_metadata: {
+            first_name: data.first_name,
+            last_name: data.last_name,
+          },
+          raw_user_meta_data: {
+            role: data.role,
+            first_name: data.first_name,
+            last_name: data.last_name,
+          }
+        };
+
+        // Ajouter le mot de passe seulement s'il est fourni
+        if (data.password && data.password.trim() !== '') {
+          updateAttributes.password = data.password;
+        }
+
+        // Mettre à jour les informations de base de l'utilisateur
+        const { error: updateError } = await supabase.functions.invoke('update-user-details', {
           body: {
             userId: selectedUser.id,
-            firstName: data.first_name,
-            lastName: data.last_name,
-            role: data.role,
+            attributes: updateAttributes
           }
         });
-        if (error) throw error;
-        showSuccess('Utilisateur mis à jour avec succès.');
+        
+        if (updateError) throw updateError;
+
+        // Gérer le changement de MFA si nécessaire
+        if (data.has_mfa !== selectedUser.has_mfa) {
+          const { error: mfaError } = await supabase.functions.invoke('toggle-user-mfa', {
+            body: {
+              userId: selectedUser.id,
+              enable: data.has_mfa
+            }
+          });
+          
+          if (mfaError) {
+            // Si l'erreur est liée à l'activation du MFA (utilisateur n'a pas configuré), on continue
+            if (data.has_mfa && mfaError.message?.includes('configuré')) {
+              showError('MFA non activé: L\'utilisateur doit d\'abord configurer son MFA depuis son profil.');
+            } else {
+              throw mfaError;
+            }
+          }
+        }
+        
+        const successMessage = data.password && data.password.trim() !== '' 
+          ? 'Utilisateur et mot de passe mis à jour avec succès.'
+          : 'Utilisateur mis à jour avec succès.';
+        showSuccess(successMessage);
       } else {
         // Create logic
         const { error } = await supabase.functions.invoke('create-user', {
@@ -99,7 +157,7 @@ const UserManager = () => {
       </CardHeader>
       <CardContent>
         <UsersTable
-          users={users.filter(u => u.id !== session?.user.id)}
+          users={filteredUsers}
           loading={loading}
           onEdit={handleOpenDialog}
           onRefresh={refreshUsers}

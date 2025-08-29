@@ -80,6 +80,9 @@
   "soon": "Bientôt",
   "soon_available": "Bientôt disponible",
   "series_available": "Série disponible",
+  "no_available_content_found": "Aucun contenu disponible trouvé",
+  "no_content_found": "Aucun contenu trouvé",
+  "try_disabling_available_filter": "Essayez de désactiver le filtre de disponibilité",
   
   "media_type": "Type de média",
   "login_to_request": "Se connecter pour demander",

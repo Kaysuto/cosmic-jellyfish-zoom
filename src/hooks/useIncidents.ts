@@ -13,11 +13,7 @@ export const useIncidents = () => {
     try {
       const { data, error } = await supabase
         .from('incidents')
-        .select(`
-          *,
-          incident_updates (*),
-          services (*)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -25,18 +21,10 @@ export const useIncidents = () => {
       }
       
       const formattedData = data.map(incident => {
-        let affectedService = null;
-        if (Array.isArray(incident.services)) {
-          affectedService = incident.services.length > 0 ? incident.services[0] : null;
-        } else if (incident.services) {
-          affectedService = incident.services;
-        }
-        
         return {
           ...incident,
-          incident_updates: Array.isArray(incident.incident_updates) ? incident.incident_updates : [],
-          service: affectedService,
-          services: undefined
+          incident_updates: [], // Table incident_updates n'existe pas encore
+          service: null // Temporairement null jusqu'à ce que la relation soit corrigée
         };
       });
 

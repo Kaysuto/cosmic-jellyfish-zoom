@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Link } from 'react-router-dom';
 import { useNextUp, NextUpItem } from '@/hooks/useNextUp';
 import { useContinueWatching } from '@/hooks/useContinueWatching';
@@ -12,7 +12,7 @@ import { useSession } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 const NextUpSection = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { session } = useSession();
   const { items, loading } = useNextUp();
   const { items: continueItems } = useContinueWatching();

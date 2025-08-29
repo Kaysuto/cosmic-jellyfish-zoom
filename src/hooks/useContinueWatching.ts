@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/AuthContext';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 
 export interface ContinueWatchingItem {
   id: number; // tmdb_id
@@ -11,12 +12,16 @@ export interface ContinueWatchingItem {
   progress: number; // as a percentage
   playback_position_ticks: number;
   runtime_ticks: number;
- season_number?: number;
- episode_number?: number;
+  season_number?: number;
+  episode_number?: number;
+  vote_average?: number;
+  release_date?: string;
+  first_air_date?: string;
 }
 
 export const useContinueWatching = () => {
   const { session } = useSession();
+  const { i18n } = useSafeTranslation();
   const [items, setItems] = useState<ContinueWatchingItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,16 +33,29 @@ export const useContinueWatching = () => {
     }
 
     setLoading(true);
-    const { data, error } = await supabase.rpc('get_continue_watching', { p_user_id: session.user.id });
     
-    if (error) {
+    try {
+      // Utiliser la nouvelle fonction qui récupère les données complètes comme la Watchlist
+      const { data, error } = await supabase.functions.invoke('get-continue-watching-details', {
+        body: { 
+          userId: session.user.id,
+          language: i18n.language 
+        }
+      });
+      
+      if (error) {
+        console.error('Error fetching continue watching items:', error);
+        setItems([]);
+      } else {
+        setItems(data as ContinueWatchingItem[]);
+      }
+    } catch (error) {
       console.error('Error fetching continue watching items:', error);
       setItems([]);
-    } else {
-      setItems(data as ContinueWatchingItem[]);
     }
+    
     setLoading(false);
-  }, [session]);
+  }, [session, i18n.language]);
 
   useEffect(() => {
     fetchItems();

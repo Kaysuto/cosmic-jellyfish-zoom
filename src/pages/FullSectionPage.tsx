@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { supabase } from '@/integrations/supabase/client';
 import { showError } from '@/utils/toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,8 +17,8 @@ import { Label } from '@/components/ui/label';
 type CatalogSection = 'animations' | 'animes' | 'films' | 'series';
 
 const FullSectionPage = () => {
-  const { section } = useParams<{ section: CatalogSection }>();
-  const { t, i18n } = useTranslation();
+  const { section } = useParams();
+  const { t, i18n } = useSafeTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { session } = useSession();
@@ -93,7 +93,7 @@ const FullSectionPage = () => {
 
   const handleAvailableOnlyChange = (checked: boolean) => {
     setAvailableOnly(checked);
-    setPage(1);
+    setPage(1); // Toujours revenir à la page 1 lors du changement de filtre
   };
 
   const openRequestModal = (item: MediaItem) => {
@@ -196,30 +196,48 @@ const FullSectionPage = () => {
         <LoadingSkeleton />
       ) : (
         <>
-          <MediaGrid items={media} showRequestButton={!!session} onRequest={openRequestModal} />
-          
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 mt-8">
-              <Button
-                variant="outline"
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                <ChevronLeft className="mr-2 h-4 w-4" />
-                {t('previous')}
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {t('page')} {page} / {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-              >
-                {t('next')}
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
+          {media.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg">
+                {availableOnly 
+                  ? t('no_available_content_found') 
+                  : t('no_content_found')
+                }
+              </p>
+              {availableOnly && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  {t('try_disabling_available_filter')}
+                </p>
+              )}
             </div>
+          ) : (
+            <>
+              <MediaGrid items={media} showRequestButton={!!session} onRequest={openRequestModal} />
+              
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-8">
+                  <Button
+                    variant="outline"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="mr-2 h-4 w-4" />
+                    {t('previous')}
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    {t('page')} {page} / {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                  >
+                    {t('next')}
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, Hourglass } from 'lucide-react';
@@ -13,7 +13,7 @@ interface ScheduleCardProps {
 }
 
 const ScheduleCard: React.FC<ScheduleCardProps> = ({ item, currentMediaType }) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   // Affichage du titre avec numéro d'épisode si dispo
   let title = item.title || item.name;
   if ((item.seasonNumber !== undefined && item.episodeNumber !== undefined) && title) {

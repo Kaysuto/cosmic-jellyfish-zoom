@@ -7,9 +7,13 @@
   "notification_media_request": "Nouvelle demande pour \"{{title}}\"",
   "notification_request_approved": "Votre demande pour \"{{title}}\" a été approuvée.",
   "notification_request_rejected": "Votre demande pour \"{{title}}\" a été rejetée.",
+  "notification_undefined": "Notification pour \"{{title}}\"",
   "mark_all_as_read": "Marquer tout comme lu",
   "requested_by": "Demandé par",
   "mark_as_read": "Marquer comme lue",
   "delete_notification": "Supprimer la notification",
-  "clear_all_notifications": "Tout effacer"
+  "clear_all_notifications": "Tout effacer",
+  "notification_deleted": "Notification supprimée.",
+  "notification_deleted_error": "Erreur lors de la suppression de la notification.",
+  "mark_all_read_error": "Erreur lors du marquage des notifications comme lues."
 }

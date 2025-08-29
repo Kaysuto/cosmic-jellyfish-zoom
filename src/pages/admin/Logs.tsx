@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuditLogs, AuditLog } from '@/hooks/useAuditLogs';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import type { TFunction } from 'i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -50,7 +50,7 @@ const getActionDescription = (log: AuditLog, t: TFunction): string => {
 };
 
 const LogsPage = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const { logs, loading, error, totalCount } = useAuditLogs(currentPage, itemsPerPage);

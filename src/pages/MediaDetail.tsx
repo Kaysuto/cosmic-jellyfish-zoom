@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/AuthContext';
 import { useJellyfin } from '@/contexts/JellyfinContext';
@@ -21,6 +21,7 @@ import RequestModal from '@/components/catalog/RequestModal';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { FunctionsHttpError } from '@supabase/supabase-js';
+import { useRequestStatus } from '@/hooks/useRequestStatus';
 
 interface MediaDetails {
   id: number;
@@ -69,7 +70,7 @@ interface ContinueWatchingInfo {
   progress?: number | null;
 }
 
-type RequestStatus = 'available' | 'pending' | 'approved' | 'rejected' | null;
+
 
 const getShortTrackName = (title: string | undefined) => {
   if (!title) return 'Unknown';
@@ -81,14 +82,14 @@ const MediaDetailPage = () => {
   const { mediaType: rawType, tmdbId: id } = useParams<{ mediaType: string; tmdbId: string }>();
   const type = rawType as 'movie' | 'tv' | 'anime';
   const [searchParams] = useSearchParams();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useSafeTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { session } = useSession();
   const { error: jellyfinError } = useJellyfin();
   const [details, setDetails] = useState<MediaDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [requestStatus, setRequestStatus] = useState<RequestStatus>(null);
+
   const [selectedSeason, setSelectedSeason] = useState<SeasonDetails | null>(null);
   const [seasonLoading, setSeasonLoading] = useState(false);
   const [selectedSeasonNumber, setSelectedSeasonNumber] = useState<number | null>(null);
@@ -109,6 +110,10 @@ const MediaDetailPage = () => {
   const [selectedAudio, setSelectedAudio] = useState<string>('auto');
   const [selectedSubtitle, setSelectedSubtitle] = useState<string>('auto');
 
+  // Utiliser le hook useRequestStatus pour gérer les demandes
+  const mediaIds = id ? [Number(id)] : [];
+  const { requestedIds, addRequestedIdAndRefresh, forceRefresh } = useRequestStatus(mediaIds);
+  const isRequested = requestedIds.has(Number(id));
 
   const fromSearch = searchParams.get('fromSearch');
   const currentLocale = i18n.language === 'fr' ? fr : enUS;
@@ -118,7 +123,7 @@ const MediaDetailPage = () => {
     setSeasonLoading(true);
     try {
       const { data: tmdbSeasonData, error: tmdbError } = await supabase.functions.invoke('get-tv-season-details', {
-        body: { seriesId: id, seasonNumber, language: i18n.language },
+        body: { seriesId: Number(id), seasonNumber, language: i18n.language },
       });
       if (tmdbError) throw tmdbError;
 
@@ -150,11 +155,7 @@ const MediaDetailPage = () => {
     }
   };
 
-  const fetchRequestStatus = async () => {
-    if (!session?.user || !id || !type) return;
-    const { data: requestData } = await supabase.from('media_requests').select('status').eq('tmdb_id', id).eq('media_type', type).maybeSingle();
-    if (requestData) setRequestStatus(requestData.status as RequestStatus);
-  };
+
 
  const fetchContinueWatching = useCallback(async () => {
    if (session?.user) {
@@ -205,13 +206,19 @@ const MediaDetailPage = () => {
 
       try {
         const apiMediaType = type === 'anime' ? 'tv' : type;
+        const mediaId = Number(id);
+
+        // Vérifier que l'ID est valide
+        if (!mediaId || isNaN(mediaId)) {
+          throw new Error('ID de média invalide');
+        }
 
         const promises = [
-          supabase.functions.invoke('get-media-details', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } }),
-          supabase.functions.invoke('get-media-videos', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } }),
-          supabase.functions.invoke('get-similar-media', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } }),
-          supabase.functions.invoke('get-media-credits', { body: { mediaType: apiMediaType, mediaId: id, language: i18n.language } }),
-          supabase.from('catalog_items').select('jellyfin_id').eq('tmdb_id', Number(id)).eq('media_type', apiMediaType).maybeSingle()
+          supabase.functions.invoke('get-media-details', { body: { mediaType: apiMediaType, mediaId: mediaId, language: i18n.language } }),
+          supabase.functions.invoke('get-media-videos', { body: { mediaType: apiMediaType, mediaId: mediaId, language: i18n.language } }),
+          supabase.functions.invoke('get-similar-media', { body: { mediaType: apiMediaType, mediaId: mediaId, language: i18n.language } }),
+          supabase.functions.invoke('get-media-credits', { body: { mediaType: apiMediaType, mediaId: mediaId, language: i18n.language } }),
+          supabase.from('catalog_items').select('jellyfin_id').eq('tmdb_id', mediaId).eq('media_type', apiMediaType).maybeSingle()
         ];
 
         const [detailsResult, videosResult, similarResult, creditsResult, catalogResult] = await Promise.all(promises);
@@ -313,6 +320,17 @@ const MediaDetailPage = () => {
     setRequestModalOpen(true);
   };
 
+  const onModalSuccess = () => {
+    if (selectedItemForRequest) {
+      // Si l'item est déjà marqué comme demandé, forcer le rafraîchissement
+      if (selectedItemForRequest.isRequested) {
+        forceRefresh();
+      } else {
+        addRequestedIdAndRefresh(selectedItemForRequest.id);
+      }
+    }
+  };
+
   const handlePlay = (season?: number, episode?: number, startTime?: number) => {
     if (!type || !id) return;
     let url = `/media/${type}/${id}/play`;
@@ -395,7 +413,7 @@ const MediaDetailPage = () => {
       }
     }
 
-    if (requestStatus === 'pending' || requestStatus === 'approved') {
+    if (isRequested) {
       return <Button size="lg" disabled><Check className="mr-2 h-4 w-4" /> {t('requested')}</Button>;
     }
     
@@ -699,7 +717,7 @@ const MediaDetailPage = () => {
           </div>
         </div>
       </div>
-      <RequestModal open={requestModalOpen} onOpenChange={setRequestModalOpen} item={selectedItemForRequest} onSuccess={fetchRequestStatus} />
+      <RequestModal open={requestModalOpen} onOpenChange={setRequestModalOpen} item={selectedItemForRequest} onSuccess={onModalSuccess} />
     </>
   );
 };

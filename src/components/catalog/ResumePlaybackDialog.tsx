@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ContinueWatchingItem } from "@/hooks/useContinueWatching";
-import { useTranslation } from "react-i18next";
+import { useSafeTranslation } from "@/hooks/useSafeTranslation";
 import { X } from 'lucide-react';
 
 interface ResumePlaybackDialogProps {
@@ -22,7 +22,7 @@ interface ResumePlaybackDialogProps {
 }
 
 const ResumePlaybackDialog = ({ open, onOpenChange, item, onResume, onRestart, onViewDetails }: ResumePlaybackDialogProps) => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   if (!item) return null;
 

@@ -24,6 +24,18 @@ serve(async (req) => {
       throw new Error("Missing required fields in the record");
     }
 
+    // Récupérer les informations du profil utilisateur
+    const { data: userProfile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('first_name, last_name, email, avatar_url')
+      .eq('id', record.user_id)
+      .single();
+
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError);
+      // On continue même si on ne peut pas récupérer le profil
+    }
+
     const { error } = await supabaseAdmin
       .from('notifications')
       .insert({
@@ -36,6 +48,11 @@ serve(async (req) => {
           user_id: record.user_id,
           requested_at: record.requested_at,
           poster_path: record.poster_path,
+          // Ajouter les informations du profil utilisateur
+          first_name: userProfile?.first_name || '',
+          last_name: userProfile?.last_name || '',
+          email: userProfile?.email || '',
+          avatar_url: userProfile?.avatar_url || null,
         },
         target_role: 'admin',
         is_read: false,

@@ -1,0 +1,11 @@
+{
+  "playback_error": "Playback Error",
+  "error": "Error",
+  "missing_media_info": "Missing media information",
+  "media_not_found_in_catalog": "Media not found in catalog",
+  "missing_season_episode": "Missing season and episode numbers",
+  "unsupported_media_type": "Unsupported media type",
+  "stream_error": "Error retrieving stream",
+  "no_stream_url": "No stream URL could be found",
+  "back": "Back"
+}

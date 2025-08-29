@@ -1,10 +1,10 @@
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from '@/hooks/useSafeTranslation';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Mail, Shield } from 'lucide-react';
 
 const DmcaPage = () => {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
 
   return (
     <div className="container mx-auto px-4 py-16">
